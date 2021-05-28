@@ -52,6 +52,21 @@ public enum AMPhone {
         }
         return addUUID()
     }()
+    public static var cacheDir:String{
+        if let str  = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first {
+            return str
+        }
+        return tmpDir
+    }
+    public static var docDir:String{
+        if let str  = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first {
+            return str
+        }
+        return tmpDir
+    }
+    public static var tmpDir:String{
+        return NSTemporaryDirectory()
+    }
     private static func getUUID()-> String?{
         var query = self.keychainQuery()
         query[kSecMatchLimit as String] = kSecMatchLimitOne

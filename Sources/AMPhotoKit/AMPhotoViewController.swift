@@ -18,7 +18,6 @@ open class AMPhotoViewController: UIViewController {
         }
     }
     required public init(model:AMPhoto,config:AMPhotoConfig = .default){
-        
         self.photoView = AMPhotoView(model: model, config: config)
         super.init(nibName: nil, bundle: nil)
         self.photoView.delegate = self

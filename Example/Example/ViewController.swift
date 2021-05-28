@@ -7,7 +7,7 @@
 
 import UIKit
 import Airmey
-
+let pop = AMPopup()
 class ViewController: UIViewController {
     let imageLabel:AMImageLabel = .init()
     override func viewDidLoad() {
@@ -19,9 +19,9 @@ class ViewController: UIViewController {
         self.view.addSubview(imageLabel)
         imageLabel.am.center.equal(to: 0)
         imageLabel.onclick = {_  in
-            pop.remind(.succeed("成功"))
+            pop.remind("test")
         }
-        var image:UIImage? = .gradual(.zero, points: .xmin(.red),.xmax(.blue))
+//        var image:UIImage? = .gradual(.zero, points: .xmin(.red),.xmax(.blue))
         // Do any additional setup after loading the view.
     }
 }

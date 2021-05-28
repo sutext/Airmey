@@ -183,9 +183,9 @@ public struct XAxisAnchor {
         }
         switch self.kind {
         case .left:
-            return view.leftAnchor.less(than: su.leftAnchor, offset: offset)
+            return view.leadingAnchor.less(than: su.leadingAnchor, offset: offset)
         case .right:
-            return view.rightAnchor.less(than: su.rightAnchor, offset: offset)
+            return view.trailingAnchor.less(than: su.trailingAnchor, offset: offset)
         case .center:
             return view.centerXAnchor.less(than: su.centerXAnchor, offset: offset)
         }
@@ -194,22 +194,22 @@ public struct XAxisAnchor {
     public func less(than other:Self, offset:CGFloat? = nil) -> NSLayoutConstraint{
         switch self.kind {
         case .left:
-            let left = self.view.leftAnchor
+            let left = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return left.less(than: other.view.leftAnchor, offset: offset)
+                return left.less(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return left.less(than: other.view.rightAnchor,offset: offset)
+                return left.less(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return left.less(than: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leftAnchor
+            let right = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return right.less(than: other.view.leftAnchor, offset: offset)
+                return right.less(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return right.less(than: other.view.rightAnchor,offset: offset)
+                return right.less(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return right.less(than: other.view.centerXAnchor, offset: offset)
             }
@@ -217,9 +217,9 @@ public struct XAxisAnchor {
             let center = self.view.centerXAnchor
             switch other.kind {
             case .left:
-                return center.less(than: other.view.leftAnchor, offset: offset)
+                return center.less(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return center.less(than: other.view.rightAnchor,offset: offset)
+                return center.less(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return center.less(than: other.view.centerXAnchor, offset: offset)
             }
@@ -232,9 +232,9 @@ public struct XAxisAnchor {
         }
         switch self.kind {
         case .left:
-            return view.leftAnchor.equal(to: su.leftAnchor, offset: offset)
+            return view.leadingAnchor.equal(to: su.leadingAnchor, offset: offset)
         case .right:
-            return  view.rightAnchor.equal(to: su.rightAnchor,offset: offset)
+            return  view.trailingAnchor.equal(to: su.trailingAnchor,offset: offset)
         case .center:
             return view.centerXAnchor.equal(to: su.centerXAnchor, offset: offset)
         }
@@ -243,22 +243,22 @@ public struct XAxisAnchor {
     public func equal(to other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch self.kind {
         case .left:
-            let left = self.view.leftAnchor
+            let left = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return left.equal(to: other.view.leftAnchor, offset: offset)
+                return left.equal(to: other.view.leadingAnchor, offset: offset)
             case .right:
-                return left.equal(to: other.view.rightAnchor,offset: offset)
+                return left.equal(to: other.view.trailingAnchor,offset: offset)
             case .center:
                 return left.equal(to: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leftAnchor
+            let right = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return right.equal(to: other.view.leftAnchor, offset: offset)
+                return right.equal(to: other.view.leadingAnchor, offset: offset)
             case .right:
-                return right.equal(to: other.view.rightAnchor,offset: offset)
+                return right.equal(to: other.view.trailingAnchor,offset: offset)
             case .center:
                 return right.equal(to: other.view.centerXAnchor, offset: offset)
             }
@@ -266,9 +266,9 @@ public struct XAxisAnchor {
             let center = self.view.centerXAnchor
             switch other.kind {
             case .left:
-                return center.equal(to: other.view.leftAnchor, offset: offset)
+                return center.equal(to: other.view.leadingAnchor, offset: offset)
             case .right:
-                return center.equal(to: other.view.rightAnchor,offset: offset)
+                return center.equal(to: other.view.trailingAnchor,offset: offset)
             case .center:
                 return center.equal(to: other.view.centerXAnchor, offset: offset)
             }
@@ -281,9 +281,9 @@ public struct XAxisAnchor {
         }
         switch self.kind {
         case .left:
-            return view.leftAnchor.greater(than: su.leftAnchor, offset: offset)
+            return view.leadingAnchor.greater(than: su.leadingAnchor, offset: offset)
         case .right:
-            return view.rightAnchor.greater(than: su.rightAnchor, offset: offset)
+            return view.trailingAnchor.greater(than: su.trailingAnchor, offset: offset)
         case .center:
             return view.centerXAnchor.greater(than: su.centerXAnchor, offset: offset)
         }
@@ -292,22 +292,22 @@ public struct XAxisAnchor {
     public func greater(than other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch self.kind {
         case .left:
-            let left = self.view.leftAnchor
+            let left = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return left.greater(than: other.view.leftAnchor, offset: offset)
+                return left.greater(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return left.greater(than: other.view.rightAnchor,offset: offset)
+                return left.greater(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return left.greater(than: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leftAnchor
+            let right = self.view.leadingAnchor
             switch other.kind {
             case .left:
-                return right.greater(than: other.view.leftAnchor, offset: offset)
+                return right.greater(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return right.greater(than: other.view.rightAnchor,offset: offset)
+                return right.greater(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return right.greater(than: other.view.centerXAnchor, offset: offset)
             }
@@ -315,9 +315,9 @@ public struct XAxisAnchor {
             let center = self.view.centerXAnchor
             switch other.kind {
             case .left:
-                return center.greater(than: other.view.leftAnchor, offset: offset)
+                return center.greater(than: other.view.leadingAnchor, offset: offset)
             case .right:
-                return center.greater(than: other.view.rightAnchor,offset: offset)
+                return center.greater(than: other.view.trailingAnchor,offset: offset)
             case .center:
                 return center.greater(than: other.view.centerXAnchor, offset: offset)
             }

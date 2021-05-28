@@ -33,7 +33,7 @@ open class AMStorage{
         self.mom = mom
         self.moc = NSManagedObjectContext(concurrencyType:.privateQueueConcurrencyType);
         self.psc = NSPersistentStoreCoordinator(managedObjectModel: mom)
-        let storeURL = URL(fileURLWithPath:"\(AMDirectory.doc)/\(url.lastPathComponent).db");
+        let storeURL = URL(fileURLWithPath:"\(AMPhone.docDir)/\(url.lastPathComponent).db");
         let opions = [
             NSMigratePersistentStoresAutomaticallyOption:true,
             NSInferMappingModelAutomaticallyOption:true

@@ -241,7 +241,7 @@ extension AMNetwork{
         }
     }
     public class Task{
-        var af:DataRequest
+        private var af:DataRequest
         init(_ af:DataRequest) {
             self.af = af
         }

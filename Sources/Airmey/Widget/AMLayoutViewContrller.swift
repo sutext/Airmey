@@ -70,13 +70,13 @@ open class AMLayoutViewContrller: UIViewController {
             }
         }
     }
+    public var dimming:CGFloat = 0.3//the alpha of dimming cover view default=0.4
+    public var enableShadow:Bool = true;
     public var leftDisplayMode:DisplayMode = .default
     public var rightDisplayMode:DisplayMode = .default
-    public var enableShadow:Bool = true;
     public var leftDisplayVector:CGVector = CGVector(dx: 240, dy: 64)
     public var rightDisplayVector:CGVector = CGVector(dx: 80, dy: 64)
     public var animationDuration:TimeInterval = 0.35
-    public var dimming:CGFloat = 0.3//the alpha of dimming cover view default=0.4
     public init(rootViewController:UIViewController) {
         self.rootViewController = rootViewController
         super.init(nibName: nil, bundle: nil)
@@ -116,9 +116,7 @@ public extension AMLayoutViewContrller{
             self.showRightController(duration: animated ? self.animationDuration : 0)
         }
     }
-    /**
-     * dismiss current showed controller. and show the root view controller
-     */
+    /// dismiss current showed controller. and show the root view controller
     func dismissCurrentController(animated:Bool)  {
         let duration = animated ? self.animationDuration : 0;
         switch self.status {
@@ -280,8 +278,7 @@ extension AMLayoutViewContrller{
                 self.status = .rightHiding;
             }
         }
-        else if velocity.x < 0
-        {
+        else if velocity.x < 0{
             if self.status == .normal,let _ = self.rightViewController{
                 self.willShowRightController();
                 self.startPoint = self.rightStartPoint;
@@ -374,8 +371,7 @@ extension AMLayoutViewContrller{
         }
     }
 }
-extension AMLayoutViewContrller:UIGestureRecognizerDelegate
-{
+extension AMLayoutViewContrller:UIGestureRecognizerDelegate{
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let offset = self.guesture.translation(in: self.view)
         let velocity = self.guesture.velocity(in: self.view);
