@@ -80,6 +80,11 @@ extension AMPopupCenter{
         self.queue.append(op)
         self.next()
     }
+    private func delayNext(){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.next()
+        }
+    }
     private func next() {
         guard self.current == nil,!self.queue.isEmpty else {
             return
@@ -110,13 +115,13 @@ extension AMPopupCenter{
     private func _clear() {
         UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: false)
         self.current = nil
-        self.next()
+        self.delayNext()
     }
     private func _dismiss(_ vc:UIViewController, animated:Bool,finish:AMBlock?){
         let block = {
             finish?()
             self.current = nil
-            self.next()
+            self.delayNext()
         }
         if let popup = vc as? AMPopupController {
             popup._dismiss(animated: animated,completion: block)
@@ -131,7 +136,7 @@ extension AMPopupCenter{
         self.show(vc,animated: animated) {
             finish?()
             self.current = nil
-            self.next()
+            self.delayNext()
         }
     }
     private func _remind(_ vc:AMRemindable,duration:TimeInterval?) {
@@ -139,26 +144,33 @@ extension AMPopupCenter{
         DispatchQueue.main.asyncAfter(deadline: .now()+(duration ?? 1)) {
             vc._dismiss(animated: true){
                 self.current = nil
-                self.next()
+                self.delayNext()
             }
         }
     }
     private func _wait(_ vc:AMWaitable)  {
         guard self.waiter == nil else {
             self.current = nil
-            self.next()
+            self.delayNext()
             return
         }
         self.waiter = vc
         self.show(vc) {
             self.current = nil
-            self.next()
+            self.delayNext()
         }
     }
     private func _idle() {
-        self.waiter?._dismiss(animated: true)
-        self.current = nil
-        self.next()
+        guard let vc = self.waiter else {
+            self.current = nil
+            self.delayNext()
+            return
+        }
+        vc._dismiss(animated: true){
+            self.waiter = nil
+            self.current = nil
+            self.delayNext()
+        }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
         guard let top = self.topvc else {

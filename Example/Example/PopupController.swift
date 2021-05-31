@@ -10,6 +10,7 @@ import Airmey
 let pop = PopupCenter()
 public class PopupCenter:AMPopupCenter{
     public override class var Alert: AMAlertable.Type{AMAlertController.self}
+    public override class var Action: AMActionable.Type{AMActionController.self}
 }
 class PopupController: UIViewController {
     init() {
@@ -17,7 +18,6 @@ class PopupController: UIViewController {
         self.modalPresentationStyle = .fullScreen
         self.tabBarItem = UITabBarItem(title: "Popup", image: .round(.yellow, radius: 10), selectedImage: .round(.cyan, radius: 10))
     }
-    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -29,23 +29,32 @@ class PopupController: UIViewController {
         self.view.addSubview(self.stackView)
         self.stackView.axis = .vertical
         self.stackView.alignment = .leading
-        self.stackView.distribution = .equalCentering
+        self.stackView.distribution = .equalSpacing
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: 0)
-        self.addTest("Test Popup") {
+        self.addTest("Test multiple popup") {
+            pop.wait("loading....")
+            pop.idle()
             pop.remind("test1")
             pop.action(["apple","facebook"])
             pop.action(["facebook","apple"])
             pop.remind("testing....")
             pop.alert("test alert",confirm: "确定",cancel: "取消")
             pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
+            pop.present(self)
 
         }
         self.addTest("Test Present") {
-            self.present(PopupController(), animated: true, completion: nil)
+            pop.present(UpdateController())
         }
         self.addTest("clear") {
             pop.clear()
+        }
+        self.addTest("Test Wait") {
+            pop.wait("loading...")
+            DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+                pop.idle()
+            }
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {

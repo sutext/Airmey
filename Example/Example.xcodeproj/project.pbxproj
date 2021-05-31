@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3372C6D32664A785007351D0 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6D22664A785007351D0 /* UpdateController.swift */; };
 		338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D4265FD69500987BA7 /* AppDelegate.swift */; };
 		338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D8265FD69500987BA7 /* NetowrkController.swift */; };
 		338E70DE265FD69600987BA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DD265FD69600987BA7 /* Assets.xcassets */; };
@@ -60,6 +61,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3372C6D22664A785007351D0 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		338E70D1265FD69500987BA7 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		338E70D4265FD69500987BA7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		338E70D8265FD69500987BA7 /* NetowrkController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetowrkController.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				338E70D4265FD69500987BA7 /* AppDelegate.swift */,
 				33E37D922662B11B00D953D0 /* RootViewController.swift */,
 				33E37D982662B14000D953D0 /* PopupController.swift */,
+				3372C6D22664A785007351D0 /* UpdateController.swift */,
 				338E70D8265FD69500987BA7 /* NetowrkController.swift */,
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
@@ -240,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33E37D992662B14000D953D0 /* PopupController.swift in Sources */,
+				3372C6D32664A785007351D0 /* UpdateController.swift in Sources */,
 				338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */,
 				338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */,
 				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,

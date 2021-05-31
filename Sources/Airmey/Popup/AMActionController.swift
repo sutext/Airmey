@@ -20,12 +20,15 @@ open class AMActionController:AMPopupController,AMActionable{
         self.items = items
         self.cancelBar.text = "Cancel"
         super.init(AMFramePresenter(bottom: CGFloat(count)*self.rowHeight + .tabbarHeight))
-        self.presenter.onhide = {
-            if let idx = self.hideAtIndex {
+        self.presenter.onhide = {[weak self] in
+            if let idx = self?.hideAtIndex {
                 onhide?(items[idx],idx)
             }else{
                 onhide?(nil,nil)
             }
+        }
+        self.presenter.onMaskClick={[weak self] in
+            self?.dismiss(animated: true)
         }
         self.tableView.isScrollEnabled = (items.count > 5)
     }

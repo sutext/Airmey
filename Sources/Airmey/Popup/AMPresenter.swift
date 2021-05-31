@@ -14,6 +14,8 @@ import UIKit
 public class AMPresenter: NSObject {
     public var onshow:AMBlock?
     public var onhide:AMBlock?
+    public var onMaskClick:AMBlock?
+    public var transitionDuration:TimeInterval = 0.3
     ///override method
     ///empty implemention by default
     open func presentWillBegin(in pc:UIPresentationController){
@@ -66,10 +68,11 @@ extension AMPresenter:UIViewControllerTransitioningDelegate{
 }
 extension AMPresenter:UIViewControllerAnimatedTransitioning{
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-        return 0.25
+        return self.transitionDuration
     }
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-        UIView.animate(withDuration: 0.25, animations: {
+        UIView.animate(withDuration: self.transitionDuration, animations: {
+            
         }) { (finished) in
             transitionContext.completeTransition(finished)
         }
@@ -84,6 +87,9 @@ public class AMFramePresenter: AMPresenter {
     private let dimmingFrame:CGRect
     private lazy var dimmingView:AMView = {
         let view = AMView()
+        view.onclick = {_ in
+            self.onMaskClick?()
+        }
         view.backgroundColor = UIColor(white: 0, alpha: 0.4)
         view.alpha = 0
         return view;
@@ -131,35 +137,34 @@ public class AMFramePresenter: AMPresenter {
         container.addSubview(self.dimmingView)
         container.addSubview(pc.presentedView!)
         self.dimmingView.frame = .screen
-        self.dimmingView.onclick = { _ in
-            pc.presentedViewController.dismiss(animated: true)
-        }
         pc.presentedViewController.view.frame = self.initialFrame
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{_ in
             self.dimmingView.alpha = 1
             pc.presentedViewController.view.frame = self.finalFrame
             self.dimmingView.frame = self.dimmingFrame
-        })
+        }
     }
     public override func dismissWillBegin(in pc: UIPresentationController) {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
         pc.presentedViewController.view.frame = self.finalFrame
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{ _ in
             self.dimmingView.alpha = 0
             self.dimmingView.frame = .screen
             pc.presentedViewController.view.frame = self.initialFrame
-        })
+        }
     }
 }
 
 
 /// Add auto dimming background view to the target view controller
 public class AMDimmingPresenter: AMPresenter {
-    public var masktap:Bool = false
     private lazy var dimmingView:AMView = {
         let view = AMView()
+        view.onclick = {_ in
+            self.onMaskClick?()
+        }
         view.backgroundColor = UIColor(white: 0, alpha: 0.4)
         view.alpha = 0
         return view;
@@ -174,28 +179,23 @@ public class AMDimmingPresenter: AMPresenter {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
-        if self.masktap{
-            self.dimmingView.onclick = {_ in
-                pc.presentedViewController.dismiss(animated: true)
-            }
-        }
         self.dimmingView.frame = presentView.bounds
         presentView.insertSubview(self.dimmingView, at: 0)
         container.addSubview(presentView)
         presentView.alpha = 0
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{ _ in
             self.dimmingView.alpha = 1
             presentView.alpha = 1
-        })
+        }
     }
     public override func dismissWillBegin(in pc: UIPresentationController) {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{ _ in
             self.dimmingView.alpha = 0
             pc.presentedView?.alpha = 0
-        })
+        }
     }
 }
 
@@ -210,16 +210,16 @@ public class AMFadeinPresenter: AMPresenter {
             return
         }
         pc.presentedView?.alpha = 0
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{_ in
             pc.presentedView?.alpha = 1
-        })
+        }
     }
     public override func dismissWillBegin(in pc: UIPresentationController) {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
-        coordinator.animate(alongsideTransition: { (ctx) in
+        coordinator.animate{_ in
             pc.presentedView?.alpha = 0
-        })
+        }
     }
 }
