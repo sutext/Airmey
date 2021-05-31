@@ -7,7 +7,7 @@
 
 import UIKit
 
-open class AMRemindController: UIViewController ,AMRemindable{
+open class AMRemindController: AMPopupController ,AMRemindable{
     private lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)
@@ -22,12 +22,9 @@ open class AMRemindController: UIViewController ,AMRemindable{
         label.font = UIFont.systemFont(ofSize: 15)
         return label
     }()
-    public let presenter = AMFadeinPresenter()
     public required init(_ msg: String, title: String? = nil) {
-        super.init(nibName: nil, bundle: nil)
+        super.init(AMFadeinPresenter())
         self.messageLabel.text = msg
-        self.transitioningDelegate = self.presenter
-        self.modalPresentationStyle = .custom
     }
     
     public required init?(coder aDecoder: NSCoder) {

@@ -8,38 +8,38 @@
 
 /* Begin PBXBuildFile section */
 		338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D4265FD69500987BA7 /* AppDelegate.swift */; };
-		338E70D9265FD69500987BA7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D8265FD69500987BA7 /* ViewController.swift */; };
+		338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D8265FD69500987BA7 /* NetowrkController.swift */; };
 		338E70DE265FD69600987BA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DD265FD69600987BA7 /* Assets.xcassets */; };
 		338E70E1265FD69600987BA7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */; };
-		338E70F8265FDA6A00987BA7 /* Airmey.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 338E70F0265FD6B200987BA7 /* Airmey.framework */; };
-		338E70F9265FDA6A00987BA7 /* Airmey.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 338E70F0265FD6B200987BA7 /* Airmey.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D922662B11B00D953D0 /* RootViewController.swift */; };
+		33E37D992662B14000D953D0 /* PopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D982662B14000D953D0 /* PopupController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		338E70EF265FD6B200987BA7 /* PBXContainerItemProxy */ = {
+		33E37D81266200A700D953D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */;
+			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 338E702D265FD16400987BA7;
 			remoteInfo = Airmey;
 		};
-		338E70F1265FD6B200987BA7 /* PBXContainerItemProxy */ = {
+		33E37D83266200A700D953D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */;
+			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 338E70A0265FD48800987BA7;
 			remoteInfo = AMPhotoKit;
 		};
-		338E70F3265FD6B200987BA7 /* PBXContainerItemProxy */ = {
+		33E37D85266200A700D953D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */;
+			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 338E70AD265FD49700987BA7;
 			remoteInfo = AMCrypto;
 		};
-		338E70F5265FD6B200987BA7 /* PBXContainerItemProxy */ = {
+		33E37D87266200A700D953D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */;
+			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 338E70BA265FD4B000987BA7;
 			remoteInfo = AMKeyboard;
@@ -53,7 +53,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				338E70F9265FDA6A00987BA7 /* Airmey.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,11 +62,13 @@
 /* Begin PBXFileReference section */
 		338E70D1265FD69500987BA7 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		338E70D4265FD69500987BA7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		338E70D8265FD69500987BA7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		338E70D8265FD69500987BA7 /* NetowrkController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetowrkController.swift; sourceTree = "<group>"; };
 		338E70DD265FD69600987BA7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		338E70E0265FD69600987BA7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		338E70E2265FD69600987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Airmey.xcodeproj; path = ../Airmey.xcodeproj; sourceTree = "<group>"; };
+		33E37D7A266200A700D953D0 /* Airmey.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Airmey.xcodeproj; path = ../Airmey.xcodeproj; sourceTree = "<group>"; };
+		33E37D922662B11B00D953D0 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		33E37D982662B14000D953D0 /* PopupController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +76,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				338E70F8265FDA6A00987BA7 /* Airmey.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +85,7 @@
 		338E70C8265FD69500987BA7 = {
 			isa = PBXGroup;
 			children = (
-				338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */,
+				33E37D7A266200A700D953D0 /* Airmey.xcodeproj */,
 				338E70D3265FD69500987BA7 /* Example */,
 				338E70D2265FD69500987BA7 /* Products */,
 				338E70F7265FDA6A00987BA7 /* Frameworks */,
@@ -104,7 +104,9 @@
 			isa = PBXGroup;
 			children = (
 				338E70D4265FD69500987BA7 /* AppDelegate.swift */,
-				338E70D8265FD69500987BA7 /* ViewController.swift */,
+				33E37D922662B11B00D953D0 /* RootViewController.swift */,
+				33E37D982662B14000D953D0 /* PopupController.swift */,
+				338E70D8265FD69500987BA7 /* NetowrkController.swift */,
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
 				338E70E2265FD69600987BA7 /* Info.plist */,
@@ -112,22 +114,22 @@
 			path = Example;
 			sourceTree = "<group>";
 		};
-		338E70E9265FD6B200987BA7 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				338E70F0265FD6B200987BA7 /* Airmey.framework */,
-				338E70F2265FD6B200987BA7 /* AMPhotoKit.framework */,
-				338E70F4265FD6B200987BA7 /* AMCrypto.framework */,
-				338E70F6265FD6B200987BA7 /* AMKeyboard.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		338E70F7265FDA6A00987BA7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		33E37D7B266200A700D953D0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				33E37D82266200A700D953D0 /* Airmey.framework */,
+				33E37D84266200A700D953D0 /* AMPhotoKit.framework */,
+				33E37D86266200A700D953D0 /* AMCrypto.framework */,
+				33E37D88266200A700D953D0 /* AMKeyboard.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,8 +180,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 338E70E9265FD6B200987BA7 /* Products */;
-					ProjectRef = 338E70E8265FD6B200987BA7 /* Airmey.xcodeproj */;
+					ProductGroup = 33E37D7B266200A700D953D0 /* Products */;
+					ProjectRef = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -190,32 +192,32 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		338E70F0265FD6B200987BA7 /* Airmey.framework */ = {
+		33E37D82266200A700D953D0 /* Airmey.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Airmey.framework;
-			remoteRef = 338E70EF265FD6B200987BA7 /* PBXContainerItemProxy */;
+			remoteRef = 33E37D81266200A700D953D0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		338E70F2265FD6B200987BA7 /* AMPhotoKit.framework */ = {
+		33E37D84266200A700D953D0 /* AMPhotoKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = AMPhotoKit.framework;
-			remoteRef = 338E70F1265FD6B200987BA7 /* PBXContainerItemProxy */;
+			remoteRef = 33E37D83266200A700D953D0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		338E70F4265FD6B200987BA7 /* AMCrypto.framework */ = {
+		33E37D86266200A700D953D0 /* AMCrypto.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = AMCrypto.framework;
-			remoteRef = 338E70F3265FD6B200987BA7 /* PBXContainerItemProxy */;
+			remoteRef = 33E37D85266200A700D953D0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		338E70F6265FD6B200987BA7 /* AMKeyboard.framework */ = {
+		33E37D88266200A700D953D0 /* AMKeyboard.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = AMKeyboard.framework;
-			remoteRef = 338E70F5265FD6B200987BA7 /* PBXContainerItemProxy */;
+			remoteRef = 33E37D87266200A700D953D0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -237,8 +239,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				338E70D9265FD69500987BA7 /* ViewController.swift in Sources */,
+				33E37D992662B14000D953D0 /* PopupController.swift in Sources */,
+				338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */,
 				338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */,
+				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

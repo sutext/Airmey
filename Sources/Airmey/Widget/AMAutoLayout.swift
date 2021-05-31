@@ -9,8 +9,7 @@
 import UIKit
 
 ///These sample methods of layout anchor create an active constraint
-extension NSLayoutXAxisAnchor
-{
+extension NSLayoutXAxisAnchor{
     @discardableResult
     func equal(to other:NSLayoutXAxisAnchor,offset:CGFloat?=nil) -> NSLayoutConstraint {
         guard let offset = offset else {
@@ -46,8 +45,7 @@ extension NSLayoutXAxisAnchor
     }
 }
 ///These sample methods of layout anchor create an active constraint
-extension NSLayoutYAxisAnchor
-{
+extension NSLayoutYAxisAnchor{
     @discardableResult
     func equal(to other:NSLayoutYAxisAnchor,offset:CGFloat?=nil) -> NSLayoutConstraint {
         guard let offset = offset else {
@@ -83,8 +81,7 @@ extension NSLayoutYAxisAnchor
     }
 }
 
-extension NSLayoutDimension
-{
+extension NSLayoutDimension{
     @discardableResult
     func equal(to constant:CGFloat) -> NSLayoutConstraint {
         let const = self.constraint(equalToConstant: constant)

@@ -17,7 +17,7 @@ open class AMLabel: UILabel {
     @objc private func tapsel() {
         self.onclick?(self)
     }
-    open var onclick: ((AMLabel) -> Swift.Void)?{
+    open var onclick: ((_ sender:AMLabel) -> Swift.Void)?{
         didSet{
             if let _ = self.onclick {
                 self.isUserInteractionEnabled = true;

@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		3372C6C52660E012007351D0 /* AMRemindController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6C42660E012007351D0 /* AMRemindController.swift */; };
 		3372C6C72660E070007351D0 /* AMActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6C62660E070007351D0 /* AMActionController.swift */; };
-		3372C6C92660E097007351D0 /* AMWaitingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6C82660E097007351D0 /* AMWaitingController.swift */; };
-		3372C6CB2660E164007351D0 /* AMPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6CA2660E164007351D0 /* AMPopup.swift */; };
+		3372C6C92660E097007351D0 /* AMWaitiController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6C82660E097007351D0 /* AMWaitiController.swift */; };
+		3372C6CB2660E164007351D0 /* AMPopupCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6CA2660E164007351D0 /* AMPopupCenter.swift */; };
 		338E706C265FD2A300987BA7 /* AMPhone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E703A265FD2A300987BA7 /* AMPhone.swift */; };
 		338E706D265FD2A300987BA7 /* AMDateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E703B265FD2A300987BA7 /* AMDateStyle.swift */; };
 		338E706E265FD2A300987BA7 /* AMAutoLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E703D265FD2A300987BA7 /* AMAutoLayout.swift */; };
@@ -24,7 +24,7 @@
 		338E7076265FD2A300987BA7 /* AMSwiper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E7045265FD2A300987BA7 /* AMSwiper.swift */; };
 		338E7077265FD2A300987BA7 /* AMToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E7046265FD2A300987BA7 /* AMToolBar.swift */; };
 		338E7078265FD2A300987BA7 /* AMView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E7047265FD2A300987BA7 /* AMView.swift */; };
-		338E7079265FD2A300987BA7 /* AMViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E7048265FD2A300987BA7 /* AMViewPresenter.swift */; };
+		338E7079265FD2A300987BA7 /* AMPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E7048265FD2A300987BA7 /* AMPresenter.swift */; };
 		338E707A265FD2A300987BA7 /* AMUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E704A265FD2A300987BA7 /* AMUpload.swift */; };
 		338E707B265FD2A300987BA7 /* AMRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E704B265FD2A300987BA7 /* AMRequest.swift */; };
 		338E707C265FD2A300987BA7 /* AMNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E704C265FD2A300987BA7 /* AMNetwork.swift */; };
@@ -47,13 +47,15 @@
 		338E70C5265FD51C00987BA7 /* AMPhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E705C265FD2A300987BA7 /* AMPhotoViewController.swift */; };
 		338E70C6265FD51C00987BA7 /* AMPhotoBrowserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E705D265FD2A300987BA7 /* AMPhotoBrowserController.swift */; };
 		338E70C7265FD51C00987BA7 /* AMPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E705E265FD2A300987BA7 /* AMPhoto.swift */; };
+		33E37D8E2662375C00D953D0 /* AMAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D8D2662375C00D953D0 /* AMAlertController.swift */; };
+		33E37D902662AD8F00D953D0 /* AMPopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D8F2662AD8F00D953D0 /* AMPopupController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3372C6C42660E012007351D0 /* AMRemindController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMRemindController.swift; sourceTree = "<group>"; };
 		3372C6C62660E070007351D0 /* AMActionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMActionController.swift; sourceTree = "<group>"; };
-		3372C6C82660E097007351D0 /* AMWaitingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMWaitingController.swift; sourceTree = "<group>"; };
-		3372C6CA2660E164007351D0 /* AMPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMPopup.swift; sourceTree = "<group>"; };
+		3372C6C82660E097007351D0 /* AMWaitiController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMWaitiController.swift; sourceTree = "<group>"; };
+		3372C6CA2660E164007351D0 /* AMPopupCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMPopupCenter.swift; sourceTree = "<group>"; };
 		338E702D265FD16400987BA7 /* Airmey.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Airmey.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		338E7031265FD16400987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		338E703A265FD2A300987BA7 /* AMPhone.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMPhone.swift; sourceTree = "<group>"; };
@@ -69,7 +71,7 @@
 		338E7045265FD2A300987BA7 /* AMSwiper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMSwiper.swift; sourceTree = "<group>"; };
 		338E7046265FD2A300987BA7 /* AMToolBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMToolBar.swift; sourceTree = "<group>"; };
 		338E7047265FD2A300987BA7 /* AMView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMView.swift; sourceTree = "<group>"; };
-		338E7048265FD2A300987BA7 /* AMViewPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMViewPresenter.swift; sourceTree = "<group>"; };
+		338E7048265FD2A300987BA7 /* AMPresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMPresenter.swift; sourceTree = "<group>"; };
 		338E704A265FD2A300987BA7 /* AMUpload.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMUpload.swift; sourceTree = "<group>"; };
 		338E704B265FD2A300987BA7 /* AMRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMRequest.swift; sourceTree = "<group>"; };
 		338E704C265FD2A300987BA7 /* AMNetwork.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AMNetwork.swift; sourceTree = "<group>"; };
@@ -105,6 +107,8 @@
 		338E70B0265FD49700987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		338E70BA265FD4B000987BA7 /* AMKeyboard.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AMKeyboard.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		338E70BD265FD4B000987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		33E37D8D2662375C00D953D0 /* AMAlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMAlertController.swift; sourceTree = "<group>"; };
+		33E37D8F2662AD8F00D953D0 /* AMPopupController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMPopupController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,11 +147,13 @@
 		3372C6C32660DFEC007351D0 /* Popup */ = {
 			isa = PBXGroup;
 			children = (
-				338E7048265FD2A300987BA7 /* AMViewPresenter.swift */,
-				3372C6C42660E012007351D0 /* AMRemindController.swift */,
+				338E7048265FD2A300987BA7 /* AMPresenter.swift */,
+				3372C6CA2660E164007351D0 /* AMPopupCenter.swift */,
+				33E37D8F2662AD8F00D953D0 /* AMPopupController.swift */,
+				3372C6C82660E097007351D0 /* AMWaitiController.swift */,
+				33E37D8D2662375C00D953D0 /* AMAlertController.swift */,
 				3372C6C62660E070007351D0 /* AMActionController.swift */,
-				3372C6C82660E097007351D0 /* AMWaitingController.swift */,
-				3372C6CA2660E164007351D0 /* AMPopup.swift */,
+				3372C6C42660E012007351D0 /* AMRemindController.swift */,
 			);
 			path = Popup;
 			sourceTree = "<group>";
@@ -204,11 +210,11 @@
 		338E703C265FD2A300987BA7 /* Widget */ = {
 			isa = PBXGroup;
 			children = (
-				338E7042265FD2A300987BA7 /* AMLabel.swift */,
 				338E7047265FD2A300987BA7 /* AMView.swift */,
+				338E7042265FD2A300987BA7 /* AMLabel.swift */,
+				338E703F265FD2A300987BA7 /* AMButton.swift */,
 				338E7045265FD2A300987BA7 /* AMSwiper.swift */,
 				338E7046265FD2A300987BA7 /* AMToolBar.swift */,
-				338E703F265FD2A300987BA7 /* AMButton.swift */,
 				338E703D265FD2A300987BA7 /* AMAutoLayout.swift */,
 				338E7043265FD2A300987BA7 /* AMEffectView.swift */,
 				338E7044265FD2A300987BA7 /* AMTableView.swift */,
@@ -403,6 +409,7 @@
 				TargetAttributes = {
 					338E702C265FD16400987BA7 = {
 						CreatedOnToolsVersion = 12.5;
+						LastSwiftMigration = 1250;
 					};
 					338E709F265FD48800987BA7 = {
 						CreatedOnToolsVersion = 12.5;
@@ -479,11 +486,12 @@
 				338E7076265FD2A300987BA7 /* AMSwiper.swift in Sources */,
 				338E707B265FD2A300987BA7 /* AMRequest.swift in Sources */,
 				338E7078265FD2A300987BA7 /* AMView.swift in Sources */,
-				3372C6C92660E097007351D0 /* AMWaitingController.swift in Sources */,
+				3372C6C92660E097007351D0 /* AMWaitiController.swift in Sources */,
 				338E7070265FD2A300987BA7 /* AMButton.swift in Sources */,
+				33E37D8E2662375C00D953D0 /* AMAlertController.swift in Sources */,
 				338E7080265FD2A300987BA7 /* AMImage.swift in Sources */,
 				3372C6C52660E012007351D0 /* AMRemindController.swift in Sources */,
-				3372C6CB2660E164007351D0 /* AMPopup.swift in Sources */,
+				3372C6CB2660E164007351D0 /* AMPopupCenter.swift in Sources */,
 				3372C6C72660E070007351D0 /* AMActionController.swift in Sources */,
 				338E706C265FD2A300987BA7 /* AMPhone.swift in Sources */,
 				338E7077265FD2A300987BA7 /* AMToolBar.swift in Sources */,
@@ -493,11 +501,12 @@
 				338E7071265FD2A300987BA7 /* AMCollectionView.swift in Sources */,
 				338E707F265FD2A300987BA7 /* AMImageLabel.swift in Sources */,
 				338E7082265FD2A300987BA7 /* Airmey.swift in Sources */,
-				338E7079265FD2A300987BA7 /* AMViewPresenter.swift in Sources */,
+				338E7079265FD2A300987BA7 /* AMPresenter.swift in Sources */,
 				338E7086265FD2A300987BA7 /* AMTimer.swift in Sources */,
 				338E706E265FD2A300987BA7 /* AMAutoLayout.swift in Sources */,
 				338E7081265FD2A300987BA7 /* AMImageView.swift in Sources */,
 				338E707E265FD2A300987BA7 /* AMImageCache.swift in Sources */,
+				33E37D902662AD8F00D953D0 /* AMPopupController.swift in Sources */,
 				338E707A265FD2A300987BA7 /* AMUpload.swift in Sources */,
 				338E7075265FD2A300987BA7 /* AMTableView.swift in Sources */,
 				338E7085265FD2A300987BA7 /* AMStorage.swift in Sources */,
@@ -663,6 +672,7 @@
 		338E7036265FD16400987BA7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
@@ -682,6 +692,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -690,6 +701,7 @@
 		338E7037265FD16400987BA7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";

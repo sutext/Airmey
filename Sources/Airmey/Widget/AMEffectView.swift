@@ -17,9 +17,8 @@ open class AMEffectView: UIView {
         self.innerView = visualView.contentView
         self.visualEffect = visualView
         super.init(frame: .zero)
-        self.backgroundColor = .hex(0xffffff,alpha:0.6)
+        self.backgroundColor = .hex(0xffffff,alpha:0.9)
         self.addSubview(self.visualEffect)
-        self.visualEffect.clipsToBounds = true
         self.visualEffect.am.edge.equal(to: 0)
     }
     public var cornerRadius:CGFloat{
@@ -29,6 +28,11 @@ open class AMEffectView: UIView {
         set{
             self.layer.cornerRadius = newValue
             self.visualEffect.layer.cornerRadius = newValue
+        }
+    }
+    open override var clipsToBounds: Bool{
+        didSet{
+            self.visualEffect.clipsToBounds = clipsToBounds
         }
     }
     public required init?(coder aDecoder: NSCoder) {

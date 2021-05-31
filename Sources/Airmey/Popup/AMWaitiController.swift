@@ -1,5 +1,5 @@
 //
-//  AMWaitingController.swift
+//  AMWaitiController.swift
 //  Airmey
 //
 //  Created by supertext on 5/28/21.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-open class AMWaitingController: UIViewController,AMWaitable {
+open class AMWaitiController: AMPopupController,AMWaitable {
     private lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)
@@ -35,12 +35,9 @@ open class AMWaitingController: UIViewController,AMWaitable {
         view.spacing = 10
         return view
     }()
-    public let presenter: AMDimmingPresenter = AMDimmingPresenter()
     required public init(_ msg:String?) {
-        super.init(nibName: nil, bundle: nil)
+        super.init(AMDimmingPresenter())
         self.titleLabel.text = msg
-        self.transitioningDelegate = self.presenter
-        self.modalPresentationStyle = .custom
     }
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

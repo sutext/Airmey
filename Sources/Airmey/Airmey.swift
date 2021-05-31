@@ -42,7 +42,7 @@ public extension CGFloat{
         return origin * .scaleFactor
     }
 }
-
+public typealias AMBlock = ()->Void
 public extension CGRect{
     static let screen = UIScreen.main.bounds
 }
