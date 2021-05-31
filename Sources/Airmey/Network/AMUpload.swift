@@ -35,7 +35,10 @@ public class AMUpload {
         self.init(name:name,type:.data(data: data, mimeType: mimeType, fileName: fileName))
     }
 }
-public extension MultipartFormData{
+public protocol AMUploadRequest:AMRequest{
+    var uploads:[AMUpload]{get}
+}
+extension MultipartFormData{
     func append(object:AMUpload){
         switch object.type {
         case .data(let data, let mimeType, let fileName):
@@ -64,7 +67,4 @@ public extension MultipartFormData{
             }
         }
     }
-}
-open class AMUploadRequest<M>:AMRequest<M>{
-    public var uploads:[AMUpload] = []
 }

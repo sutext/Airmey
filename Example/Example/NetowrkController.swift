@@ -6,7 +6,9 @@
 //
 
 import UIKit
-import Airmey
+import  Airmey
+
+
 class NetowrkController: UIViewController {
     let stackView = UIStackView()
     init() {
@@ -26,19 +28,24 @@ class NetowrkController: UIViewController {
         self.stackView.distribution = .equalCentering
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: 0)
-        self.addTest("Test Popup") {
-            pop.remind("test1")
-            pop.action(["apple","facebook"])
-            pop.remind("testing....")
-            pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1tes")
-            pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1tes")
-
-            pop.action(["facebook","apple"])
-            pop.wait("loading...")
-            pop.idle()
+        self.addTest("Test Login") {
+            pop.action(CCLoginType.allCases) { type, idx in
+                self.doLogin(type as! CCLoginType)
+            }
         }
-        self.addTest("Test Present") {
-            self.present(NetowrkController(), animated: true, completion: nil)
+    }
+    func doLogin(_ type:CCLoginType)  {
+        pop.wait("login...")
+        let token = "EAADvOD7Q7dQBAHrw4EKbpT1prranKTHz2Sl1TxAmNTRhHXdugZCh0JNRhrbeMbufxP0ONysuUMOxLOdZADO6LYOEnoaQf1EhZBJBWwS6pGjRPk2yCE3tSiOK4rJvfVSm6QZA8M4h7n5hlJgikUZCmZCBiUbq1rvmPBeHUZABU6qDu7m6VfhdLYhEIyUY3ferQ3Ts46bHl7afHcfLAyfZBphWPiFdDR7DC9l0miYFGmszXAZDZD"
+        net.request(.login(token,type: type.rawValue)){
+            pop.idle()
+            switch $0.result{
+            case .success(let info):
+                debugPrint(info)
+                pop.remind("login succeed \(info["token"].stringValue)")
+            case .failure(let err):
+                pop.remind("loing error:\(err)")
+            }
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {

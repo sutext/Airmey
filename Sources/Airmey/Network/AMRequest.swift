@@ -12,11 +12,6 @@ import Foundation
 public protocol AMModel{
     init(_ json:AMJson)throws
 }
-extension AMJson:AMModel{
-    public init(_ json: AMJson) throws {
-        self = json
-    }
-}
 open class AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{
     private let af:DataResponse<M,Error>
     init(_ af:DataResponse<M,Error>) {self.af = af}
@@ -40,35 +35,26 @@ open class AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{
         .init(af.tryMap(transform))
     }
 }
-open class AMRequest<M>:ExpressibleByStringLiteral{
-    public var path: String
-    public var params: [String:Any]?
-    public var options: AMNetwork.Options?
-    public init(_ path:String){
-        self.path = path
-    }
-    open func create(_ json:AMJson)throws ->M{
-        throw AMError.network(.invalidURL)
-    }
-    public required init(stringLiteral value: StringLiteralType) {
-        self.path = value
+public protocol AMRequest{
+    associatedtype Model
+    var path: String{get}
+    var params: [String:Any]?{get}
+    var options: AMNetwork.Options?{get}
+    func create(_ json:AMJson)throws ->Model
+}
+extension AMRequest where Self.Model:AMModel{
+    public func create(_ json: AMJson) throws -> Model {
+        return try Model.init(json)
     }
 }
-extension AMRequest where M:AMModel{
-    open func create(_ json: AMJson) throws -> M {
-        return try M.init(json)
-    }
-}
-
-extension AMRequest where M:RandomAccessCollection,
-                          M:MutableCollection,
-                          M.Element:AMModel{
-    open func create(_ json: AMJson) throws -> M {
+extension AMRequest where Self.Model:RandomAccessCollection,
+                          Self.Model:MutableCollection,
+                          Self.Model.Element:AMModel{
+    public func create(_ json: AMJson) throws -> Model {
         guard case .array = json else{
-            throw AMError.network(.invalidRespone(info: "Response of dictask must be array"))
+            throw AMError.network(.invalidRespone(info: "Response of array request must be array"))
         }
-        let mod = try json.arrayValue.map{try M.Element.init($0)}
-        return mod as! M
+        let mod = try json.arrayValue.map{try Model.Element.init($0)}
+        return mod as! Model
     }
 }
-

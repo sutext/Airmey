@@ -9,16 +9,23 @@
 import Alamofire
 import Foundation
 
+extension Notification.Name{
+    public static let AMNetworkStatusChanged:Notification.Name = Notification.Name("com.airmey.network.status.changed")
+}
+
 open class AMNetwork {
     private static var monitor:NetworkReachabilityManager?
     public private(set) static var status:Status = .unknown{
         didSet{
             if status != oldValue{
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .AMNetworkStatusDidChanged, object: self)
+                    NotificationCenter.default.post(name: .AMNetworkStatusChanged, object: self)
                 }
             }
         }
+    }
+    public init(baseURL:String) {
+        self.baseURL = URL(string:baseURL);
     }
     private var _debugEnable = false
     private var baseURL:URL?
@@ -26,9 +33,6 @@ open class AMNetwork {
         let manager = Session(configuration: self.sessionConfig, serverTrustManager: nil)
         return manager
     }()
-    public init(baseURL:String) {
-        self.baseURL = URL(string:baseURL);
-    }
     open var headers:[String:String]{[:]}
     open var method:Method{.get}
     open var timeout:TimeInterval{60 }
@@ -38,23 +42,29 @@ open class AMNetwork {
         config.headers = HTTPHeaders.default;
         return config;
     }
-    public func setDebug(enable:Bool) {
-        _debugEnable = enable;
-    }
-    open func resolve(_ json:AMJson)throws ->AMJson{
-        return json
-    }
+    open func resolve(_ json:AMJson)throws ->AMJson{ json }
     @discardableResult
-    public func request<M>(_ req:AMRequest<M>,completion:((AMResponse<M>)->Void)? = nil)->Task?{
+    public func request<R:AMRequest>(_ req:R,completion:((AMResponse<R.Model>)->Void)? = nil)->Task?{
         return self.request(req.path, params: req.params, options: req.options) { resp in
             completion?(resp.tryMap{try req.create($0)})
         }
     }
     @discardableResult
-    public func request(_  path:String,params:[String:Any]?=nil,options:Options?=nil,completion:((AMResponse<AMJson>)->Void)? = nil)->Task?{
+    public func request(
+        _  path:String,
+        params:[String:Any]?=nil,
+        options:Options?=nil,
+        completion:((AMResponse<AMJson>)->Void)? = nil)->Task?{
+        
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
-            completion?(.init(DataResponse(request: nil, response: nil, data: nil,metrics:nil, serializationDuration:0 , result: .failure(AFError.invalidURL(url: path)))))
+            completion?(.init(DataResponse(
+                                request: nil,
+                                response: nil,
+                                data: nil,
+                                metrics:nil,
+                                serializationDuration:0 ,
+                                result: .failure(AFError.invalidURL(url: path)))))
             return nil;
         }
         let method = options?.method?.af ?? self.method.af
@@ -66,11 +76,14 @@ open class AMNetwork {
                 headers.add(name: $0.key, value: $0.value)
             }
         }
-        let task = self.session.request(url,method: method,
-                                        parameters: params,
-                                        encoding:encoding,
-                                        headers:headers,
-                                        requestModifier: {$0.timeoutInterval = timeout})
+        let task = self.session.request(
+            url,
+            method: method,
+            parameters: params,
+            encoding:encoding,
+            headers:headers,
+            requestModifier: {$0.timeoutInterval = timeout}
+        )
         task.responseJSON(queue: .main) { (resp) in
             let res = resp.tryMap { json->AMJson in
                 if let resolver = options?.resolver {
@@ -88,11 +101,17 @@ open class AMNetwork {
         return .init(task);
     }
     @discardableResult
-    public func upload<M>(_ req:AMUploadRequest<M>,completion:((AMResponse<M>)->Void)? = nil)->UploadTask?{
+    public func upload<R:AMUploadRequest>(_ req:R,completion:((AMResponse<R.Model>)->Void)? = nil)->UploadTask?{
         //Assert
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            completion?(.init(DataResponse(request: nil, response: nil, data: nil,metrics:nil, serializationDuration:0 ,result: .failure(AFError.invalidURL(url: req.path)))))
+            completion?(.init(DataResponse(
+                                request: nil,
+                                response: nil,
+                                data: nil,
+                                metrics:nil,
+                                serializationDuration:0 ,
+                                result: .failure(AFError.invalidURL(url:req.path)))))
             return nil
         }
         var headers = HTTPHeaders(self.headers)
@@ -115,7 +134,7 @@ open class AMNetwork {
             }
         }, with: newreq)
         task.responseJSON(queue: .main) { (resp) in
-            let res = resp.tryMap { json->M in
+            let res = resp.tryMap { json->R.Model in
                 if let resolver = req.options?.resolver {
                     return try req.create(try resolver(AMJson(json)))
                 }
@@ -131,9 +150,7 @@ open class AMNetwork {
         return .init(task)
     }
 }
-extension Notification.Name{
-    public static let AMNetworkStatusDidChanged:Notification.Name = Notification.Name("com.airmey.network.status.changed")
-}
+
 extension AMNetwork{
     public class func listen(host:String?=nil) {
         if let monitor = self.monitor {

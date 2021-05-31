@@ -451,26 +451,16 @@ extension AMJson:CustomStringConvertible,CustomDebugStringConvertible{
         return self.rawString
     }
     public var debugDescription: String{
-        switch self {
-        case .null:
-            return "null"
-        case .bool(let value):
-            return value.description
-        case .string(let value):
-            return "\"\(value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\""))\""
-        case .number(let value):
-            return value.stringValue
-        case .array(let ary):
-            let result = ary.reduce("", { (str, json) -> String in
-                return "\(str)\t\(json.rawString),\n"
-            }).dropLast(2)
-            return "[\n\(result)\n]"
-        case .object(let dic):
-            let result = dic.reduce("", { (str, json) -> String in
-                return "\(str)\t\"\(json.key)\":\(json.value.rawString),\n"
-            }).dropLast(2)
-            return "{\n\(result)\n}"
+        guard let data = self.rawData else {
+            return ""
         }
+        guard let obj = try? JSONSerialization.jsonObject(with: data, options: []) else {
+            return ""
+        }
+        guard let ndata = try? JSONSerialization.data(withJSONObject: obj, options: .prettyPrinted) else {
+            return ""
+        }
+        return String(data: ndata, encoding: .utf8) ?? ""
     }
 }
 extension AMJson:Codable{
