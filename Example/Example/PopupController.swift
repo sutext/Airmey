@@ -41,7 +41,7 @@ class PopupController: UIViewController {
             pop.remind("testing....")
             pop.alert("test alert",confirm: "确定",cancel: "取消")
             pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
-            pop.present(self)
+            pop.present(PopupController())
 
         }
         self.addTest("Test Present") {

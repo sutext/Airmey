@@ -269,12 +269,3 @@ public extension UIImage{
         return CALayer.gradual(size, points: points)?.image
     }
 }
-
-
-
-
-
-
-
-
-

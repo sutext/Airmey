@@ -98,7 +98,6 @@ public enum AMPhone {
         query[kSecClass as String] = kSecClassGenericPassword
         query[kSecAttrService as String] = "com.airmey" as NSString
         query[kSecAttrAccount as String] = "uuid" as NSString
-//        query[kSecAttrAccessGroup as String] = "" as NSString
         return query
     }
 }

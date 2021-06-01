@@ -31,16 +31,6 @@ public class CCNetwork: AMNetwork {
     public override var method: AMNetwork.Method{
         .post
     }
-    public override func resolve(_ json: AMJson) throws -> AMJson {
-        guard let code = json["code"].int,code==1 else {
-            throw Error.invalidCode(code: json["code"].int)
-        }
-        let data = json["data"]
-        if case .null = data{
-            throw Error.invalidData
-        }
-        return data
-    }
     public override var headers: [String : String]{
         let device = UIDevice.current
         let info = Bundle.main.infoDictionary
@@ -63,7 +53,7 @@ public class CCNetwork: AMNetwork {
     }
 }
 extension CCNetwork{
-    public struct BaseURL:RawRepresentable,ExpressibleByStringLiteral{
+    public struct BaseURL:RawRepresentable,ExpressibleByStringLiteral,Equatable{
         public var rawValue: String
         public init(rawValue: String) {
             self.rawValue = rawValue
@@ -107,10 +97,40 @@ extension CCNetwork.BaseURL{
 }
 extension AMNetwork.Options{
     public static func post(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
-        .init(.post,base: base.url)
+        .init(.post,base: base.url) { old in
+            return old.tryMap {
+                let json = AMJson($0)
+                guard case .api = base else{
+                    return json
+                }
+                guard let code = json["code"].int,code==1 else {
+                    throw CCNetwork.Error.invalidCode(code: json["code"].int)
+                }
+                let data = json["data"]
+                if case .null = data{
+                    throw CCNetwork.Error.invalidData
+                }
+                return data
+            }
+        }
     }
     public static func get(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
-        .init(.get,base: base.url)
+        .init(.get,base: base.url) { old in
+            return old.tryMap {
+                let json = AMJson($0)
+                guard case .api = base else{
+                    return json
+                }
+                guard let code = json["code"].int,code==1 else {
+                    throw CCNetwork.Error.invalidCode(code: json["code"].int)
+                }
+                let data = json["data"]
+                if case .null = data{
+                    throw CCNetwork.Error.invalidData
+                }
+                return data
+            }
+        }
     }
 }
 extension CCNetwork{

@@ -165,7 +165,7 @@ extension NSLayoutDimension{
     }
 }
 
-public struct XAxisAnchor {
+public struct AMXAxisAnchor {
     enum Kind {
         case left
         case right
@@ -322,7 +322,7 @@ public struct XAxisAnchor {
     }
 }
 
-public struct YAxisAnchor {
+public struct AMYAxisAnchor {
     enum Kind {
         case top
         case bottom
@@ -482,7 +482,7 @@ public struct YAxisAnchor {
         }
     }
 }
-public struct DimensionAnchor {
+public struct AMDimensionAnchor {
     enum Kind {
         case width
         case height
@@ -562,11 +562,11 @@ public struct DimensionAnchor {
         }
     }
 }
-public struct CenterAnchor {
-    private let maker:AnchorMaker
+public struct AMCenterAnchor {
+    private let maker:AMAnchorMaker
     public typealias Constraint = (x:NSLayoutConstraint,y:NSLayoutConstraint)
     init(view:UIView) {
-        self.maker = AnchorMaker(view)
+        self.maker = AMAnchorMaker(view)
     }
     @discardableResult
     public func equal(to:CGFloat)->Constraint {
@@ -577,11 +577,11 @@ public struct CenterAnchor {
         return (maker.centerX.equal(to: to.x),maker.centerY.equal(to: to.y))
     }
     @discardableResult
-    public func equal(to:CenterAnchor)->Constraint {
+    public func equal(to:AMCenterAnchor)->Constraint {
         return (maker.centerX.equal(to: to.maker.centerX),maker.centerY.equal(to: to.maker.centerY))
     }
 }
-public struct EdgeAnchor {
+public struct AMEdgeAnchor {
     public typealias Constraint = (
         top:NSLayoutConstraint?,
         left:NSLayoutConstraint?,
@@ -592,9 +592,9 @@ public struct EdgeAnchor {
         left:NSLayoutConstraint,
         bottom:NSLayoutConstraint,
         right:NSLayoutConstraint)
-    private let maker:AnchorMaker
+    private let maker:AMAnchorMaker
     init(view:UIView) {
-        self.maker = AnchorMaker(view)
+        self.maker = AMAnchorMaker(view)
     }
     @discardableResult
     public func equal(to:CGFloat)->ConstConstraint {
@@ -635,7 +635,7 @@ public struct EdgeAnchor {
     ///     self.am.edge.equal(to:other.am.edege,10)
     ///
     ///
-    @discardableResult public func equal(to:EdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
+    @discardableResult public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
         let left = maker.left.equal(to: to.maker.left,offset: offset)
         let right = maker.right.equal(to: to.maker.right,offset: offset)
         let top = maker.top.equal(to: to.maker.top,offset: offset)
@@ -648,7 +648,7 @@ public struct EdgeAnchor {
     ///     self.am.edge.equal(to:other.am.edege,(10,10,nil,10))
     ///
     @discardableResult public func equal(
-        to:EdgeAnchor,
+        to:AMEdgeAnchor,
         top:CGFloat?=nil,
         left:CGFloat?=nil,
         bottom:CGFloat?=nil,
@@ -672,11 +672,11 @@ public struct EdgeAnchor {
         return (topC,leftC,bottomC,rightC)
     }
 }
-public struct SizeAnchor {
+public struct AMSizeAnchor {
     public typealias Constraint = (width:NSLayoutConstraint,height:NSLayoutConstraint)
-    private let maker:AnchorMaker
+    private let maker:AMAnchorMaker
     init(view:UIView) {
-        self.maker = AnchorMaker(view)
+        self.maker = AMAnchorMaker(view)
     }
     @discardableResult
     public func equal(to:CGFloat)->Constraint {
@@ -687,80 +687,80 @@ public struct SizeAnchor {
         return (maker.width.equal(to: to.width),maker.height.equal(to: to.height))
     }
     @discardableResult
-    public func equal(to:SizeAnchor,offset:CGFloat?=nil)->Constraint {
+    public func equal(to:AMSizeAnchor,offset:CGFloat?=nil)->Constraint {
         return (maker.width.equal(to: to.maker.width,offset: offset),
             maker.height.equal(to: to.maker.height,offset: offset))
     }
     @discardableResult
-    public func equal(to:SizeAnchor,offset:(width:CGFloat,height:CGFloat))->Constraint {
+    public func equal(to:AMSizeAnchor,offset:(width:CGFloat,height:CGFloat))->Constraint {
         return (maker.width.equal(to: to.maker.width,offset: offset.width),
                 maker.height.equal(to: to.maker.height,offset: offset.height))
     }
 }
 
-public struct AnchorMaker {
+public struct AMAnchorMaker {
     private let view:UIView
     init(_ view:UIView) {
         self.view = view
     }
-    public var left:XAxisAnchor{
-        return XAxisAnchor(kind:.left,view:self.view)
+    public var left:AMXAxisAnchor{
+        return AMXAxisAnchor(kind:.left,view:self.view)
     }
-    public var right:XAxisAnchor{
-        return XAxisAnchor(kind:.right,view:self.view)
+    public var right:AMXAxisAnchor{
+        return AMXAxisAnchor(kind:.right,view:self.view)
     }
-    public var centerX:XAxisAnchor{
-        return XAxisAnchor(kind:.center,view:self.view)
+    public var centerX:AMXAxisAnchor{
+        return AMXAxisAnchor(kind:.center,view:self.view)
     }
-    public var top:YAxisAnchor{
-        return YAxisAnchor(kind:.top,view:self.view)
+    public var top:AMYAxisAnchor{
+        return AMYAxisAnchor(kind:.top,view:self.view)
     }
-    public var bottom:YAxisAnchor{
-        return YAxisAnchor(kind:.bottom,view:self.view)
+    public var bottom:AMYAxisAnchor{
+        return AMYAxisAnchor(kind:.bottom,view:self.view)
     }
-    public var centerY:YAxisAnchor{
-        return YAxisAnchor(kind:.center,view:self.view)
+    public var centerY:AMYAxisAnchor{
+        return AMYAxisAnchor(kind:.center,view:self.view)
     }
-    public var width:DimensionAnchor{
-        return DimensionAnchor(kind: .width, view: self.view)
+    public var width:AMDimensionAnchor{
+        return AMDimensionAnchor(kind: .width, view: self.view)
     }
-    public var height:DimensionAnchor{
-        return DimensionAnchor(kind: .height, view: self.view)
+    public var height:AMDimensionAnchor{
+        return AMDimensionAnchor(kind: .height, view: self.view)
     }
-    public var edge:EdgeAnchor{
-        return EdgeAnchor(view: self.view)
+    public var edge:AMEdgeAnchor{
+        return AMEdgeAnchor(view: self.view)
     }
-    public var size:SizeAnchor{
-        return SizeAnchor(view: self.view)
+    public var size:AMSizeAnchor{
+        return AMSizeAnchor(view: self.view)
     }
-    public var center:CenterAnchor{
-        return CenterAnchor(view: self.view)
+    public var center:AMCenterAnchor{
+        return AMCenterAnchor(view: self.view)
     }
 }
 extension UIView{
-    public var am:AnchorMaker{
+    public var am:AMAnchorMaker{
         self.translatesAutoresizingMaskIntoConstraints = false
-        return AnchorMaker(self)
+        return AMAnchorMaker(self)
     }
-    public func amake(builder:(AnchorMaker)->Void) {
+    public func amake(builder:(AMAnchorMaker)->Void) {
         builder(am)
     }
     public func amake(
         _ t1:UIView,
-        builder:(AnchorMaker,AnchorMaker)->Void) {
+        builder:(AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am)
     }
     public func amake(
         _ t1:UIView,
         _ t2:UIView,
-        builder:(AnchorMaker,AnchorMaker,AnchorMaker)->Void) {
+        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am,t2.am)
     }
     public func amake(
         _ t1:UIView,
         _ t2:UIView,
         _ t3:UIView,
-        builder:(AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker)->Void) {
+        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am,t2.am,t3.am)
     }
     public func amake(
@@ -768,7 +768,7 @@ extension UIView{
         _ t2:UIView,
         _ t3:UIView,
         _ t4:UIView,
-        builder:(AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker)->Void) {
+        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am,t2.am,t3.am,t4.am)
     }
     public func amake(
@@ -777,7 +777,7 @@ extension UIView{
         _ t3:UIView,
         _ t4:UIView,
         _ t5:UIView,
-        builder:(AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker,AnchorMaker)->Void) {
+        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am,t2.am,t3.am,t4.am,t5.am)
     }
 }

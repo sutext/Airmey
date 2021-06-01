@@ -24,25 +24,36 @@ open class AMNetwork {
             }
         }
     }
-    public init(baseURL:String) {
-        self.baseURL = URL(string:baseURL);
-    }
-    private var _debugEnable = false
-    private var baseURL:URL?
     private lazy var session:Session = {
         let manager = Session(configuration: self.sessionConfig, serverTrustManager: nil)
         return manager
     }()
+    private var baseURL:URL?
+    public init(baseURL:String) {
+        self.baseURL = URL(string:baseURL);
+    }
+    public var isDebug:Bool = false
+    /// global http headers @default empty
     open var headers:[String:String]{[:]}
+    /// global http method settings  @default .get
     open var method:Method{.get}
+    /// global timeout settings @default 60s
     open var timeout:TimeInterval{60 }
+    /// global request encode @default .json
     open var encoding:Encoding{.json}
+    /// global response verifer @default map directly
+    open func verify(_ old:AMResponse<Any>)->AMResponse<AMJson>{
+        return old.tryMap{.init($0)}
+    }
+    /// global error catched here
+    open func catched (_ error:Error){
+        
+    }
     open var sessionConfig:URLSessionConfiguration{
         let config = URLSessionConfiguration.default
         config.headers = HTTPHeaders.default;
         return config;
     }
-    open func resolve(_ json:AMJson)throws ->AMJson{ json }
     @discardableResult
     public func request<R:AMRequest>(_ req:R,completion:((AMResponse<R.Model>)->Void)? = nil)->Task?{
         return self.request(req.path, params: req.params, options: req.options) { resp in
@@ -85,15 +96,19 @@ open class AMNetwork {
             requestModifier: {$0.timeoutInterval = timeout}
         )
         task.responseJSON(queue: .main) { (resp) in
-            let res = resp.tryMap { json->AMJson in
-                if let resolver = options?.resolver {
-                    return try resolver(AMJson(json))
-                }
-                return try self.resolve(AMJson(json))
+            let amres:AMResponse<Any> = .init(resp.mapError{$0})
+            var result:AMResponse<AMJson>! = nil
+            if let verifier = options?.verifier{
+                result = verifier(amres)
+            }else{
+                result = self.verify(amres)
             }
-            completion?(.init(res))
+            if let error = result?.error {
+                self.catched(error)
+            }
+            completion?(result)
         }
-        if _debugEnable{
+        if isDebug{
             task.responseJSON {
                 debugPrint($0)
             }
@@ -134,15 +149,19 @@ open class AMNetwork {
             }
         }, with: newreq)
         task.responseJSON(queue: .main) { (resp) in
-            let res = resp.tryMap { json->R.Model in
-                if let resolver = req.options?.resolver {
-                    return try req.create(try resolver(AMJson(json)))
-                }
-                return try req.create(try self.resolve(AMJson(json)))
+            let amres:AMResponse<Any> = .init(resp.mapError{$0})
+            var result:AMResponse<R.Model>! = nil
+            if let verifier = req.options?.verifier{
+                result = verifier(amres).tryMap{try req.create($0)}
+            }else{
+                result = self.verify(amres).tryMap{try req.create($0)}
             }
-            completion?(.init(res))
+            if let error = result?.error {
+                self.catched(error)
+            }
+            completion?(result)
         }
-        if _debugEnable{
+        if isDebug{
             task.responseJSON {
                 debugPrint($0)
             }
@@ -150,7 +169,6 @@ open class AMNetwork {
         return .init(task)
     }
 }
-
 extension AMNetwork{
     public class func listen(host:String?=nil) {
         if let monitor = self.monitor {
@@ -211,6 +229,7 @@ extension AMNetwork{
     }
 }
 extension AMNetwork{
+    public typealias Verifier = (AMResponse<Any>) -> AMResponse<AMJson>
     public struct Options{
         /// overwrite the global method settings
         public var method:Method?
@@ -220,21 +239,22 @@ extension AMNetwork{
         public var headers:[String:String]?
         /// overwrite global timeout settings
         public var timeout:TimeInterval?
-        /// overwrite the network resolver
-        public var resolver:((AMJson) throws -> AMJson)?
         /// overwrite the global params encoding settings
         public var encoding:Encoding?
+        /// overwrite the network verify method
+        public var verifier:Verifier?
+
         public init(_ method:Method?=nil,
                     base:URL?=nil,
                     headers:[String:String]?=nil,
                     timeout:TimeInterval?=nil,
                     encoding:Encoding?=nil,
-                    resolver:((AMJson) throws -> AMJson)? = nil) {
+                    verifier:Verifier? = nil) {
             self.method = method
             self.baseURL = base
             self.headers = headers
             self.timeout = timeout
-            self.resolver = resolver
+            self.verifier = verifier
             self.encoding = encoding
         }
     }

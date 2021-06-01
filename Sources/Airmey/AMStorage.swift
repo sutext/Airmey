@@ -50,6 +50,40 @@ open class AMStorage{
 }
 //MARK: public sync methods
 extension AMStorage{
+    public func delete(_ object:NSManagedObject?)throws{
+        if let object = object {
+            var err:Error? = nil
+            self.moc.performAndWait {
+                do {
+                    self.moc.delete(object)
+                    try self.moc.save();
+                } catch {
+                    err = error
+                }
+            }
+            if let err = err{
+                throw err
+            }
+        }
+    }
+    public func delete(_ objects:[NSManagedObject]?)throws{
+        if let objects = objects {
+            var err:Error? = nil
+            self.moc.performAndWait {
+                do {
+                    objects.forEach {
+                        self.moc.delete($0)
+                    }
+                    try self.moc.save();
+                } catch {
+                    err = error
+                }
+            }
+            if let err = err{
+                throw err
+            }
+        }
+    }
     @discardableResult
     public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model)throws->Object{
         var obj:Object? = nil

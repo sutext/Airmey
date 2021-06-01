@@ -8,7 +8,6 @@
 
 import UIKit
 /// user must provide the dataSource impl for the swiper
-///
 /// the data structure of swiper is double side linked list
 public protocol AMSwiperDataSource:AnyObject {
     ///the head node

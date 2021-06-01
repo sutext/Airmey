@@ -12,14 +12,11 @@ import Photos
 
 public class AMImageCache {
     public static let shared = AMImageCache()
-    public typealias FinishLoadHandler = (UIImage?,Error?)->Void
-    
+    public typealias FinishLoadHandler = (Result<UIImage,Error>)->Void
     private let fetchQueue = OperationQueue()//phasset fetch queue
     private let imageCache = NSCache<NSString,UIImage>()//phasset image cache
     private let thumbCache = NSCache<NSString,UIImage>()//phasset thumb cache
-    
     private let memeryCache = NSCache<NSString,NSData>()
-    
     private let diskCache = URLCache(memoryCapacity: 50*1024*1024, diskCapacity: 500*1024*1024, diskPath: "com.airmey.image.downloader")
     private lazy var downloader:Session = {
         return Session(configuration: self.sessionConfig)
@@ -64,32 +61,33 @@ extension AMImageCache{
         self.diskCache.removeAllCachedResponses()
     }
     public func image(with url:String,scale:CGFloat = 3,finish: FinishLoadHandler?) {
-        self.data(with: url) { (data, err) in
-            if let data = data{
+        self.data(with: url) { result in
+            switch result{
+            case .failure(let err):
+                finish?(.failure(err))
+            case .success(let data):
                 guard let image = AMImage(data: data, scale: scale) else{
                     let error = AMError.image(.invalidData)
-                    finish?(nil,error)
+                    finish?(.failure(error))
                     return
                 }
-                finish?(image.value,nil)
-            }else{
-                finish?(nil,err)
+                finish?(.success(image.value))
             }
         }
     }
-    public func data(with url:String,finish:((Data?,Error?)->Void)?) {
+    public func data(with url:String,finish:((Result<Data,Error>)->Void)?) {
         let key = url as NSString
         if let data = self.memeryCache.object(forKey: key) {
-            finish?(data as Data,nil)
+            finish?(.success(data as Data))
             return
         }
         self.downloader.request(url, method: .get,headers: ["Accept":"image/*"]).responseData { (resp) in
             switch resp.result{
             case .failure(let err):
-                finish?(nil,err)
+                finish?(.failure(err))
             case .success(let data):
                 self.memeryCache.setObject(data as NSData, forKey: key);
-                finish?(data,nil)
+                finish?(.success(data))
             }
         }
     }
@@ -131,7 +129,7 @@ extension AMImageCache{
     public func image(with asset:PHAsset,finish:@escaping FinishLoadHandler) -> Operation?{
         let key = asset.localIdentifier as NSString
         if let image = self.imageCache.object(forKey: key) {
-            finish(image,nil)
+            finish(.success(image))
             return nil;
         }
         let operation = BlockOperation()
@@ -141,13 +139,13 @@ extension AMImageCache{
                 self.imageCache.setObject(image, forKey: key)
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(image,nil)
+                        finish(.success(image))
                     }
                 }
             }catch{
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(nil,error)
+                        finish(.failure(error))
                     }
                 }
             }
@@ -160,7 +158,7 @@ extension AMImageCache{
     public func thumb(with asset:PHAsset,thumbSize:CGSize,finish:@escaping FinishLoadHandler) -> Operation?{
         let key = (asset.localIdentifier+"_mini") as NSString
         if let image = self.thumbCache.object(forKey: key) {
-            finish(image,nil)
+            finish(.success(image))
             return nil;
         }
         let operation = BlockOperation()
@@ -170,13 +168,13 @@ extension AMImageCache{
                 self.thumbCache.setObject(image, forKey: key)
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(image,nil)
+                        finish(.success(image))
                     }
                 }
             }catch{
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(nil,error)
+                        finish(.failure(error))
                     }
                 }
             }
@@ -190,33 +188,45 @@ extension UIImageView{
         if let placeholder = placeholder {
             self.image = placeholder;
         }
-        AMImageCache.shared.image(with: url,scale:scale) { (image, error) in
-            UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                self.image = image
-            }, completion: nil)
-            finish?(image,error)
+        AMImageCache.shared.image(with: url,scale:scale) { result in
+            switch result{
+            case .failure(let err):
+                finish?(.failure(err))
+            case .success(let image):
+                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                    self.image = image
+                }, completion: nil)
+            }
         }
     }
     @nonobjc public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:AMImageCache.FinishLoadHandler? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
-        AMImageCache.shared.image(with: asset) { (image, error) in
-            UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                self.image = image
-            }, completion: nil)
-            finish?(image,error)
+        AMImageCache.shared.image(with: asset) { result in
+            switch result{
+            case .failure(let err):
+                finish?(.failure(err))
+            case .success(let image):
+                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                    self.image = image
+                }, completion: nil)
+            }
         }
     }
     @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:AMImageCache.FinishLoadHandler? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
-        AMImageCache.shared.thumb(with: asset,thumbSize:thumbSize) { (image, error) in
-            UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                self.image = image
-            }, completion: nil)
-            finish?(image,error)
+        AMImageCache.shared.thumb(with: asset,thumbSize:thumbSize) { result in
+            switch result{
+            case .failure(let err):
+                finish?(.failure(err))
+            case .success(let image):
+                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                    self.image = image
+                }, completion: nil)
+            }
         }
     }
 }
@@ -225,11 +235,15 @@ extension UIButton{
         if let placeholder = placeholder {
             self.setImage(placeholder, for: state)
         }
-        AMImageCache.shared.image(with: url,scale:scale) { (image, error) in
-            UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                self.setImage(image, for: state)
-            }, completion: nil)
-            finish?(image,error)
+        AMImageCache.shared.image(with: url,scale:scale) { result in
+            switch result{
+            case .failure(let err):
+                finish?(.failure(err))
+            case .success(let image):
+                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
+                    self.setImage(image, for: .normal)
+                }, completion: nil)
+            }
         }
     }
 }

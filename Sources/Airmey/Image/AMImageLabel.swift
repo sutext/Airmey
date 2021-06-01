@@ -18,9 +18,10 @@ public final class AMImageLabel: AMView {
     private let stackView = UIStackView()
     private let imageView = AMImageView()
     private let textLabel = UILabel()
-    private(set) var layout:Layout
-    private(set) var ratio:CGFloat?
-    private(set) var insets:EdgeAnchor.Constraint!
+    private var imageConstt : AMSizeAnchor.Constraint?
+    public private(set) var layout:Layout
+    public private(set) var ratio:CGFloat?
+    public private(set) var insets:AMEdgeAnchor.Constraint!
     public init(_ layout:Layout = .left,image:UIImage? = nil , text:String? = nil ,ratio:CGFloat? = nil) {
         self.layout = layout
         self.ratio = ratio
@@ -57,29 +58,37 @@ public final class AMImageLabel: AMView {
             self.stackView.addArrangedSubview(self.imageView)
         }
     }
-//    func setImage(with url:String?){
-//        guard let scale = self.ratio else {
-//            self.imageView.setImage(with: url)
-//            return
-//        }
-//        self.imageView.setImage(with: url){
-//            if $1==nil , let img = $0{
-//                $2.constraint(width: img.size.width*scale, height: img.size.height*scale)
-//            }
-//        }
-//    }
-//    func setModel(_ model:(AMURLConvertible&AMTextConvertible)?){
-//        self.setImage(with: model?.url)
-//        self.textLabel.text = model?.text
-//    }
+    public func setImage(with url:String?,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:AMImageCache.FinishLoadHandler? = nil){
+        guard let url = url else {
+            return
+        }
+        guard let scale = self.ratio else {
+            self.imageView.setImage(with: url,scale:scale ,placeholder: placeholder,finish: finish)
+            return
+        }
+        self.imageView.setImage(with: url,scale:scale ,placeholder: placeholder){[weak self] result in
+            if let image = try? result.get(){
+                self?.setImage(size: CGSize(width: image.size.width*scale, height: image.size.height*scale))
+            }
+            finish?(result)
+        }
+    }
+    private func setImage(size:CGSize){
+        if let const = self.imageConstt {
+            const.height.constant = size.width
+            const.width.constant = size.height
+            return
+        }
+        self.imageConstt = self.imageView.am.size.equal(to: (size.width,size.height))
+
+    }
     public required init?(coder aDecoder: NSCoder) {
         return nil
     }
 }
 ///MARK: property accessable
 public extension AMImageLabel{
-    var text:String?
-    {
+    var text:String?{
         get{
             return self.textLabel.text
         }
@@ -87,8 +96,7 @@ public extension AMImageLabel{
             self.textLabel.text = newValue
         }
     }
-    var image:UIImage?
-    {
+    var image:UIImage?{
         get{
             return self.imageView.image
         }
@@ -102,7 +110,7 @@ public extension AMImageLabel{
                 return
             }
             let size = newone.size
-            self.imageView.am.size.equal(to: (size.width*scale,size.height*scale))
+            self.setImage(size: CGSize(width: size.width*scale, height: size.height*scale))
         }
     }
     var font:UIFont?{
