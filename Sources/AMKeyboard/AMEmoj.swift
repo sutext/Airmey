@@ -16,15 +16,15 @@ public class AMEmoj {
         self.contents = category.rawValue.components(separatedBy: " ")
         self.title = self.contents[0]
     }
+    public static let flag:AMEmoj = AMEmoj(.flag)
+    public static let food:AMEmoj = AMEmoj(.food)
     public static let smiley:AMEmoj = AMEmoj(.smiley)
     public static let animal:AMEmoj = AMEmoj(.animal)
-    public static let food:AMEmoj = AMEmoj(.food)
-    public static let activity:AMEmoj = AMEmoj(.activity)
     public static let travel:AMEmoj = AMEmoj(.travel)
     public static let object:AMEmoj = AMEmoj(.object)
     public static let symbol:AMEmoj = AMEmoj(.symbol)
-    public static let flag:AMEmoj = AMEmoj(.flag)
-    
+    public static let activity:AMEmoj = AMEmoj(.activity)
+
     public static var pale:AMEmoj{
         return AMEmoj(.pale)
     }

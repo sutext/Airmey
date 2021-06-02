@@ -58,32 +58,16 @@ public final class AMImageLabel: AMView {
             self.stackView.addArrangedSubview(self.imageView)
         }
     }
-    public func setImage(with url:String?,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:AMImageCache.FinishLoadHandler? = nil){
-        guard let url = url else {
-            return
-        }
-        guard let scale = self.ratio else {
-            self.imageView.setImage(with: url,scale:scale ,placeholder: placeholder,finish: finish)
-            return
-        }
-        self.imageView.setImage(with: url,scale:scale ,placeholder: placeholder){[weak self] result in
-            if let image = try? result.get(){
-                self?.setImage(size: CGSize(width: image.size.width*scale, height: image.size.height*scale))
-            }
-            finish?(result)
-        }
-    }
-    private func setImage(size:CGSize){
-        if let const = self.imageConstt {
-            const.height.constant = size.width
-            const.width.constant = size.height
-            return
-        }
-        self.imageConstt = self.imageView.am.size.equal(to: (size.width,size.height))
-
-    }
     public required init?(coder aDecoder: NSCoder) {
         return nil
+    }
+    private func setImage(width:CGFloat,height:CGFloat ){
+        if let const = self.imageConstt {
+            const.height.constant = width
+            const.width.constant = height
+            return
+        }
+        self.imageConstt = self.imageView.am.size.equal(to: (width,height))
     }
 }
 ///MARK: property accessable
@@ -110,7 +94,7 @@ public extension AMImageLabel{
                 return
             }
             let size = newone.size
-            self.setImage(size: CGSize(width: size.width*scale, height: size.height*scale))
+            self.setImage(width: size.width*scale, height: size.height*scale)
         }
     }
     var font:UIFont?{

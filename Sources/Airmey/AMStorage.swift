@@ -10,19 +10,20 @@ import CoreData
 import Foundation
 
 public protocol AMManagedObject:NSManagedObject{
-    associatedtype IDValue:Codable
+    associatedtype IDValue:Codable&Hashable
     associatedtype Model
     static func id(for model:Model)throws->IDValue
     var id:IDValue{get}
     func aweak(from model:Model)
 }
-public protocol AMFetchPropertyConfigurable:NSManagedObject{
+
+public protocol AMFetchPropertyConfigure:NSManagedObject{
     static func config(for entity:NSEntityDescription)
 }
 open class AMStorage{
-    public let mom:NSManagedObjectModel
-    public let moc:NSManagedObjectContext
-    public let psc:NSPersistentStoreCoordinator
+    private let mom:NSManagedObjectModel
+    private let moc:NSManagedObjectContext
+    private let psc:NSPersistentStoreCoordinator
     private lazy var queue:DispatchQueue = {
         DispatchQueue(label: "com.airmey.sqlite.queue")
     }()
@@ -46,6 +47,14 @@ open class AMStorage{
             try self.psc.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: opions)
         }
         self.moc.persistentStoreCoordinator = self.psc;
+        for entity in self.mom.entities{
+            guard let type = NSClassFromString(entity.managedObjectClassName) else{
+                return
+            }
+            if let configType = type as? AMFetchPropertyConfigure.Type{
+                configType.config(for: entity)
+            }
+        }
     }
 }
 //MARK: public sync methods

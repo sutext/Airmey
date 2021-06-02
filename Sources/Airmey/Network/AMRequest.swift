@@ -9,10 +9,15 @@
 import Alamofire
 import Foundation
 
-public protocol AMModel{
-    init(_ json:AMJson)throws
+public protocol AMRequest{
+    associatedtype Model
+    var path: String{get}
+    var params: [String:Any]?{get}
+    var options: AMNetwork.Options?{get}
+    func convert(_ json:AMJson)throws ->Model
 }
-open class AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{
+
+public struct AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{
     private let af:DataResponse<M,Error>
     init(_ af:DataResponse<M,Error>) {self.af = af}
     public var result:Result<M,Error>{af.result}
@@ -35,26 +40,4 @@ open class AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{
         .init(af.tryMap(transform))
     }
 }
-public protocol AMRequest{
-    associatedtype Model
-    var path: String{get}
-    var params: [String:Any]?{get}
-    var options: AMNetwork.Options?{get}
-    func create(_ json:AMJson)throws ->Model
-}
-extension AMRequest where Self.Model:AMModel{
-    public func create(_ json: AMJson) throws -> Model {
-        return try Model.init(json)
-    }
-}
-extension AMRequest where Self.Model:RandomAccessCollection,
-                          Self.Model:MutableCollection,
-                          Self.Model.Element:AMModel{
-    public func create(_ json: AMJson) throws -> Model {
-        guard case .array = json else{
-            throw AMError.network(.invalidRespone(info: "Response of array request must be array"))
-        }
-        let mod = try json.arrayValue.map{try Model.Element.init($0)}
-        return mod as! Model
-    }
-}
+

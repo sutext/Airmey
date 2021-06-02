@@ -12,7 +12,7 @@ import Photos
 
 public class AMImageCache {
     public static let shared = AMImageCache()
-    public typealias FinishLoadHandler = (Result<UIImage,Error>)->Void
+    public typealias ONFinish = (Result<UIImage,Error>)->Void
     private let fetchQueue = OperationQueue()//phasset fetch queue
     private let imageCache = NSCache<NSString,UIImage>()//phasset image cache
     private let thumbCache = NSCache<NSString,UIImage>()//phasset thumb cache
@@ -60,18 +60,18 @@ extension AMImageCache{
     public func clearDisk(){
         self.diskCache.removeAllCachedResponses()
     }
-    public func image(with url:String,scale:CGFloat = 3,finish: FinishLoadHandler?) {
+    public func image(with url:String,scale:CGFloat = 3,finish: ONFinish?) {
         self.data(with: url) { result in
             switch result{
             case .failure(let err):
                 finish?(.failure(err))
             case .success(let data):
-                guard let image = AMImage(data: data, scale: scale) else{
+                guard let image:UIImage = .data(data, scale: scale) else{
                     let error = AMError.image(.invalidData)
                     finish?(.failure(error))
                     return
                 }
-                finish?(.success(image.value))
+                finish?(.success(image))
             }
         }
     }
@@ -101,7 +101,7 @@ extension AMImageCache{
         return try self.image(with: asset, imageSize: thumSize);
     }
     @discardableResult
-    public func data(with asset:PHAsset,finish:@escaping ((Data?,Error?)->Void))->Operation?{
+    public func data(with asset:PHAsset,finish:((Data?,Error?)->Void)?=nil)->Operation?{
         let operation = BlockOperation()
         operation.addExecutionBlock {
             let options = PHImageRequestOptions()
@@ -118,7 +118,7 @@ extension AMImageCache{
                     if imageData == nil {
                         error = AMError.image(.system(info: userInfo))
                     }
-                    finish(imageData,error)
+                    finish?(imageData,error)
                 }
             }
         }
@@ -126,10 +126,10 @@ extension AMImageCache{
         return operation;
     }
     @discardableResult
-    public func image(with asset:PHAsset,finish:@escaping FinishLoadHandler) -> Operation?{
+    public func image(with asset:PHAsset,finish: ONFinish?=nil) -> Operation?{
         let key = asset.localIdentifier as NSString
         if let image = self.imageCache.object(forKey: key) {
-            finish(.success(image))
+            finish?(.success(image))
             return nil;
         }
         let operation = BlockOperation()
@@ -139,13 +139,13 @@ extension AMImageCache{
                 self.imageCache.setObject(image, forKey: key)
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(.success(image))
+                        finish?(.success(image))
                     }
                 }
             }catch{
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(.failure(error))
+                        finish?(.failure(error))
                     }
                 }
             }
@@ -155,10 +155,10 @@ extension AMImageCache{
     }
     
     @discardableResult
-    public func thumb(with asset:PHAsset,thumbSize:CGSize,finish:@escaping FinishLoadHandler) -> Operation?{
+    public func thumb(with asset:PHAsset,thumbSize:CGSize,finish: ONFinish?=nil) -> Operation?{
         let key = (asset.localIdentifier+"_mini") as NSString
         if let image = self.thumbCache.object(forKey: key) {
-            finish(.success(image))
+            finish?(.success(image))
             return nil;
         }
         let operation = BlockOperation()
@@ -168,13 +168,13 @@ extension AMImageCache{
                 self.thumbCache.setObject(image, forKey: key)
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(.success(image))
+                        finish?(.success(image))
                     }
                 }
             }catch{
                 DispatchQueue.main.async {
                     if(!operation.isCancelled){
-                        finish(.failure(error))
+                        finish?(.failure(error))
                     }
                 }
             }
@@ -184,7 +184,7 @@ extension AMImageCache{
     }
 }
 extension UIImageView{
-    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:AMImageCache.FinishLoadHandler? = nil)  {
+    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:AMImageCache.ONFinish? = nil)  {
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -199,7 +199,7 @@ extension UIImageView{
             }
         }
     }
-    @nonobjc public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:AMImageCache.FinishLoadHandler? = nil){
+    @nonobjc public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:AMImageCache.ONFinish? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -214,7 +214,7 @@ extension UIImageView{
             }
         }
     }
-    @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:AMImageCache.FinishLoadHandler? = nil){
+    @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:AMImageCache.ONFinish? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -231,7 +231,7 @@ extension UIImageView{
     }
 }
 extension UIButton{
-    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:AMImageCache.FinishLoadHandler? = nil)  {
+    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:AMImageCache.ONFinish? = nil)  {
         if let placeholder = placeholder {
             self.setImage(placeholder, for: state)
         }

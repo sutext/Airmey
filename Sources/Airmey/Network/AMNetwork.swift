@@ -51,13 +51,14 @@ open class AMNetwork {
     }
     open var sessionConfig:URLSessionConfiguration{
         let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = self.timeout
         config.headers = HTTPHeaders.default;
         return config;
     }
     @discardableResult
     public func request<R:AMRequest>(_ req:R,completion:((AMResponse<R.Model>)->Void)? = nil)->Task?{
         return self.request(req.path, params: req.params, options: req.options) { resp in
-            completion?(resp.tryMap{try req.create($0)})
+            completion?(resp.tryMap{try req.convert($0)})
         }
     }
     @discardableResult
@@ -152,9 +153,9 @@ open class AMNetwork {
             let amres:AMResponse<Any> = .init(resp.mapError{$0})
             var result:AMResponse<R.Model>! = nil
             if let verifier = req.options?.verifier{
-                result = verifier(amres).tryMap{try req.create($0)}
+                result = verifier(amres).tryMap{try req.convert($0)}
             }else{
-                result = self.verify(amres).tryMap{try req.create($0)}
+                result = self.verify(amres).tryMap{try req.convert($0)}
             }
             if let error = result?.error {
                 self.catched(error)
