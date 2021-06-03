@@ -9,44 +9,50 @@
 import UIKit
 
 public protocol AMCollectionViewDelegate:UICollectionViewDelegate {
-    func collectionView(_ collectionView:AMCollectionView,willRefreshUsing control:AMRefreshControl,with style:AMRefreshStyle)
+    func collectionView(_ collectionView:AMCollectionView, beginRefresh style:AMRefreshStyle, control:AMRefreshControl)
 }
 open class AMCollectionView: UICollectionView {
     private var controls:[AMRefreshStyle:AMRefreshControl] = [:]
     open override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         if newSuperview == nil {
-            self.removeRefresh([.top,.bottom])
+            self.remove(refreshs:[.top,.bottom])
         }
     }
-    open func usingRefresh(_ styles:Set<AMRefreshStyle>){
-        if styles.contains(.top) {
-            self.usingRefresh(UIRefreshControl.self)
+    ///using default refresh control.
+    public func using(refreshs:Set<AMRefreshStyle>){
+        if refreshs.contains(.top) {
+            self.using(refresh:UIRefreshControl.self)
         }
-        if styles.contains(.bottom) {
-            self.usingRefresh(AMLoadmoreControl.self)
+        if refreshs.contains(.bottom) {
+            self.using(refresh: AMLoadmoreControl.self)
         }
     }
-    public func usingRefresh<Control:AMRefreshControl>(_ type:Control.Type) {
+    public func using<Control:AMRefreshControl>(refresh type:Control.Type){
         if self.controls[type.style] == nil{
             let control = type.init()
-            control.addTarget(self, action: #selector(AMCollectionView.beginRefresh(sender:)), for: .valueChanged)
+            control.addTarget(self, action: #selector(AMTableView.beginRefresh(sender:)), for: .valueChanged)
             self.controls[type.style] = control
             self.addSubview(control)
         }
     }
-    public func removeRefresh(_ styles:Set<AMRefreshStyle>) {
-        for style in styles {
+    public func remove(refreshs:Set<AMRefreshStyle>){
+        for style in refreshs {
             self.controls[style]?.removeFromSuperview()
             self.controls[style] = nil
         }
     }
-    public func set(_ styles:Set<AMRefreshStyle>,enable:Bool) {
-        for style in styles {
-            self.controls[style]?.isEnabled = enable
+    public func enable(refreshs :Set<AMRefreshStyle>){
+        for style in refreshs {
+            self.controls[style]?.isEnabled = true
         }
     }
-    public func control(of style:AMRefreshStyle)->AMRefreshControl? {
+    public func disable(refreshs:Set<AMRefreshStyle>){
+        for style in refreshs {
+            self.controls[style]?.isEnabled = false
+        }
+    }
+    public func refresh(at style:AMRefreshStyle)->AMRefreshControl?{
         return self.controls[style]
     }
     @objc func beginRefresh(sender:AnyObject) {
@@ -60,6 +66,6 @@ open class AMCollectionView: UICollectionView {
         guard let delegate = self.delegate as? AMCollectionViewDelegate else{
             return
         }
-        delegate.collectionView(self, willRefreshUsing: control, with: type(of: control).style)
+        delegate.collectionView(self, beginRefresh: type(of: control).style,control: control)
     }
 }

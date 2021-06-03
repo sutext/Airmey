@@ -9,7 +9,7 @@
 import UIKit
 
 public protocol AMTableViewDelegate:UITableViewDelegate{
-    func tableView(_ tableView:AMTableView,willRefreshUsing control:AMRefreshControl ,with style:AMRefreshStyle)
+    func tableView(_ tableView:AMTableView, beginRefresh style:AMRefreshStyle, control:AMRefreshControl)
 }
 
 open class AMTableView: UITableView {
@@ -17,18 +17,20 @@ open class AMTableView: UITableView {
     open override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         if newSuperview == nil {
-            self.removeRefresh([.top,.bottom])
+            self.remove(refreshs: [.top,.bottom])
         }
     }
-    open func usingRefresh(_ styles:Set<AMRefreshStyle>){
-        if styles.contains(.top) {
-            self.usingRefresh(UIRefreshControl.self)
+    
+    ///using default refresh control.
+    public func using(refreshs:Set<AMRefreshStyle>){
+        if refreshs.contains(.top) {
+            self.using(refresh:UIRefreshControl.self)
         }
-        if styles.contains(.bottom) {
-            self.usingRefresh(AMLoadmoreControl.self)
+        if refreshs.contains(.bottom) {
+            self.using(refresh: AMLoadmoreControl.self)
         }
     }
-    public func usingRefresh<Control:AMRefreshControl>(_ type:Control.Type){
+    public func using<Control:AMRefreshControl>(refresh type:Control.Type){
         if self.controls[type.style] == nil{
             let control = type.init()
             control.addTarget(self, action: #selector(AMTableView.beginRefresh(sender:)), for: .valueChanged)
@@ -36,18 +38,23 @@ open class AMTableView: UITableView {
             self.addSubview(control)
         }
     }
-    public func removeRefresh(_ styles:Set<AMRefreshStyle>){
-        for style in styles {
+    public func remove(refreshs:Set<AMRefreshStyle>){
+        for style in refreshs {
             self.controls[style]?.removeFromSuperview()
             self.controls[style] = nil
         }
     }
-    public func set(_ styles:Set<AMRefreshStyle>,enable:Bool) {
-        for style in styles {
-            self.controls[style]?.isEnabled = enable
+    public func enable(refreshs :Set<AMRefreshStyle>){
+        for style in refreshs {
+            self.controls[style]?.isEnabled = true
         }
     }
-    public func control(of style:AMRefreshStyle)->AMRefreshControl?{
+    public func disable(refreshs:Set<AMRefreshStyle>){
+        for style in refreshs {
+            self.controls[style]?.isEnabled = false
+        }
+    }
+    public func refresh(at style:AMRefreshStyle)->AMRefreshControl?{
         return self.controls[style]
     }
     @objc func beginRefresh(sender:AnyObject) {
@@ -61,38 +68,35 @@ open class AMTableView: UITableView {
         guard let delegate = self.delegate as? AMTableViewDelegate else{
             return
         }
-        delegate.tableView(self, willRefreshUsing: control, with: type(of: control).style)
+        delegate.tableView(self, beginRefresh: type(of: control).style,control: control)
     }
 }
-public protocol AMCellReuseId{
-    var rawValue:String{get}
-}
-extension String:AMCellReuseId{
-    public var rawValue: String {
-        return self
-    }
-}
+public protocol AMCellReuseId:RawRepresentable where RawValue == String{}
 //extension enum : AMCellReuseId where Self.RawValue == String{}
-
-public protocol AMCellReusable{
+public struct AMCommonReuseId:AMCellReuseId {
+    public var rawValue: String
+    public init(rawValue: String) {
+        self.rawValue  = rawValue
+    }
+}
+public protocol AMReusableCell:UITableViewCell{
     associatedtype ReuseId:AMCellReuseId
     static var reuseids:[ReuseId]{get}
     var reuseid:ReuseId?{get}
 }
-public extension AMCellReusable where Self:UITableViewCell{
-    static var reuseids:[String]{
-        return [NSStringFromClass(self)]
+public extension AMReusableCell{
+    static var reuseids:[AMCommonReuseId]{
+        return [AMCommonReuseId(rawValue: NSStringFromClass(Self.self))]
     }
-    var reuseid:String?{
-        return self.reuseIdentifier
+    var reuseid:AMCommonReuseId?{
+        guard let str = self.reuseIdentifier else {
+            return nil
+        }
+        return AMCommonReuseId(rawValue: str)
     }
 }
 ///Auto implemention for string enum type ReuseId
-public extension AMCellReusable where Self:UITableViewCell,
-                                      Self.ReuseId:RawRepresentable,
-                                      Self.ReuseId.RawValue == String,
-                                      Self.ReuseId:CaseIterable,
-                                      Self.ReuseId.AllCases == [Self.ReuseId]{
+public extension AMReusableCell where Self.ReuseId:CaseIterable,Self.ReuseId.AllCases == [Self.ReuseId]{
     static var reuseids:[ReuseId]{
          return ReuseId.allCases
     }
@@ -104,20 +108,20 @@ public extension AMCellReusable where Self:UITableViewCell,
     }
 }
 public extension UITableView{
-    func register<Cell:UITableViewCell>(_ type:Cell.Type) where Cell:AMCellReusable{
+    func register<Cell>(_ type:Cell.Type) where Cell:AMReusableCell{
         for id  in type.reuseids {
             self.register(type, forCellReuseIdentifier: id.rawValue)
         }
     }
-    func register<Cell:UITableViewCell>(_ type:Cell.Type,for reuseids:[Cell.ReuseId])where Cell:AMCellReusable{
+    func register<Cell>(_ type:Cell.Type,for reuseids:[Cell.ReuseId])where Cell:AMReusableCell{
         for id  in reuseids {
             self.register(type, forCellReuseIdentifier: id.rawValue)
         }
     }
-    func dequeueReusableCell<Cell:UITableViewCell>(_ type:Cell.Type, with identifier:Cell.ReuseId,for indexPath:IndexPath)->Cell where Cell:AMCellReusable{
+    func dequeueReusableCell<Cell>(_ type:Cell.Type, with identifier:Cell.ReuseId,for indexPath:IndexPath)->Cell where Cell:AMReusableCell{
         return self.dequeueReusableCell(withIdentifier: identifier.rawValue, for: indexPath) as! Cell
     }
-    func dequeueReusableCell<Cell:UITableViewCell>(_ type:Cell.Type,for indexPath:IndexPath)->Cell where Cell:AMCellReusable, Cell.ReuseId == String{
-        return self.dequeueReusableCell(type, with: NSStringFromClass(type), for: indexPath)
+    func dequeueReusableCell<Cell>(_ type:Cell.Type,for indexPath:IndexPath)->Cell where Cell:AMReusableCell, Cell.ReuseId == AMCommonReuseId{
+        return self.dequeueReusableCell(type, with: AMCommonReuseId(rawValue: NSStringFromClass(type)) , for: indexPath)
     }
 }
