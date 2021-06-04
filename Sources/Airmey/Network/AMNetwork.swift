@@ -46,7 +46,7 @@ open class AMNetwork {
         return old.tryMap{.init($0)}
     }
     /// global error catched here
-    open func catched (_ error:Error){
+    open func oncatch (_ error:Error){
         
     }
     open var sessionConfig:URLSessionConfiguration{
@@ -105,7 +105,7 @@ open class AMNetwork {
                 result = self.verify(amres)
             }
             if let error = result?.error {
-                self.catched(error)
+                self.oncatch(error)
             }
             completion?(result)
         }
@@ -158,7 +158,7 @@ open class AMNetwork {
                 result = self.verify(amres).tryMap{try req.convert($0)}
             }
             if let error = result?.error {
-                self.catched(error)
+                self.oncatch(error)
             }
             completion?(result)
         }

@@ -54,11 +54,7 @@ public extension AMJson{
         case let value as NSArray:
             self = .array(value.map{AMJson($0)})
         case let value as [String: Any]:
-            var result = [String: AMJson]()
-            for (key, val) in value {
-                result[key] = AMJson(val)
-            }
-            self = .object(result)
+            self = .object(value.mapValues{AMJson($0)})
         case let value as NSDictionary:
             var result = [String: AMJson]()
             for (key, val) in value {
@@ -111,17 +107,16 @@ extension AMJson:Equatable{
     }
 }
 extension AMJson:ExpressibleByArrayLiteral{
-    public init(arrayLiteral elements: AMJson...) {
-        self = .array(elements)
+    public init(arrayLiteral elements: Any...) {
+        self.init(elements)
     }
 }
 extension AMJson:ExpressibleByDictionaryLiteral{
-    public init(dictionaryLiteral elements: (String, AMJson)...) {
-        var result:[Key:Value] = [:]
-        for item in elements{
-            result[item.0] = item.1
+    public init(dictionaryLiteral elements: (String, Any)...) {
+        let dic = elements.reduce(into: [:]) { result, item in
+            result[item.0] = AMJson(item.1)
         }
-        self = .object(result)
+        self = .object(dic)
     }
 }
 extension AMJson:ExpressibleByFloatLiteral{

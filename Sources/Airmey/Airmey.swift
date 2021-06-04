@@ -42,7 +42,6 @@ public extension CGFloat{
         return origin * .scaleFactor
     }
 }
-public typealias AMBlock = ()->Void
 public extension CGRect{
     static let screen = UIScreen.main.bounds
 }
@@ -182,5 +181,43 @@ public extension UIColor{
     ///
     static func hex(_ rgb:UInt,alpha:CGFloat=1.0)->UIColor{
         UIColor(rgb,alpha: alpha)
+    }
+}
+public typealias AMBlock = ()->Void
+public typealias ResultBlock<D> = (Result<D,Error>)->Void
+extension Result{
+    ///
+    /// Get error from result
+    /// Just make our code succinctly
+    ///
+    ///        let result:Result<Int,Error> = .success(1)
+    ///        guard let value = result.value esle{
+    ///             print(result.error!)//At this time error not nil surely
+    ///             retrun
+    ///        }
+    ///        print(value)//do your success logic
+    ///
+    public var error:Failure?{
+        if case .failure(let err) = self {
+            return err
+        }
+        return nil
+    }
+    ///
+    /// Get success value from result
+    /// Just make our code succinctly
+    ///
+    ///        let result:Result<Int,Error> = .success(1)
+    ///        if let error = result.error{
+    ///             print(result.error)
+    ///             retrun
+    ///        }
+    ///        print(result.value!)//At this time value not nil surely
+    ///
+    public var value:Success?{
+        if case .success(let value) = self {
+            return value
+        }
+        return nil
     }
 }

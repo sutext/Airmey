@@ -11,7 +11,7 @@ import UIKit
 /// The base class  for all presenter
 /// This is an abstract class
 /// You must override the hock method to provide your implmention
-public class AMPresenter: NSObject {
+open class AMPresenter: NSObject {
     public var onshow:AMBlock?
     public var onhide:AMBlock?
     public var onMaskClick:AMBlock?
