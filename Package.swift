@@ -30,29 +30,20 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "Airmey",
-            dependencies: ["Alamofire"],
-            exclude: ["Info.plist"],
-            linkerSettings:[
-                .linkedFramework("UIKit", .when(platforms: [.iOS])),
-                .linkedFramework("Photos", .when(platforms: [.iOS])),
-                .linkedFramework("CoreData", .when(platforms: [.iOS]))
-            ]
+            dependencies: ["Alamofire"]
         ),
         .target(
             name: "AMCrypto",
             dependencies: [],
-            exclude: ["Info.plist"],
             publicHeadersPath: "."
         ),
         .target(
             name: "AMPhotoKit",
-            dependencies: ["Airmey"],
-            exclude: ["Info.plist"]
+            dependencies: ["Airmey"]
         ),
         .target(
             name: "AMKeyboard",
-            dependencies: ["Airmey"],
-            exclude: ["Info.plist"]
+            dependencies: ["Airmey"]
         )
     ]
 )

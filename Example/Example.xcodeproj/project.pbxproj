@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,40 +13,10 @@
 		338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D8265FD69500987BA7 /* NetowrkController.swift */; };
 		338E70DE265FD69600987BA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DD265FD69600987BA7 /* Assets.xcassets */; };
 		338E70E1265FD69600987BA7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */; };
+		33B649FE266A1C4200E04113 /* Airmey in Frameworks */ = {isa = PBXBuildFile; productRef = 33B649FD266A1C4200E04113 /* Airmey */; };
 		33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D922662B11B00D953D0 /* RootViewController.swift */; };
 		33E37D992662B14000D953D0 /* PopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D982662B14000D953D0 /* PopupController.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		33E37D81266200A700D953D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 338E702D265FD16400987BA7;
-			remoteInfo = Airmey;
-		};
-		33E37D83266200A700D953D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 338E70A0265FD48800987BA7;
-			remoteInfo = AMPhotoKit;
-		};
-		33E37D85266200A700D953D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 338E70AD265FD49700987BA7;
-			remoteInfo = AMCrypto;
-		};
-		33E37D87266200A700D953D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 338E70BA265FD4B000987BA7;
-			remoteInfo = AMKeyboard;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		338E70FA265FDA6A00987BA7 /* Embed Frameworks */ = {
@@ -70,7 +40,7 @@
 		338E70DD265FD69600987BA7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		338E70E0265FD69600987BA7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		338E70E2265FD69600987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		33E37D7A266200A700D953D0 /* Airmey.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Airmey.xcodeproj; path = ../Airmey.xcodeproj; sourceTree = "<group>"; };
+		33B649FC266A1BE500E04113 /* Airmey */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Airmey; path = ..; sourceTree = "<group>"; };
 		33E37D922662B11B00D953D0 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		33E37D982662B14000D953D0 /* PopupController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				33B649FE266A1C4200E04113 /* Airmey in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +60,7 @@
 		338E70C8265FD69500987BA7 = {
 			isa = PBXGroup;
 			children = (
-				33E37D7A266200A700D953D0 /* Airmey.xcodeproj */,
+				33B649FC266A1BE500E04113 /* Airmey */,
 				338E70D3265FD69500987BA7 /* Example */,
 				338E70D2265FD69500987BA7 /* Products */,
 				338E70F7265FDA6A00987BA7 /* Frameworks */,
@@ -127,17 +98,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		33E37D7B266200A700D953D0 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				33E37D82266200A700D953D0 /* Airmey.framework */,
-				33E37D84266200A700D953D0 /* AMPhotoKit.framework */,
-				33E37D86266200A700D953D0 /* AMCrypto.framework */,
-				33E37D88266200A700D953D0 /* AMKeyboard.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -155,6 +115,9 @@
 			dependencies = (
 			);
 			name = Example;
+			packageProductDependencies = (
+				33B649FD266A1C4200E04113 /* Airmey */,
+			);
 			productName = Example;
 			productReference = 338E70D1265FD69500987BA7 /* Example.app */;
 			productType = "com.apple.product-type.application";
@@ -184,49 +147,12 @@
 			mainGroup = 338E70C8265FD69500987BA7;
 			productRefGroup = 338E70D2265FD69500987BA7 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 33E37D7B266200A700D953D0 /* Products */;
-					ProjectRef = 33E37D7A266200A700D953D0 /* Airmey.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				338E70D0265FD69500987BA7 /* Example */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		33E37D82266200A700D953D0 /* Airmey.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Airmey.framework;
-			remoteRef = 33E37D81266200A700D953D0 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33E37D84266200A700D953D0 /* AMPhotoKit.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = AMPhotoKit.framework;
-			remoteRef = 33E37D83266200A700D953D0 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33E37D86266200A700D953D0 /* AMCrypto.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = AMCrypto.framework;
-			remoteRef = 33E37D85266200A700D953D0 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		33E37D88266200A700D953D0 /* AMKeyboard.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = AMKeyboard.framework;
-			remoteRef = 33E37D87266200A700D953D0 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		338E70CF265FD69500987BA7 /* Resources */ = {
@@ -446,6 +372,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		33B649FD266A1C4200E04113 /* Airmey */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Airmey;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 338E70C9265FD69500987BA7 /* Project object */;
 }

@@ -756,29 +756,31 @@ extension UIView{
         builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
         builder(am,t1.am,t2.am)
     }
-    public func amake(
-        _ t1:UIView,
-        _ t2:UIView,
-        _ t3:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
-        builder(am,t1.am,t2.am,t3.am)
+    ///
+    /// rebuild all constraints
+    ///
+    public func remake(builder:(AMAnchorMaker)->Void) {
+        NSLayoutConstraint.deactivate(self.constraints)
+        self.removeConstraints(self.constraints)
+        builder(am)
+        self.updateFocusIfNeeded()
     }
-    public func amake(
+    public func remake(
         _ t1:UIView,
-        _ t2:UIView,
-        _ t3:UIView,
-        _ t4:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
-        builder(am,t1.am,t2.am,t3.am,t4.am)
+        builder:(AMAnchorMaker,AMAnchorMaker)->Void) {
+        NSLayoutConstraint.deactivate(self.constraints)
+        self.removeConstraints(self.constraints)
+        builder(am,t1.am)
+        self.updateFocusIfNeeded()
     }
-    public func amake(
+    public func remake(
         _ t1:UIView,
         _ t2:UIView,
-        _ t3:UIView,
-        _ t4:UIView,
-        _ t5:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
-        builder(am,t1.am,t2.am,t3.am,t4.am,t5.am)
+        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
+        NSLayoutConstraint.deactivate(self.constraints)
+        self.removeConstraints(self.constraints)
+        builder(am,t1.am,t2.am)
+        self.updateFocusIfNeeded()
     }
 }
 

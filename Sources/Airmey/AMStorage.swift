@@ -187,7 +187,7 @@ extension AMStorage{
 }
 //MARK: async methods
 extension AMStorage{
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model,block:((Result<Object,Error>) ->Void)?){
+    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model,block:ResultBlock<Object>?){
         self.queue.async {
             var result:Result<Object,Error>
             do {
@@ -201,7 +201,7 @@ extension AMStorage{
             }
         }
     }
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],block:((Result<[Object],Error>)->Void)?){
+    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],block:ResultBlock<[Object]>?){
         self.queue.async {
             var result:Result<[Object],Error>
             do {

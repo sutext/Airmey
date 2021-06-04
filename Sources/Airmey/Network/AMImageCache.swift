@@ -12,7 +12,6 @@ import Photos
 
 public class AMImageCache {
     public static let shared = AMImageCache()
-    public typealias ONFinish = (Result<UIImage,Error>)->Void
     private let fetchQueue = OperationQueue()//phasset fetch queue
     private let imageCache = NSCache<NSString,UIImage>()//phasset image cache
     private let thumbCache = NSCache<NSString,UIImage>()//phasset thumb cache
@@ -60,7 +59,7 @@ extension AMImageCache{
     public func clearDisk(){
         self.diskCache.removeAllCachedResponses()
     }
-    public func image(with url:String,scale:CGFloat = 3,finish: ONFinish?) {
+    public func image(with url:String,scale:CGFloat = 3,finish: ResultBlock<UIImage>?) {
         self.data(with: url) { result in
             switch result{
             case .failure(let err):
@@ -75,7 +74,7 @@ extension AMImageCache{
             }
         }
     }
-    public func data(with url:String,finish:((Result<Data,Error>)->Void)?) {
+    public func data(with url:String,finish:ResultBlock<Data>?) {
         let key = url as NSString
         if let data = self.memeryCache.object(forKey: key) {
             finish?(.success(data as Data))
@@ -126,7 +125,7 @@ extension AMImageCache{
         return operation;
     }
     @discardableResult
-    public func image(with asset:PHAsset,finish: ONFinish?=nil) -> Operation?{
+    public func image(with asset:PHAsset,finish: ResultBlock<UIImage>?=nil) -> Operation?{
         let key = asset.localIdentifier as NSString
         if let image = self.imageCache.object(forKey: key) {
             finish?(.success(image))
@@ -155,7 +154,7 @@ extension AMImageCache{
     }
     
     @discardableResult
-    public func thumb(with asset:PHAsset,thumbSize:CGSize,finish: ONFinish?=nil) -> Operation?{
+    public func thumb(with asset:PHAsset,thumbSize:CGSize,finish: ResultBlock<UIImage>?=nil) -> Operation?{
         let key = (asset.localIdentifier+"_mini") as NSString
         if let image = self.thumbCache.object(forKey: key) {
             finish?(.success(image))
@@ -184,7 +183,7 @@ extension AMImageCache{
     }
 }
 extension UIImageView{
-    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:AMImageCache.ONFinish? = nil)  {
+    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:ResultBlock<UIImage>? = nil)  {
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -199,7 +198,7 @@ extension UIImageView{
             }
         }
     }
-    @nonobjc public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:AMImageCache.ONFinish? = nil){
+    @nonobjc public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:ResultBlock<UIImage>? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -214,7 +213,7 @@ extension UIImageView{
             }
         }
     }
-    @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:AMImageCache.ONFinish? = nil){
+    @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:ResultBlock<UIImage>? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
@@ -231,7 +230,7 @@ extension UIImageView{
     }
 }
 extension UIButton{
-    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:AMImageCache.ONFinish? = nil)  {
+    @nonobjc public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:ResultBlock<UIImage>? = nil)  {
         if let placeholder = placeholder {
             self.setImage(placeholder, for: state)
         }

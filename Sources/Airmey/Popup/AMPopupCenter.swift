@@ -76,9 +76,10 @@ extension AMPopupCenter{
 }
 extension AMPopupCenter{
     private func add(_ op:Operation) {
-        assert(Thread.current.isMainThread,"Operations outside the main thread are not allowed!")
-        self.queue.append(op)
-        self.next()
+        DispatchQueue.main.async {
+            self.queue.append(op)
+            self.next()
+        }        
     }
     private func delayNext(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
