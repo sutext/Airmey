@@ -14,7 +14,7 @@ public protocol AMRequest{
     var path: String{get}
     var params: [String:Any]?{get}
     var options: AMNetwork.Options?{get}
-    func convert(_ json:AMJson)throws ->Model
+    func convert(_ json:JSON)throws ->Model
 }
 
 public struct AMResponse<M>:CustomStringConvertible, CustomDebugStringConvertible{

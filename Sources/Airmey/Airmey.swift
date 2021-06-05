@@ -76,14 +76,37 @@ public func +(l:CGSize,r:CGSize)->CGSize{
 public func *(l:CGSize,r:CGFloat)->CGSize{
     return CGSize(width: l.width*r, height: l.height*r);
 }
-extension Array {
-    public mutating func remove(at indexSet:NSIndexSet) -> () {
-        let idxs = indexSet.sorted(by: >)
-        for i in idxs {
-            self.remove(at: i)
+extension String{
+    ///
+    /// Generate a new string repeat form self
+    ///
+    /// - Parameter count: The repeat count
+    /// - Returns: A new string
+    ///
+    public func `repeat`(_ count:Int) -> String {
+        (0..<count).reduce("") { result, _ in
+            "\(result)\(self)"
         }
     }
 }
+extension Array {
+    ///
+    /// Remove some element form Array
+    ///
+    /// - Note: Any value in the set that out of self bounds will be ignore!
+    /// - Parameter  indexSet  An set of index.
+    /// - Returns: An array of elements that has been removed.
+    ///
+    public mutating func remove(in indexSet:NSIndexSet) -> [Element] {
+        let idxs = indexSet.filter{$0<count}.sorted(by: >)
+        var removed:[Element] = []
+        for i in idxs {
+            removed.append(remove(at: i))
+        }
+        return removed
+    }
+}
+
 public protocol AMTextConvertible {
     var text:String?{get}
 }

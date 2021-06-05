@@ -13,6 +13,7 @@ class RootViewController: UITabBarController {
         self.view.backgroundColor = .white
         let popup = UINavigationController(rootViewController: PopupController())
         let network = UINavigationController(rootViewController: NetowrkController())
-        self.viewControllers = [popup,network]
+        let json = UINavigationController(rootViewController: TestJsonController())
+        self.viewControllers = [popup,network,json]
     }
 }

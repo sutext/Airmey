@@ -42,7 +42,7 @@ open class AMNetwork {
     /// global request encode @default .json
     open var encoding:Encoding{.json}
     /// global response verifer @default map directly
-    open func verify(_ old:AMResponse<Any>)->AMResponse<AMJson>{
+    open func verify(_ old:AMResponse<Any>)->AMResponse<JSON>{
         return old.tryMap{.init($0)}
     }
     /// global error catched here
@@ -66,7 +66,7 @@ open class AMNetwork {
         _  path:String,
         params:[String:Any]?=nil,
         options:Options?=nil,
-        completion:((AMResponse<AMJson>)->Void)? = nil)->Task?{
+        completion:((AMResponse<JSON>)->Void)? = nil)->Task?{
         
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
@@ -98,7 +98,7 @@ open class AMNetwork {
         )
         task.responseJSON(queue: .main) { (resp) in
             let amres:AMResponse<Any> = .init(resp.mapError{$0})
-            var result:AMResponse<AMJson>! = nil
+            var result:AMResponse<JSON>! = nil
             if let verifier = options?.verifier{
                 result = verifier(amres)
             }else{
@@ -230,7 +230,7 @@ extension AMNetwork{
     }
 }
 extension AMNetwork{
-    public typealias Verifier = (AMResponse<Any>) -> AMResponse<AMJson>
+    public typealias Verifier = (AMResponse<Any>) -> AMResponse<JSON>
     public struct Options{
         /// overwrite the global method settings
         public var method:Method?

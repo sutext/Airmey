@@ -48,7 +48,7 @@ public class CCNetwork: AMNetwork {
         return result
     }
     @discardableResult
-    func request(_ req: CCRequest, completion: ((AMResponse<AMJson>) -> Void)? = nil) -> AMNetwork.Task? {
+    func request(_ req: CCRequest, completion: ((AMResponse<JSON>) -> Void)? = nil) -> AMNetwork.Task? {
         return self.request(req.path, params: req.params, options: req.options, completion: completion)
     }
 }
@@ -99,7 +99,7 @@ extension AMNetwork.Options{
     public static func post(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
         .init(.post,base: base.url) { old in
             return old.tryMap {
-                let json = AMJson($0)
+                let json = JSON($0)
                 guard case .api = base else{
                     return json
                 }
@@ -117,7 +117,7 @@ extension AMNetwork.Options{
     public static func get(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
         .init(.get,base: base.url) { old in
             return old.tryMap {
-                let json = AMJson($0)
+                let json = JSON($0)
                 guard case .api = base else{
                     return json
                 }

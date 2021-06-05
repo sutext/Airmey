@@ -7,21 +7,35 @@
 //
 import Foundation
 
-public enum AMJson {
+public enum JSON {
     case null
     case bool(Bool)
-    case array([AMJson])
+    case array([JSON])
     case string(String)
     case number(NSNumber)
-    case object([String:AMJson])
+    case object([String:JSON])
 }
+
 extension NSNumber{
-    private static let boolType = NSNumber(value:true).objCType.pointee
-    public var isBool:Bool{
-        return self.objCType.pointee == NSNumber.boolType
+    public struct CType:RawRepresentable,Codable,Equatable,Hashable{
+        public var rawValue: CChar
+        public init(rawValue: CChar) {
+            self.rawValue = rawValue
+        }
+        public init(_ number:NSNumber) {
+            self.init(rawValue: number.objCType.pointee)
+        }
+        public static let bool:Self = CType(rawValue: NSNumber(value:true).objCType.pointee)
+        public static let int8:Self = CType(rawValue: NSNumber(value:Int8.max).objCType.pointee)
+        public static let int16:Self = CType(rawValue: NSNumber(value:Int16.max).objCType.pointee)
+        public static let int32:Self = CType(rawValue: NSNumber(value:Int32.max).objCType.pointee)
+        public static let int64:Self = CType(rawValue: NSNumber(value:Int64.max).objCType.pointee)
+        public static let uint64:Self = CType(rawValue: NSNumber(value:UInt64.max).objCType.pointee)
+        public static let float:Self = CType(rawValue: NSNumber(value:Float(0)).objCType.pointee)
+        public static let double:Self = CType(rawValue: NSNumber(value:Double(0)).objCType.pointee)
     }
 }
-public extension AMJson{
+public extension JSON{
     init(json string:String){
         guard let data = string.data(using: .utf8) else {
             self = .null
@@ -33,33 +47,44 @@ public extension AMJson{
         let json = try? JSONSerialization.jsonObject(with: data, options: [])
         self.init(json)
     }
+    static func parse(_ string:String)->JSON{
+        guard let data = string.data(using: .utf8) else {
+            return .null
+        }
+        return JSON.parse(data)
+    }
+    static func parse(_ data:Data)->JSON{
+        let json = try? JSONSerialization.jsonObject(with: data, options: [])
+        return JSON(json)
+    }
     init(_ json:Any?=nil){
         guard let json = json else {
             self = .null
             return
         }
         switch json {
-        case let value as AMJson:
+        case let value as JSON:
             self = value
         case let value as String:
             self = .string(value)
         case let value as NSNumber:
-            if value.isBool{
+            if NSNumber.CType(value) == .bool,
+               (value.int8Value==1||value.int8Value==0){
                 self = .bool(value.boolValue)
             }else{
                 self = .number(value)
             }
         case let value as [Any]:
-            self = .array(value.map{AMJson($0)})
+            self = .array(value.map{JSON($0)})
         case let value as NSArray:
-            self = .array(value.map{AMJson($0)})
+            self = .array(value.map{JSON($0)})
         case let value as [String: Any]:
-            self = .object(value.mapValues{AMJson($0)})
+            self = .object(value.mapValues{JSON($0)})
         case let value as NSDictionary:
-            var result = [String: AMJson]()
+            var result = [String: JSON]()
             for (key, val) in value {
                 if let key = key as? String{
-                    result[key] = AMJson(val)
+                    result[key] = JSON(val)
                 }
             }
             self = .object(result)
@@ -67,7 +92,7 @@ public extension AMJson{
             self = .null
         }
     }
-    mutating func merge(_ other:AMJson){
+    mutating func merge(_ other:JSON){
         switch (self,other) {
         case (.array(let thisary),.array(let otherary)):
             self = .array(thisary + otherary)
@@ -86,8 +111,8 @@ public extension AMJson{
         }
     }
 }
-extension AMJson:Equatable{
-    public static func ==(lhs: AMJson, rhs: AMJson) -> Bool {
+extension JSON:Equatable{
+    public static func ==(lhs: JSON, rhs: JSON) -> Bool {
         switch (lhs,rhs) {
         case (.null,.null):
             return true
@@ -106,43 +131,48 @@ extension AMJson:Equatable{
         }
     }
 }
-extension AMJson:ExpressibleByArrayLiteral{
+extension JSON:ExpressibleByArrayLiteral{
     public init(arrayLiteral elements: Any...) {
         self.init(elements)
     }
 }
-extension AMJson:ExpressibleByDictionaryLiteral{
+extension JSON:ExpressibleByDictionaryLiteral{
     public init(dictionaryLiteral elements: (String, Any)...) {
         let dic = elements.reduce(into: [:]) { result, item in
-            result[item.0] = AMJson(item.1)
+            result[item.0] = JSON(item.1)
         }
         self = .object(dic)
     }
 }
-extension AMJson:ExpressibleByFloatLiteral{
+extension JSON:ExpressibleByFloatLiteral{
     public init(floatLiteral value: FloatLiteralType) {
         self = .number(NSNumber(value:value))
     }
 }
-extension AMJson:ExpressibleByIntegerLiteral{
+extension JSON:ExpressibleByIntegerLiteral{
     public init(integerLiteral value: IntegerLiteralType) {
         self = .number(NSNumber(value:value))
     }
 }
-extension AMJson:ExpressibleByStringLiteral{
+extension JSON:ExpressibleByStringLiteral{
     public init(stringLiteral value: StringLiteralType) {
         self = .string(value)
     }
 }
-extension AMJson:ExpressibleByBooleanLiteral{
+extension JSON:ExpressibleByBooleanLiteral{
     public init(booleanLiteral value: BooleanLiteralType) {
         self = .bool(value)
     }
 }
-extension AMJson: Collection {
+extension JSON:ExpressibleByNilLiteral{
+    public init(nilLiteral: ()) {
+        self = .null
+    }
+}
+extension JSON: Collection {
     public enum Index: Comparable {
         case array(Int)
-        case object(DictionaryIndex<String, AMJson>)
+        case object(DictionaryIndex<String, JSON>)
         case null
         static public func == (lhs: Index, rhs: Index) -> Bool {
             switch (lhs, rhs) {
@@ -150,7 +180,8 @@ extension AMJson: Collection {
                 return left == right
             case (.object(let left), .object(let right)):
                 return left == right
-            case (.null, .null): return true
+            case (.null, .null):
+                return true
             default:
                 return false
             }
@@ -206,7 +237,7 @@ extension AMJson: Collection {
             return 0
         }
     }
-    public subscript (position: Index) -> (String, AMJson) {
+    public subscript (position: Index) -> (String, JSON) {
         switch (self,position) {
         case let (.array(ary),.array(idx)):
             return (String(idx), ary[idx])
@@ -217,64 +248,49 @@ extension AMJson: Collection {
         }
     }
 }
-public enum AMJsonKey{
-    case index(Int)
-    case key(String)
-}
-public protocol AMJsonKeyConvertible{
-    var mkey:AMJsonKey{get}
-}
-extension Int:AMJsonKeyConvertible{
-    public var mkey: AMJsonKey{
-        return .index(self)
-    }
-}
-extension String:AMJsonKeyConvertible{
-    public var mkey: AMJsonKey{
-        return .key(self)
-    }
-}
 
-extension AMJson{
-    public subscript(sub:AMJsonKeyConvertible)->AMJson{
+public protocol AMJsonKey:Codable{}
+extension String:AMJsonKey{}
+extension Int:AMJsonKey{}
+    
+extension JSON{
+    public subscript(key:AMJsonKey)->JSON{
         get{
-            switch (self,sub.mkey){
-            case let (.array(ary),.index(idx)):
-                return ary[idx]
-            case let (.object(dic),.key(key)):
-                return dic[key] ?? .null
+            switch (self,key){
+            case let (.array(ary),idx as Int):
+                return ary.count>idx ? ary[idx] : .null
+            case let (.object(dic),str as String):
+                return dic[str] ?? .null
             default:
                 return .null
             }
         }
         set{
-            switch sub.mkey{
-            case .index(let idx):
-                switch self {
-                case .array(var ary):
-                    if ary.indices.contains(idx){
-                        ary[idx] = newValue
-                        self = .array(ary)
-                    }
-                case .null:
-                    self = .array([newValue])
-                default:
-                    break
+            switch key{
+            case let idx as Int:
+                guard case .array(var ary) = self else {
+                    return
                 }
-            case .key(let key):
+                if ary.count>idx{
+                    ary[idx] = newValue
+                    self = .array(ary)
+                }
+            case let str as String:
                 switch self{
                 case .object(var dic):
-                    dic[key] = newValue
+                    dic[str] = newValue
                     self = .object(dic)
                 case .null:
-                    self = .object([key:newValue])
+                    self = .object([str:newValue])
                 default :
                     break
                 }
+            default:
+                break
             }
         }
     }
-    private subscript(path: [AMJsonKeyConvertible]) -> AMJson {
+    private subscript(path: [AMJsonKey]) -> JSON {
         get {
             return path.reduce(self){$0[$1]}
         }
@@ -293,7 +309,7 @@ extension AMJson{
             }
         }
     }
-    public subscript(path: AMJsonKeyConvertible...) -> AMJson {
+    public subscript(path: AMJsonKey...) -> JSON {
         get {
             return self[path]
         }
@@ -303,7 +319,7 @@ extension AMJson{
     }
 }
 
-public extension AMJson{
+public extension JSON{
     @inlinable var int8:Int8?{
         return self.number?.int8Value
     }
@@ -333,6 +349,12 @@ public extension AMJson{
     }
     @inlinable var int64Value:Int64{
         return self.int64 ?? 0
+    }
+    @inlinable var uint64:UInt64?{
+        return self.number?.uint64Value
+    }
+    @inlinable var uint64Value:UInt64{
+        return self.uint64 ?? 0
     }
     @inlinable var float:Float?{
         return self.number?.floatValue
@@ -395,27 +417,27 @@ public extension AMJson{
     @inlinable var boolValue:Bool{
         return self.bool ?? false
     }
-    @inlinable var array:[AMJson]?{
+    @inlinable var array:[JSON]?{
         if case .array(let ary) = self {
             return ary
         }
         return nil
     }
-    @inlinable var arrayValue:[AMJson]{
+    @inlinable var arrayValue:[JSON]{
         return self.array ?? []
     }
-    @inlinable var object:[String:AMJson]?{
+    @inlinable var object:[String:JSON]?{
         if case .object(let dic) = self {
             return dic
         }
         return nil
     }
-    @inlinable var objectValue:[String:AMJson]{
+    @inlinable var objectValue:[String:JSON]{
         return self.object ?? [:]
     }
 }
-extension AMJson{
-    public var rawString: String{
+extension JSON{
+    private func toString(_ deep:Int? = nil,strip:Bool = true)-> String{
         switch self {
         case .null:
             return "null"
@@ -425,55 +447,108 @@ extension AMJson{
             return value.stringValue
         case .string(let value):
             return "\"\(value.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\""))\""
-        case .array(let ary):
-            let result = ary.reduce("", { (str, json) -> String in
-                return "\(str)\(json.rawString),"
-            }).dropLast()
-            return "[\(result)]"
-        case .object(let dic):
-            let result = dic.reduce("", { (str, json) -> String in
-                return  "\(str)\"\(json.key)\":\(json.value.rawString),"
-            }).dropLast()
-            return "{\(result)}"
+        case .array(var ary):
+            if strip {
+                ary = ary.filter {$0 != .null}
+            }
+            guard ary.count>0 else {
+                return "[]"
+            }
+            guard let deep = deep else {
+                let str = ary.reduce(""){"\($0)\($1.toString(strip:strip)),"}
+                return "[\(str.dropLast())]"
+            }
+            let result = ary.reduce(""){
+                "\($0)\($1.toString(deep+1,strip:strip)),\n\("\t".repeat(deep+1))"
+            }.dropLast(deep+3)
+            return "[\n\("\t".repeat(deep+1))\(result)\n\("\t".repeat(deep))]"
+        case .object(var dic):
+            if strip {
+                dic = dic.filter {$0.value != .null}
+            }
+            guard dic.count>0 else {
+                return "{}"
+            }
+            guard let deep=deep else {
+                let result = dic.reduce("") {
+                    "\($0)\"\($1.key)\":\($1.value.toString(strip:strip)),"
+                }
+                return "{\(result.dropLast())}"
+            }
+            let result = dic.reduce(""){
+                "\($0)\"\($1.key)\":\($1.value.toString(deep+1,strip: strip)),\n\("\t".repeat(deep+1))"
+            }.dropLast(deep+3)
+            return "{\n\("\t".repeat(deep+1))\(result)\n\("\t".repeat(deep))}"
         }
     }
-    public var rawData:Data?{
-        return self.rawString.data(using: .utf8)
-    }
+    public var rawString: String{ toString() }
+    public var rawData:Data?{ self.rawString.data(using: .utf8) }
 }
-extension AMJson:CustomStringConvertible,CustomDebugStringConvertible{
-    public var description: String{
-        return self.rawString
-    }
-    public var debugDescription: String{
-        guard let data = self.rawData else {
-            return ""
-        }
-        guard let obj = try? JSONSerialization.jsonObject(with: data, options: []) else {
-            return ""
-        }
-        guard let ndata = try? JSONSerialization.data(withJSONObject: obj, options: .prettyPrinted) else {
-            return ""
-        }
-        return String(data: ndata, encoding: .utf8) ?? ""
-    }
+extension JSON:CustomStringConvertible,CustomDebugStringConvertible{
+    public var description: String{ toString(0,strip: false) }
+    public var debugDescription: String{ toString(0,strip: false) }
 }
-extension AMJson:Codable{
-    private enum CodingKeys:CodingKey {
-        case json
-    }
+// MARK: - JSON: Codable
+extension JSON: Codable {
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let rawString = try container.decode(String.self, forKey: .json)
-        guard let data = rawString.data(using: .utf8) else {
+        let container = try decoder.singleValueContainer()
+        if container.decodeNil() {
             self = .null
             return
         }
-        self.init(try?  JSONSerialization.jsonObject(with: data, options: []))
+        if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+            return
+        }
+        if let value = try? container.decode(Int64.self) {
+            self = .number(NSNumber(value: value))
+            return
+        }
+        if let value = try? container.decode(UInt64.self) {
+            self = .number(NSNumber(value: value))
+            return
+        }
+        if let value = try? container.decode(Double.self) {
+            self = .number(NSNumber(value: value))
+            return
+        }
+        if let value = try? container.decode(String.self) {
+            self = .string(value)
+            return
+        }
+        if let value = try? container.decode([JSON].self) {
+            self = .array(value)
+            return
+        }
+        if let value = try? container.decode([String:JSON].self) {
+            self = .object(value)
+            return
+        }
+        self = .null
     }
-    
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.rawString, forKey: .json)
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .bool(let bool):
+            try container.encode(bool)
+        case .null:
+            try container.encodeNil()
+        case .number(let number):
+            let type = NSNumber.CType(number)
+            switch  type{
+            case .double,.float:
+                try container.encode(number.doubleValue)
+            case .uint64:
+                try container.encode(number.uint64Value)
+            default:
+                try container.encode(number.int64Value)
+            }
+        case .string(let string):
+            try container.encode(string)
+        case .array(let ary):
+            try container.encode(ary)
+        case .object(let dic):
+            try container.encode(dic)
+        }
     }
 }
