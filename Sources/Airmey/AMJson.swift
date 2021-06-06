@@ -36,17 +36,6 @@ extension NSNumber{
     }
 }
 public extension JSON{
-    init(json string:String){
-        guard let data = string.data(using: .utf8) else {
-            self = .null
-            return
-        }
-        self.init(json:data)
-    }
-    init(json data:Data){
-        let json = try? JSONSerialization.jsonObject(with: data, options: [])
-        self.init(json)
-    }
     static func parse(_ string:String)->JSON{
         guard let data = string.data(using: .utf8) else {
             return .null
@@ -54,7 +43,13 @@ public extension JSON{
         return JSON.parse(data)
     }
     static func parse(_ data:Data)->JSON{
-        let json = try? JSONSerialization.jsonObject(with: data, options: [])
+//        guard let json = try? JSONDecoder().decode(JSON.self, from: data) else {
+//            return .null
+//        }
+//        return json
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
+            return .null
+        }
         return JSON(json)
     }
     init(_ json:Any?=nil){
@@ -529,10 +524,10 @@ extension JSON: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .bool(let bool):
-            try container.encode(bool)
         case .null:
             try container.encodeNil()
+        case .bool(let bool):
+            try container.encode(bool)
         case .number(let number):
             let type = NSNumber.CType(number)
             switch  type{

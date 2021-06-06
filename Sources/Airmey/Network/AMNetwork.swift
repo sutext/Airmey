@@ -28,10 +28,11 @@ open class AMNetwork {
         let manager = Session(configuration: self.sessionConfig, serverTrustManager: nil)
         return manager
     }()
-    private var baseURL:URL?
     public init(baseURL:String) {
         self.baseURL = URL(string:baseURL);
     }
+    private var baseURL:URL?
+
     public var isDebug:Bool = false
     /// global http headers @default empty
     open var headers:[String:String]{[:]}

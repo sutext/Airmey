@@ -30,7 +30,7 @@ class TestJsonController: UIViewController {
         print(NSNumber.CType.uint64)
         print(NSNumber.CType.float)
         print(NSNumber.CType.double)
-        var json:JSON = JSON(json:"{\"int8\":1.844674407370955e+20}")
+        var json:JSON = JSON.parse("{\"int8\":1.844674407370955e+20}")
         json["bool"] = true
         json["int16"] = JSON(Int16.max)
         json["int32"] = JSON(Int32.max)
@@ -39,7 +39,8 @@ class TestJsonController: UIViewController {
         json["uint_max"] = JSON(UInt64.max)
         json["array"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max]
         print(json)
-        if let data = try? JSONEncoder().encode(json){
+        
+        if let data = json.description.data(using: .utf8){
             if let aj = try? JSONDecoder().decode(JSON.self, from: data){
                 print(aj)
             }

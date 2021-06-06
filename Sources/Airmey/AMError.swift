@@ -16,6 +16,7 @@ public enum AMError:Error{
 extension AMError{
     public enum Network{
         case invalidURL
+        case invalidData
         case invalidRespone(info:String)
     }
 }

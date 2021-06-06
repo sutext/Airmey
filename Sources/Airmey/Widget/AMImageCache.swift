@@ -7,49 +7,29 @@
 //
 
 import UIKit
-import Alamofire
 import Photos
 
 public class AMImageCache {
     public static let shared = AMImageCache()
     private let fetchQueue = OperationQueue()//phasset fetch queue
-    private let imageCache = NSCache<NSString,UIImage>()//phasset image cache
-    private let thumbCache = NSCache<NSString,UIImage>()//phasset thumb cache
-    private let memeryCache = NSCache<NSString,NSData>()
+    private let imageCache = NSCache<NSString,UIImage>()//big image cache
+    private let thumbCache = NSCache<NSString,UIImage>()//thumb image cache
     private let diskCache = URLCache(memoryCapacity: 50*1024*1024, diskCapacity: 500*1024*1024, diskPath: "com.airmey.image.downloader")
-    private lazy var downloader:Session = {
-        return Session(configuration: self.sessionConfig)
-    }()
-    private init(){
-        self.thumbCache.countLimit = 50
-        self.imageCache.countLimit = 5
-        self.fetchQueue.maxConcurrentOperationCount = 3
-    }
-    private var sessionConfig:URLSessionConfiguration{
+    private lazy var downloader:URLSession = {
         let config = URLSessionConfiguration.default
-        config.headers = HTTPHeaders.default
         config.urlCache = self.diskCache
-        config.httpShouldSetCookies = true;
+        config.httpShouldSetCookies = true
         config.httpShouldUsePipelining = false
         config.requestCachePolicy = .useProtocolCachePolicy
-        config.allowsCellularAccess = true;
-        config.timeoutIntervalForRequest = 60;
-    
-        return config;
-    }
-    private func image(with asset:PHAsset,imageSize:CGSize)throws ->UIImage{
-        let options = PHImageRequestOptions()
-        options.isSynchronous = true;
-        var image:UIImage?
-        var userInfo:[AnyHashable:Any]?
-        PHImageManager.default().requestImage(for: asset, targetSize: imageSize, contentMode: .default, options: options) { (img, info) in
-            image = img
-            userInfo = info
-        }
-        guard let img = image else {
-            throw AMError.image(.system(info: userInfo))
-        }
-        return img;
+        config.allowsCellularAccess = true
+        config.timeoutIntervalForRequest = 60
+        return URLSession(configuration: config)
+    }()
+
+    private init(){
+        self.thumbCache.countLimit = 50
+        self.imageCache.countLimit = 20
+        self.fetchQueue.maxConcurrentOperationCount = 3
     }
 }
 extension AMImageCache{
@@ -60,49 +40,58 @@ extension AMImageCache{
         self.diskCache.removeAllCachedResponses()
     }
     public func image(with url:String,scale:CGFloat = 3,finish: ResultBlock<UIImage>?) {
-        self.data(with: url) { result in
-            switch result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let data):
-                guard let image:UIImage = .data(data, scale: scale) else{
-                    let error = AMError.image(.invalidData)
-                    finish?(.failure(error))
-                    return
-                }
-                finish?(.success(image))
-            }
-        }
-    }
-    public func data(with url:String,finish:ResultBlock<Data>?) {
         let key = url as NSString
-        if let data = self.memeryCache.object(forKey: key) {
-            finish?(.success(data as Data))
+        if let image = self.imageCache.object(forKey: key) {
+            finish?(.success(image))
             return
         }
-        self.downloader.request(url, method: .get,headers: ["Accept":"image/*"]).responseData { (resp) in
-            switch resp.result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let data):
-                self.memeryCache.setObject(data as NSData, forKey: key);
-                finish?(.success(data))
-            }
+        guard let url = URL(string: url) else {
+            finish?(.failure(AMError.network(.invalidURL)))
+            return
         }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("image/*", forHTTPHeaderField: "Accept")
+        self.downloader.dataTask(with: request) { data, resp, error in
+            guard let data = data else{
+                finish?(.failure(error ?? AMError.network(.invalidData)))
+                return
+            }
+            guard let image:UIImage = .data(data, scale: scale) else{
+                let error = AMError.image(.invalidData)
+                finish?(.failure(error))
+                return
+            }
+            self.imageCache.setObject(image, forKey: key)
+            finish?(.success(image))
+        }.resume()
     }
 }
 extension AMImageCache{
-    public func image(with asset:PHAsset)throws -> UIImage{
-        let maxlen = max(UIScreen.main.bounds.size.width, UIScreen.main.bounds.size.height)
-        return try self.image(with: asset, imageSize: CGSize(width:maxlen,height:maxlen));
+    private func image(with asset:PHAsset,size:CGSize) ->Result<UIImage,AMError>{
+        let options = PHImageRequestOptions()
+        options.isSynchronous = true;
+        var image:UIImage?
+        var userInfo:[AnyHashable:Any]?
+        PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .default, options: options) { (img, info) in
+            image = img
+            userInfo = info
+        }
+        guard let img = image else {
+            return .failure(AMError.image(.system(info: userInfo)))
+        }
+        return .success(img);
     }
-    public func thumb(with asset:PHAsset,thumSize:CGSize)throws -> UIImage{
-        return try self.image(with: asset, imageSize: thumSize);
+    public func image(with asset:PHAsset) -> Result<UIImage,AMError>{
+        let maxlen = max(UIScreen.main.bounds.size.width, UIScreen.main.bounds.size.height)
+        return self.image(with: asset, size: CGSize(width:maxlen,height:maxlen))
+    }
+    public func thumb(with asset:PHAsset,size:CGSize) -> Result<UIImage,AMError>{
+        return self.image(with: asset, size: size)
     }
     @discardableResult
-    public func data(with asset:PHAsset,finish:((Data?,Error?)->Void)?=nil)->Operation?{
-        let operation = BlockOperation()
-        operation.addExecutionBlock {
+    private func data(with asset:PHAsset,finish:ResultBlock<Data>?)->Operation?{
+        let operation = BlockOperation {
             let options = PHImageRequestOptions()
             options.isSynchronous = true;
             var imageData:Data?
@@ -112,41 +101,32 @@ extension AMImageCache{
                 userInfo = info
             })
             DispatchQueue.main.async {
-                if(!operation.isCancelled){
-                    var error:Error?
-                    if imageData == nil {
-                        error = AMError.image(.system(info: userInfo))
-                    }
-                    finish?(imageData,error)
+                guard let data = imageData else{
+                    finish?(.failure(AMError.image(.system(info: userInfo))))
+                    return
                 }
+                finish?(.success(data))
             }
         }
         self.fetchQueue.addOperation(operation);
         return operation;
     }
     @discardableResult
-    public func image(with asset:PHAsset,finish: ResultBlock<UIImage>?=nil) -> Operation?{
+    public func image(with asset:PHAsset,finish: ResultBlock<UIImage>?) -> Operation?{
         let key = asset.localIdentifier as NSString
         if let image = self.imageCache.object(forKey: key) {
             finish?(.success(image))
             return nil;
         }
-        let operation = BlockOperation()
-        operation.addExecutionBlock {
-            do{
-                let image = try self.image(with: asset)
+        let operation = BlockOperation {
+            let result = self.image(with: asset)
+            DispatchQueue.main.async {
+                guard let image = result.value else{
+                    finish?(.failure(result.error!))
+                    return
+                }
                 self.imageCache.setObject(image, forKey: key)
-                DispatchQueue.main.async {
-                    if(!operation.isCancelled){
-                        finish?(.success(image))
-                    }
-                }
-            }catch{
-                DispatchQueue.main.async {
-                    if(!operation.isCancelled){
-                        finish?(.failure(error))
-                    }
-                }
+                finish?(.success(image))
             }
         }
         self.fetchQueue.addOperation(operation);
@@ -154,28 +134,21 @@ extension AMImageCache{
     }
     
     @discardableResult
-    public func thumb(with asset:PHAsset,thumbSize:CGSize,finish: ResultBlock<UIImage>?=nil) -> Operation?{
+    public func thumb(with asset:PHAsset,size:CGSize,finish: ResultBlock<UIImage>?) -> Operation?{
         let key = (asset.localIdentifier+"_mini") as NSString
         if let image = self.thumbCache.object(forKey: key) {
             finish?(.success(image))
             return nil;
         }
-        let operation = BlockOperation()
-        operation.addExecutionBlock {
-            do{
-                let image = try self.image(with: asset,imageSize:thumbSize)
+        let operation = BlockOperation {
+            let result = self.image(with: asset,size: size)
+            DispatchQueue.main.async {
+                guard let image = result.value else{
+                    finish?(.failure(result.error!))
+                    return
+                }
                 self.thumbCache.setObject(image, forKey: key)
-                DispatchQueue.main.async {
-                    if(!operation.isCancelled){
-                        finish?(.success(image))
-                    }
-                }
-            }catch{
-                DispatchQueue.main.async {
-                    if(!operation.isCancelled){
-                        finish?(.failure(error))
-                    }
-                }
+                finish?(.success(image))
             }
         }
         self.fetchQueue.addOperation(operation);
@@ -213,11 +186,11 @@ extension UIImageView{
             }
         }
     }
-    @nonobjc public func setThumb(with asset:PHAsset,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:ResultBlock<UIImage>? = nil){
+    @nonobjc public func setThumb(with asset:PHAsset,size:CGSize,placeholder:UIImage?  = nil,finish:ResultBlock<UIImage>? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
-        AMImageCache.shared.thumb(with: asset,thumbSize:thumbSize) { result in
+        AMImageCache.shared.thumb(with: asset,size:size) { result in
             switch result{
             case .failure(let err):
                 finish?(.failure(err))
