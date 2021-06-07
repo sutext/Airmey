@@ -8,8 +8,19 @@
 import Foundation
 
 open class Network{
+    private static var monitor:Monitor?
+    public private(set) static var status:Monitor.Status = .unknown{
+        didSet{
+            if status != oldValue{
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .AMNetworkStatusChanged, object: self)
+                }
+            }
+        }
+    }
     private let session:URLSession
     private let rootQueue:DispatchQueue = .init(label: "com.airmey.network.rootQueue")
+    private var metrics:[Int:URLSessionTaskMetrics] = [:]
     public init() {
         let config = URLSessionConfiguration.default
         let queue = OperationQueue()
@@ -19,85 +30,82 @@ open class Network{
         queue.qualityOfService = .default
         session = URLSession(configuration: config,delegate: nil,delegateQueue: queue)
     }
-    private var baseURL:URL?
+    public func request(
+        _ url:URL,
+        method:Method = .get,
+        params:Params?=nil,
+        headers:Headers = Headers.default,
+        timeout:TimeInterval = 60,
+        encoder:RequestEncoder = JSONEncoder(),
+        completion:((Response<JSON>)->Void)?=nil)->URLSessionDataTask?{
+        guard let request = encoder.encode(url, method: method, params: params, headers: headers, timeout: timeout) else{
+            let result:Result<JSON,Swift.Error> = .failure(Error.paramsEncodeFailure)
+            completion?(Response<JSON>(result: result))
+            return nil
+        }
+        let task = self.session.dataTask(with: request) { data, resp, error in
+            var result:Result<JSON,Swift.Error>
+            if let data = data{
+                result = .success(JSON.parse(data))
+            }else{
+                result = .failure(error ?? Error.invalidData)
+            }
+            completion?(Response<JSON>(data: data,result:result, request: request, response: resp))
+        }
+        task.resume()
+        return task
+    }
+    public func upload(){
 
-    public var isDebug:Bool = false
-    /// global http headers @default empty
-    open var headers:[String:String]{[:]}
-    /// global http method settings  @default .get
-    open var method:Request.Method{.get}
-    /// global timeout settings @default 60s
-    open var timeout:TimeInterval{60 }
-    /// global request encode @default .json
-//    open var encoding:RequestEncoding{.json}
-    /// global response verifer @default map directly
-//    open func verify(_ old:Response<JSON>)->Response<JSON>{
-//        return old.tryMap{.init($0)}
-//    }
-    /// global error catched here
-    open func oncatch (_ error:Error){
-        
     }
     
-    public func request(_  req:Request,completion:((Response<JSON>)->Void)? = nil){
-        
-//        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
-//              let url = URL(string:req.path,relativeTo:baseURL) else {
-//            completion?(.init(DataResponse(
-//                                request: nil,
-//                                response: nil,
-//                                data: nil,
-//                                metrics:nil,
-//                                serializationDuration:0 ,
-//                                result: .failure(AFError.invalidURL(url: path)))))
-//            return nil;
-//        }
-//        let method = req.options?.method ?? self.method
-//        let encoding = req.options?.encoding ?? self.encoding
-//        let timeout = req.options?.timeout ?? self.timeout
-//        var headers = Request.Headers(self.headers)
-//        if let h = req.options?.headers {
-//            h.forEach {
-//                headers.add(name: $0.key, value: $0.value)
-//            }
-//        }
-//        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
-//        request.httpBody = params.rawData
-//        session.dataTask(with: request) { <#Data?#>, <#URLResponse?#>, <#Error?#> in
-//
-//        }
-//        let task = self.session.request(
-//            url,
-//            method: method,
-//            parameters: params,
-//            encoding:encoding,
-//            headers:headers,
-//            requestModifier: {$0.timeoutInterval = timeout}
-//        )
-//        task.responseJSON(queue: .main) { (resp) in
-//            let amres:AMResponse<Any> = .init(resp.mapError{$0})
-//            var result:AMResponse<JSON>! = nil
-//            if let verifier = options?.verifier{
-//                result = verifier(amres)
-//            }else{
-//                result = self.verify(amres)
-//            }
-//            if let error = result?.error {
-//                self.oncatch(error)
-//            }
-//            completion?(result)
-//        }
-//        if isDebug{
-//            task.responseJSON {
-//                debugPrint($0)
-//            }
-//        }
-//        return .init(task);
+}
+extension Network{
+    public class func listen(host:String?=nil) {
+        if let monitor = self.monitor {
+            monitor.startListening { (stus) in
+                self.status = status
+            }
+            return
+        }
+        if let host = host {
+            self.monitor = Monitor(host: host)
+        }else{
+            self.monitor = Monitor()
+        }
+        self.monitor?.startListening { (status) in
+            self.status = status
+        }
+    }
+    
+    public class func refresh(){
+        guard  let status = self.monitor?.status else {
+            return
+        }
+        self.status = status
+    }
+    public class func stopListen() {
+        self.monitor?.stopListening()
     }
 }
 extension Network{
+    public typealias Params = [String:JSON]
     public enum Error:Swift.Error{
         case unkown
+        case invalidURL
+        case invalidData
+        case paramsEncodeFailure
+    }
+    public enum Method:String{
+        case get = "GET"
+        case put = "PUT"
+        case head = "HEAD"
+        case post = "POST"
+        case trace = "TRACE"
+        case patch = "PATCH"
+        case delete = "DELETE"
+        case connect = "CONNECT"
+        case options = "OPTIONS"
     }
 }
 
