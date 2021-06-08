@@ -21,15 +21,16 @@ class TestJsonController: UIViewController {
         super.viewDidLoad()
         print(NSNumber.init(value: true).stringValue)
         print(NSNumber.init(value: false).stringValue)
-
-        print(NSNumber.CType.bool)
-        print(NSNumber.CType.int8)
-        print(NSNumber.CType.int16)
-        print(NSNumber.CType.int32)
-        print(NSNumber.CType.int64)
-        print(NSNumber.CType.uint64)
-        print(NSNumber.CType.float)
-        print(NSNumber.CType.double)
+        print(JSON(1))
+        print(JSON(true))
+        print(NSNumber.OCType.bool)
+        print(NSNumber.OCType.int8)
+        print(NSNumber.OCType.int16)
+        print(NSNumber.OCType.int32)
+        print(NSNumber.OCType.int64)
+        print(NSNumber.OCType.uint64)
+        print(NSNumber.OCType.float)
+        print(NSNumber.OCType.double)
         var json:JSON = JSON.parse("{\"int8\":1.844674407370955e+20}")
         json["bool"] = true
         json["int16"] = JSON(Int16.max)
@@ -38,12 +39,10 @@ class TestJsonController: UIViewController {
         json["int_max"] = JSON(Int64.max)
         json["uint_max"] = JSON(UInt64.max)
         json["array"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max]
+        json["dic"] = ["name":"jackson","age":18,"obj":json]
+        json["empty"] = [:]
+        json["null"] = nil
         print(json)
-        
-        if let data = json.description.data(using: .utf8){
-            if let aj = try? JSONDecoder().decode(JSON.self, from: data){
-                print(aj)
-            }
-        }
     }
+
 }

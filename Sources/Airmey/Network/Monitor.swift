@@ -11,12 +11,6 @@
 import Foundation
 import SystemConfiguration
 
-/// The `NetworkMonitor` class listens for reachability changes of hosts and addresses for both cellular and
-/// WiFi network interfaces.
-///
-/// Reachability can be used to determine background information about why a network operation failed, or to retry
-/// network requests when a connection is established. It should not be used to prevent a user from initiating a network
-/// request, as it's possible that an initial request may be required to establish reachability.
 extension Network{
     open class Monitor {
         /// Defines the various states of network reachability.
@@ -103,7 +97,7 @@ extension Network{
         private let reachability: SCNetworkReachability
 
         /// Protected storage for mutable state.
-        @Sync
+        @Protected
         private var mutableState = MutableState()
 
         // MARK: - Initialization
@@ -211,9 +205,7 @@ extension Network{
 
             $mutableState.write { state in
                 guard state.previousStatus != newStatus else { return }
-
                 state.previousStatus = newStatus
-
                 let listener = state.listener
                 state.listenerQueue?.async { listener?(newStatus) }
             }

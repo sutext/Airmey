@@ -15,26 +15,6 @@ public enum JSON {
     case number(NSNumber)
     case object([String:JSON])
 }
-
-extension NSNumber{
-    public struct CType:RawRepresentable,Codable,Equatable,Hashable{
-        public var rawValue: CChar
-        public init(rawValue: CChar) {
-            self.rawValue = rawValue
-        }
-        public init(_ number:NSNumber) {
-            self.init(rawValue: number.objCType.pointee)
-        }
-        public static let bool:Self = CType(rawValue: NSNumber(value:true).objCType.pointee)
-        public static let int8:Self = CType(rawValue: NSNumber(value:Int8.max).objCType.pointee)
-        public static let int16:Self = CType(rawValue: NSNumber(value:Int16.max).objCType.pointee)
-        public static let int32:Self = CType(rawValue: NSNumber(value:Int32.max).objCType.pointee)
-        public static let int64:Self = CType(rawValue: NSNumber(value:Int64.max).objCType.pointee)
-        public static let uint64:Self = CType(rawValue: NSNumber(value:UInt64.max).objCType.pointee)
-        public static let float:Self = CType(rawValue: NSNumber(value:Float(0)).objCType.pointee)
-        public static let double:Self = CType(rawValue: NSNumber(value:Double(0)).objCType.pointee)
-    }
-}
 public extension JSON{
     static func parse(_ string:String)->JSON{
         guard let data = string.data(using: .utf8) else {
@@ -43,10 +23,6 @@ public extension JSON{
         return JSON.parse(data)
     }
     static func parse(_ data:Data)->JSON{
-//        guard let json = try? JSONDecoder().decode(JSON.self, from: data) else {
-//            return .null
-//        }
-//        return json
         guard let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
             return .null
         }
@@ -57,34 +33,37 @@ public extension JSON{
             self = .null
             return
         }
+        if json is NSNull {
+            self = .null
+            return
+        }
         switch json {
         case let value as JSON:
             self = value
         case let value as String:
             self = .string(value)
         case let value as NSNumber:
-            if NSNumber.CType(value) == .bool,
-               (value.int8Value==1||value.int8Value==0){
+            if value.isBool{
                 self = .bool(value.boolValue)
             }else{
                 self = .number(value)
             }
         case let value as [Any]:
-            self = .array(value.map{JSON($0)})
+            self = .array(value.map(JSON.init))
         case let value as NSArray:
-            self = .array(value.map{JSON($0)})
+            self = .array(value.map(JSON.init))
         case let value as [String: Any]:
-            self = .object(value.mapValues{JSON($0)})
+            self = .object(value.mapValues(JSON.init))
         case let value as NSDictionary:
-            var result = [String: JSON]()
-            for (key, val) in value {
-                if let key = key as? String{
-                    result[key] = JSON(val)
+            let result = value.reduce(into: [:] as [String:JSON]) { map, ele in
+                if let key = ele.key as? String{
+                    map[key] = JSON(ele.value)
                 }
             }
             self = .object(result)
         default:
             self = .null
+            print("⚠️[Airmey JSON]: Unsupport json type of \(type(of: json)) !!!!!")
         }
     }
     mutating func merge(_ other:JSON){
@@ -128,15 +107,12 @@ extension JSON:Equatable{
 }
 extension JSON:ExpressibleByArrayLiteral{
     public init(arrayLiteral elements: Any...) {
-        self.init(elements)
+        self = .array(elements.map(JSON.init))
     }
 }
 extension JSON:ExpressibleByDictionaryLiteral{
     public init(dictionaryLiteral elements: (String, Any)...) {
-        let dic = elements.reduce(into: [:]) { result, item in
-            result[item.0] = JSON(item.1)
-        }
-        self = .object(dic)
+        self = .object(elements.reduce(into: [:]) { $0[$1.0] = JSON($1.1) })
     }
 }
 extension JSON:ExpressibleByFloatLiteral{
@@ -432,6 +408,19 @@ public extension JSON{
     }
 }
 extension JSON{
+    /// Using custom toString() serialization . That is slower than JSONEncoder
+    public var rawString: String{
+        if let data = rawData,
+           let str = String(data: data, encoding: .utf8){
+            return str
+        }
+        return "null"
+    }
+    /// Use rawString Directly
+    public var rawData:Data?{ try? JSONEncoder().encode(self) }
+}
+extension JSON:CustomStringConvertible,CustomDebugStringConvertible{
+    /// custom serialization for json
     private func toString(_ deep:Int? = nil,strip:Bool = true)-> String{
         switch self {
         case .null:
@@ -476,12 +465,18 @@ extension JSON{
             return "{\n\("\t".repeat(deep+1))\(result)\n\("\t".repeat(deep))}"
         }
     }
-    public var rawString: String{ toString() }
-    public var rawData:Data?{ self.rawString.data(using: .utf8) }
-}
-extension JSON:CustomStringConvertible,CustomDebugStringConvertible{
-    public var description: String{ toString(0,strip: false) }
-    public var debugDescription: String{ toString(0,strip: false) }
+    public var description: String{
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
+        if let data = try? encoder.encode(self),
+           let str = String(data: data, encoding: .utf8) {
+            return str
+        }
+        return "[ERROR] JSON encode failed"
+    }
+    public var debugDescription: String{
+        toString(0,strip: false)
+    }
 }
 // MARK: - JSON: Codable
 extension JSON: Codable {
@@ -529,8 +524,7 @@ extension JSON: Codable {
         case .bool(let bool):
             try container.encode(bool)
         case .number(let number):
-            let type = NSNumber.CType(number)
-            switch  type{
+            switch  number.octype{
             case .double,.float:
                 try container.encode(number.doubleValue)
             case .uint64:
@@ -545,5 +539,40 @@ extension JSON: Codable {
         case .object(let dic):
             try container.encode(dic)
         }
+    }
+}
+extension NSNumber{
+    // gen objc type
+    public var octype:OCType{ OCType(self) }
+    /// is Bool or not
+    public var isBool:Bool{
+        return octype == .bool && (int8Value == 0) || (int8Value == 1)//OCType.bool == OCType.int8
+    }
+    // double or float
+    public var isDouble:Bool{
+        switch octype {
+        case .float,.double:
+            return true
+        default:
+            return false
+        }
+    }
+    /// enum some objc type of number
+    public struct OCType:RawRepresentable,Codable,Equatable,Hashable{
+        public var rawValue: CChar
+        public init(rawValue: CChar) {
+            self.rawValue = rawValue
+        }
+        public init(_ number:NSNumber) {
+            self.init(rawValue: number.objCType.pointee)
+        }
+        public static let bool:Self = OCType(rawValue: NSNumber(value:true).objCType.pointee)
+        public static let int8:Self = OCType(rawValue: NSNumber(value:Int8.max).objCType.pointee)
+        public static let int16:Self = OCType(rawValue: NSNumber(value:Int16.max).objCType.pointee)
+        public static let int32:Self = OCType(rawValue: NSNumber(value:Int32.max).objCType.pointee)
+        public static let int64:Self = OCType(rawValue: NSNumber(value:Int64.max).objCType.pointee)
+        public static let uint64:Self = OCType(rawValue: NSNumber(value:UInt64.max).objCType.pointee)
+        public static let float:Self = OCType(rawValue: NSNumber(value:Float(0)).objCType.pointee)
+        public static let double:Self = OCType(rawValue: NSNumber(value:Double(0)).objCType.pointee)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Protected.swift
 //  
 //
 //  Created by supertext on 6/7/21.
@@ -45,7 +45,7 @@ final class UnfairLock: Lock {
 /// A thread-safe wrapper around a value.
 @propertyWrapper
 @dynamicMemberLookup
-final class Sync<T> {
+final class Protected<T> {
     private let lock = UnfairLock()
     private var value: T
     init(_ value: T) {
@@ -55,7 +55,7 @@ final class Sync<T> {
         get { lock.around { value } }
         set { lock.around { value = newValue } }
     }
-    var projectedValue: Sync<T> { self }
+    var projectedValue: Protected<T> { self }
 
     init(wrappedValue: T) {
         value = wrappedValue
@@ -71,5 +71,43 @@ final class Sync<T> {
     subscript<Property>(dynamicMember keyPath: WritableKeyPath<T, Property>) -> Property {
         get { lock.around { value[keyPath: keyPath] } }
         set { lock.around { value[keyPath: keyPath] = newValue } }
+    }
+}
+extension Protected where T: RangeReplaceableCollection {
+    /// Adds a new element to the end of this protected collection.
+    ///
+    /// - Parameter newElement: The `Element` to append.
+    func append(_ newElement: T.Element) {
+        write { (ward: inout T) in
+            ward.append(newElement)
+        }
+    }
+
+    /// Adds the elements of a sequence to the end of this protected collection.
+    ///
+    /// - Parameter newElements: The `Sequence` to append.
+    func append<S: Sequence>(contentsOf newElements: S) where S.Element == T.Element {
+        write { (ward: inout T) in
+            ward.append(contentsOf: newElements)
+        }
+    }
+
+    /// Add the elements of a collection to the end of the protected collection.
+    ///
+    /// - Parameter newElements: The `Collection` to append.
+    func append<C: Collection>(contentsOf newElements: C) where C.Element == T.Element {
+        write { (ward: inout T) in
+            ward.append(contentsOf: newElements)
+        }
+    }
+}
+extension Protected where T == Data? {
+    /// Adds the contents of a `Data` value to the end of the protected `Data`.
+    ///
+    /// - Parameter data: The `Data` to be appended.
+    func append(_ data: Data) {
+        write { (ward: inout T) in
+            ward?.append(data)
+        }
     }
 }

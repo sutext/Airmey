@@ -25,7 +25,7 @@ open class AMNetwork {
         }
     }
     private lazy var session:Session = {
-        let manager = Session(configuration: self.sessionConfig, serverTrustManager: nil)
+        var manager = Session(configuration: self.sessionConfig, serverTrustManager: nil)
         return manager
     }()
     public init(baseURL:String) {

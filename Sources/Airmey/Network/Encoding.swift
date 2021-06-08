@@ -32,7 +32,7 @@ extension Network{
             guard let params = params else {
                 return urlRequest
             }
-            guard let data = try? Foundation.JSONEncoder().encode(params)  else {
+            guard let data = JSON(params).rawData  else {
                 return nil
             }
             urlRequest.httpBody = data
@@ -193,7 +193,7 @@ extension Network{
             case .string(let string):
                 components.append((escape(key), escape("\(string)")))
             case .number(let number):
-                if NSNumber.CType(number) == .bool {
+                if number.isBool {
                     components.append((escape(key), escape(boolEncoding.encode(value: number.boolValue))))
                 } else {
                     components.append((escape(key), escape("\(number)")))

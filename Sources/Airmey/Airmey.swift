@@ -206,6 +206,8 @@ public extension UIColor{
         UIColor(rgb,alpha: alpha)
     }
 }
+
+
 public typealias AMBlock = ()->Void
 public typealias ResultBlock<D> = (Result<D,Error>)->Void
 extension Result{
