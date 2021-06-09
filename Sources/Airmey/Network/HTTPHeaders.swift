@@ -1,14 +1,14 @@
 ///
-//  Headers.swift
+//  HTTPHeaders.swift
 //  Airmey
 //
-//  Created by supertext on 2020/6/24.
-//  Copyright © 2020年 airmey. All rights reserved.
+//  Created by supertext on 2021/6/09.
+//  Copyright © 2021年 airmey. All rights reserved.
 //
 
 import Foundation
 
-public struct Headers {
+public struct HTTPHeaders {
     public enum Field:String {
         case accept = "Accept"
         case acceptCharset = "Accept-Charset"
@@ -23,17 +23,20 @@ public struct Headers {
     public init(_ values:[String:String] = [:]) {
         self.values = values
     }
+    public mutating func merge(_ other:Self){
+        self.merge(other.values)
+    }
+    public mutating func merge(_ other:[String:String]){
+        for item in other {
+            self[item.key] = item.value
+        }
+    }
     public mutating func authorization(basic username:String,password:String){
         let credential = Data("\(username):\(password)".utf8).base64EncodedString()
         self[.authorization] = "Basic \(credential)"
     }
     public mutating func authorization(bearer token:String){
         self[.authorization] = "Bearer \(token)"
-    }
-    public mutating func merge(_ other:Headers){
-        for item in other.values {
-            self[item.key] = item.value
-        }
     }
     public subscript(_ name: String) -> String? {
         get { values[name] }
@@ -55,7 +58,7 @@ public struct Headers {
             }
         }
     }
-    public static var `default`:Headers = [
+    public static var `default`:HTTPHeaders = [
         .userAgent:defaultUserAgent,
         .acceptEncoding:defaultAcceptEncoding,
         .acceptLanguage:defaultAcceptLanguage
@@ -96,7 +99,7 @@ public struct Headers {
         return  "\(executable)/\(appVersion) (\(bundle); build:\(appBuild); \(osNameVersion)) \(alamofireVersion)"
     }()
 }
-extension Headers:ExpressibleByDictionaryLiteral{
+extension HTTPHeaders:ExpressibleByDictionaryLiteral{
     public init(dictionaryLiteral elements: (Field, String)...) {
         self.values = elements.reduce(into: [:]){$0[$1.0.rawValue]=$1.1}
     }

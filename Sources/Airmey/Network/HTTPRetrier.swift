@@ -1,28 +1,34 @@
 //
-//  Retrier.swift
+//  HTTPRetrier.swift
 //  Airmey
 //
-//  Created by supertext on 2020/6/24.
-//  Copyright © 2020年 airmey. All rights reserved.
+//  Created by supertext on 2021/6/09.
+//  Copyright © 2021年 airmey. All rights reserved.
 //
 
 import Foundation
 
 /// A retry policy that retries requests using an exponential backoff for allowed HTTP methods and HTTP status codes
 /// as well as certain types of networking errors.
-open class Retrier {
+public class HTTPRetrier {
+    /// A retry policy that automatically retries idempotent requests for network connection lost errors. For more
+    /// information about retrying network connection lost errors, please refer to Apple's
+    /// [technical document](https://developer.apple.com/library/content/qa/qa1941/_index.html).
+    public static var connectionLost:HTTPRetrier {
+        .init(statusCodes:[],urlErrorCodes: [.networkConnectionLost])
+    }
     /// The default retry limit for retry policies.
-    public static let defaultRetryLimit: UInt = 2
+    public static let defaultLimit: UInt = 2
 
     /// The default exponential backoff base for retry policies (must be a minimum of 2).
-    public static let defaultExponentialBackoffBase: UInt = 2
+    public static let defualtBackoffBase: UInt = 2
 
     /// The default exponential backoff scale for retry policies.
-    public static let defaultExponentialBackoffScale: Double = 0.5
+    public static let defaultBackoffScale: Double = 0.5
 
     /// The default HTTP methods to retry.
     /// See [RFC 2616 - Section 9.1.2](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) for more information.
-    public static let defaultRetryableHTTPMethods: Set<Network.Method> = [.delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
+    public static let defaultMethods: Set<HTTPMethod> = [.delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
                                                                       .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
                                                                       .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
                                                                       .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
@@ -32,7 +38,7 @@ open class Retrier {
 
     /// The default HTTP status codes to retry.
     /// See [RFC 2616 - Section 10](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10) for more information.
-    public static let defaultRetryableHTTPStatusCodes: Set<Int> = [408, // [Request Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.9)
+    public static let defaultStatusCodes: Set<Int> = [408, // [Request Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.9)
                                                                    500, // [Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1)
                                                                    502, // [Bad Gateway](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.3)
                                                                    503, // [Service Unavailable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
@@ -40,7 +46,7 @@ open class Retrier {
     ]
 
     /// The default URL error codes to retry.
-    public static let defaultRetryableURLErrorCodes: Set<URLError.Code> = [// [Security] App Transport Security disallowed a connection because there is no secure network connection.
+    public static let defaultURLErrorCodes: Set<URLError.Code> = [// [Security] App Transport Security disallowed a connection because there is no secure network connection.
         //   - [Disabled] ATS settings do not change at runtime.
         // .appTransportSecurityRequiresSecureConnection,
 
@@ -242,116 +248,80 @@ open class Retrier {
         //   - [Disabled] The server is unlikely to provide data during the retry window.
         // .zeroByteResource,
     ]
-
     /// The total number of times the request is allowed to be retried.
-    public let retryLimit: UInt
+    public private(set) var count: UInt = 0
+    /// The total number of times the request is allowed to be retried.
+    public let limit: UInt
 
     /// The base of the exponential backoff policy (should always be greater than or equal to 2).
-    public let exponentialBackoffBase: UInt
+    public let backoffBase: UInt
 
     /// The scale of the exponential backoff.
-    public let exponentialBackoffScale: Double
+    public let backoffScale: Double
 
     /// The HTTP methods that are allowed to be retried.
-    public let retryableHTTPMethods: Set<Network.Method>
+    public let methods: Set<HTTPMethod>
 
     /// The HTTP status codes that are automatically retried by the policy.
-    public let retryableHTTPStatusCodes: Set<Int>
+    public let statusCodes: Set<Int>
 
     /// The URL error codes that are automatically retried by the policy.
-    public let retryableURLErrorCodes: Set<URLError.Code>
+    public let errorCodes: Set<URLError.Code>
 
-    /// Creates an `ExponentialBackoffRetryPolicy` from the specified parameters.
+    /// Creates an `Retrier` from the specified parameters.
     ///
     /// - Parameters:
-    ///   - retryLimit:               The total number of times the request is allowed to be retried. `2` by default.
-    ///   - exponentialBackoffBase:   The base of the exponential backoff policy. `2` by default.
-    ///   - exponentialBackoffScale:  The scale of the exponential backoff. `0.5` by default.
-    ///   - retryableHTTPMethods:     The HTTP methods that are allowed to be retried.
-    ///                               `RetryPolicy.defaultRetryableHTTPMethods` by default.
-    ///   - retryableHTTPStatusCodes: The HTTP status codes that are automatically retried by the policy.
-    ///                               `RetryPolicy.defaultRetryableHTTPStatusCodes` by default.
-    ///   - retryableURLErrorCodes:   The URL error codes that are automatically retried by the policy.
+    ///   - limit:               The total number of times the request is allowed to be retried. `2` by default.
+    ///   - backoffBase:   The base of the exponential backoff policy. `2` by default.
+    ///   - backoffScale:  The scale of the exponential backoff. `0.5` by default.
+    ///   - methods:     The HTTP methods that are allowed to be retried.`Retryer.methods` by default.
+    ///   - statusCodes: The HTTP status codes that are automatically retried by the policy. `Retryer.statusCodes` by default.
+    ///   - urlErrorCodes:   The URL error codes that are automatically retried by the policy.
     ///                               `RetryPolicy.defaultRetryableURLErrorCodes` by default.
-    public init(retryLimit: UInt = Retrier.defaultRetryLimit,
-                exponentialBackoffBase: UInt = Retrier.defaultExponentialBackoffBase,
-                exponentialBackoffScale: Double = Retrier.defaultExponentialBackoffScale,
-                retryableHTTPMethods: Set<Network.Method> = Retrier.defaultRetryableHTTPMethods,
-                retryableHTTPStatusCodes: Set<Int> = Retrier.defaultRetryableHTTPStatusCodes,
-                retryableURLErrorCodes: Set<URLError.Code> = Retrier.defaultRetryableURLErrorCodes) {
-        precondition(exponentialBackoffBase >= 2, "The `exponentialBackoffBase` must be a minimum of 2.")
-
-        self.retryLimit = retryLimit
-        self.exponentialBackoffBase = exponentialBackoffBase
-        self.exponentialBackoffScale = exponentialBackoffScale
-        self.retryableHTTPMethods = retryableHTTPMethods
-        self.retryableHTTPStatusCodes = retryableHTTPStatusCodes
-        self.retryableURLErrorCodes = retryableURLErrorCodes
+    public init(limit: UInt = HTTPRetrier.defaultLimit,
+                backoffBase: UInt = HTTPRetrier.defualtBackoffBase,
+                backoffScale: Double = HTTPRetrier.defaultBackoffScale,
+                methods: Set<HTTPMethod> = HTTPRetrier.defaultMethods,
+                statusCodes: Set<Int> = HTTPRetrier.defaultStatusCodes,
+                urlErrorCodes: Set<URLError.Code> = HTTPRetrier.defaultURLErrorCodes) {
+        precondition(backoffBase >= 2, "The `backoffBase` must be a minimum of 2.")
+        self.limit = limit
+        self.backoffBase = backoffBase
+        self.backoffScale = backoffScale
+        self.methods = methods
+        self.statusCodes = statusCodes
+        self.errorCodes = urlErrorCodes
     }
-
-//    open func retry(_ request: Request,
-//                    for session: Session,
-//                    dueTo error: Error,
-//                    completion: @escaping (RetryResult) -> Void) {
-//        if request.retryCount < retryLimit, shouldRetry(request: request, dueTo: error) {
-//            completion(.retryWithDelay(pow(Double(exponentialBackoffBase), Double(request.retryCount)) * exponentialBackoffScale))
-//        } else {
-//            completion(.doNotRetry)
-//        }
-//    }
-
     /// Determines whether or not to retry the provided `Request`.
     ///
     /// - Parameters:
     ///     - request: `Request` that failed due to the provided `Error`.
     ///     - error:   `Error` encountered while executing the `Request`.
     ///
-    /// - Returns:     `Bool` determining whether or not to retry the `Request`.
-    func shouldRetry(request: Request, dueTo error: Error) -> Bool {
+    /// - Returns:     `Result` determining whether or not to retry the `Request`.
+    func doRetry(_ request: Request, when error: Error) -> Result {
+        guard limit > count else {
+            return .not
+        }
         guard let method = request.method,
-              retryableHTTPMethods.contains(method) else {
-            return false
+              methods.contains(method) else {
+            return .not
         }
-
-        if let statusCode = request.statusCode, retryableHTTPStatusCodes.contains(statusCode) {
-            return true
-        } else {
-            let errorCode = (error as? URLError)?.code
-//            let afErrorCode = (error.asAFError?.underlyingError as? URLError)?.code
-            guard let code = errorCode else { return false }
-            
-            return retryableURLErrorCodes.contains(code)
+        if let code = request.statusCode,statusCodes.contains(code) {
+            self.count += 1
+            return .delay(pow(Double(backoffBase), Double(count))*backoffScale)
         }
+        if let code = (error as? URLError)?.code,errorCodes.contains(code) {
+            self.count += 1
+            return .delay(pow(Double(backoffBase), Double(count))*backoffScale)
+        }
+        return .not
     }
 }
-
-// MARK: -
-
-/// A retry policy that automatically retries idempotent requests for network connection lost errors. For more
-/// information about retrying network connection lost errors, please refer to Apple's
-/// [technical document](https://developer.apple.com/library/content/qa/qa1941/_index.html).
-open class ConnectionLostRetryPolicy: Retrier {
-    /// Creates a `ConnectionLostRetryPolicy` instance from the specified parameters.
-    ///
-    /// - Parameters:
-    ///   - retryLimit:              The total number of times the request is allowed to be retried.
-    ///                              `RetryPolicy.defaultRetryLimit` by default.
-    ///   - exponentialBackoffBase:  The base of the exponential backoff policy.
-    ///                              `RetryPolicy.defaultExponentialBackoffBase` by default.
-    ///   - exponentialBackoffScale: The scale of the exponential backoff.
-    ///                              `RetryPolicy.defaultExponentialBackoffScale` by default.
-    ///   - retryableHTTPMethods:    The idempotent http methods to retry.
-    ///                              `RetryPolicy.defaultRetryableHTTPMethods` by default.
-    public init(retryLimit: UInt = Retrier.defaultRetryLimit,
-                exponentialBackoffBase: UInt = Retrier.defaultExponentialBackoffBase,
-                exponentialBackoffScale: Double = Retrier.defaultExponentialBackoffScale,
-                retryableHTTPMethods: Set<Network.Method> = Retrier.defaultRetryableHTTPMethods) {
-        super.init(retryLimit: retryLimit,
-                   exponentialBackoffBase: exponentialBackoffBase,
-                   exponentialBackoffScale: exponentialBackoffScale,
-                   retryableHTTPMethods: retryableHTTPMethods,
-                   retryableHTTPStatusCodes: [],
-                   retryableURLErrorCodes: [.networkConnectionLost])
+extension HTTPRetrier{
+    public enum Result{
+        case not
+        case now
+        case delay(TimeInterval)
     }
 }
-

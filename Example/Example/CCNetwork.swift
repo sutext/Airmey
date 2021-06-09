@@ -28,7 +28,7 @@ public class CCNetwork: AMNetwork {
     fileprivate init(){
         super.init(baseURL: BaseURL.api.rawValue)
     }
-    public override var method: AMNetwork.Method{
+    public override var method: HTTPMethod{
         .post
     }
     public override var headers: [String : String]{
@@ -48,8 +48,12 @@ public class CCNetwork: AMNetwork {
         return result
     }
     @discardableResult
-    func request(_ req: CCRequest, completion: ((AMResponse<JSON>) -> Void)? = nil) -> AMNetwork.Task? {
-        return self.request(req.path, params: req.params, options: req.options, completion: completion)
+    func request(_ req: CCRequest, completion: ((Response<JSON>) -> Void)? = nil) -> Request? {
+        return self.request(req.path, params: req.params, options: req.options) { resp in
+            DispatchQueue.main.async {
+                completion?(resp)
+            }
+        }
     }
 }
 extension CCNetwork{
@@ -97,8 +101,8 @@ extension CCNetwork.BaseURL{
 }
 extension AMNetwork.Options{
     public static func post(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
-        .init(.post,base: base.url) { old in
-            return old.tryMap {
+        .init(.post,baseURL: base.url) { old in
+            return old.map {
                 let json = JSON($0)
                 guard case .api = base else{
                     return json
@@ -115,8 +119,8 @@ extension AMNetwork.Options{
         }
     }
     public static func get(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
-        .init(.get,base: base.url) { old in
-            return old.tryMap {
+        .init(.get,baseURL: base.url) { old in
+            return old.map {
                 let json = JSON($0)
                 guard case .api = base else{
                     return json
@@ -141,7 +145,7 @@ extension CCNetwork{
 }
 struct CCRequest :ExpressibleByStringLiteral{
     var path: String
-    var params: [String:Any]?
+    var params: HTTPParams?
     var options: AMNetwork.Options?
     init(stringLiteral value: StringLiteralType) {
         self.path = value
@@ -150,7 +154,7 @@ struct CCRequest :ExpressibleByStringLiteral{
 extension CCRequest{
     static func login(_ token:String,type:String)->Self{
         var req:CCRequest = "account/thirdPartyLogin"
-        req.params = ["type":type,"credential":token]
+        req.params = ["type":JSON(type),"credential":JSON(token)]
         req.options = .post(.api)
         return req
     }

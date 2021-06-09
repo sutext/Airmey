@@ -31,7 +31,7 @@ class TestJsonController: UIViewController {
         print(NSNumber.OCType.uint64)
         print(NSNumber.OCType.float)
         print(NSNumber.OCType.double)
-        var json:JSON = JSON.parse("{\"int8\":1.844674407370955e+20}")
+        var json:JSON = (try? JSON.parse("{\"int8\":1.844674407370955e+20}")) ?? nil
         json["bool"] = true
         json["int16"] = JSON(Int16.max)
         json["int32"] = JSON(Int32.max)

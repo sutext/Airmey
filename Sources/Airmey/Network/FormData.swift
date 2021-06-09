@@ -2,17 +2,12 @@
 //  FormData.swift
 //  Airmey
 //
-//  Created by supertext on 2020/6/24.
-//  Copyright © 2020年 airmey. All rights reserved.
+//  Created by supertext on 2021/6/09.
+//  Copyright © 2021年 airmey. All rights reserved.
 //
 
 import Foundation
-
-#if os(iOS) || os(watchOS) || os(tvOS)
 import MobileCoreServices
-#elseif os(macOS)
-import CoreServices
-#endif
 
 /// Constructs `multipart/form-data` for uploads within an HTTP or HTTPS body. There are currently two ways to encode
 /// multipart form data. The first way is to encode the data directly in memory. This is very efficient, but can lead
@@ -62,13 +57,13 @@ open class FormData {
     }
 
     class BodyPart {
-        let headers: Headers
+        let headers: HTTPHeaders
         let bodyStream: InputStream
         let bodyContentLength: UInt64
         var hasInitialBoundary = false
         var hasFinalBoundary = false
 
-        init(headers: Headers, bodyStream: InputStream, bodyContentLength: UInt64) {
+        init(headers: HTTPHeaders, bodyStream: InputStream, bodyContentLength: UInt64) {
             self.headers = headers
             self.bodyStream = bodyStream
             self.bodyContentLength = bodyContentLength
@@ -286,7 +281,7 @@ open class FormData {
     ///   - stream:  `InputStream` to encode into the instance.
     ///   - length:  Length, in bytes, of the stream.
     ///   - headers: `Headers` for the body part.
-    public func append(_ stream: InputStream, withLength length: UInt64, headers: Headers) {
+    public func append(_ stream: InputStream, withLength length: UInt64, headers: HTTPHeaders) {
         let bodyPart = BodyPart(headers: headers, bodyStream: stream, bodyContentLength: length)
         bodyParts.append(bodyPart)
     }
@@ -502,11 +497,11 @@ open class FormData {
 
     // MARK: - Private - Content Headers
 
-    private func contentHeaders(withName name: String, fileName: String? = nil, mimeType: String? = nil) -> Headers {
+    private func contentHeaders(withName name: String, fileName: String? = nil, mimeType: String? = nil) -> HTTPHeaders {
         var disposition = "form-data; name=\"\(name)\""
         if let fileName = fileName { disposition += "; filename=\"\(fileName)\"" }
 
-        var headers: Headers = [.contentDisposition:disposition]
+        var headers: HTTPHeaders = [.contentDisposition:disposition]
         if let mimeType = mimeType {
             headers[.contentType] = mimeType
         }

@@ -1,5 +1,5 @@
 //
-//  AMJson.swift
+//  JSON.swift
 //  Airmey
 //
 //  Created by supertext on 2020/1/15.
@@ -16,17 +16,12 @@ public enum JSON {
     case object([String:JSON])
 }
 public extension JSON{
-    static func parse(_ string:String)->JSON{
-        guard let data = string.data(using: .utf8) else {
-            return .null
-        }
-        return JSON.parse(data)
+    static func parse(_ string:String)throws->JSON{
+        return try JSON.parse(Data(string.utf8))
     }
-    static func parse(_ data:Data)->JSON{
-        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
-            return .null
-        }
-        return JSON(json)
+    static func parse(_ data:Data)throws ->JSON{
+        let obj = try JSONSerialization.jsonObject(with: data, options: [])
+        return JSON(obj)
     }
     init(_ json:Any?=nil){
         guard let json = json else {
@@ -546,7 +541,7 @@ extension NSNumber{
     public var octype:OCType{ OCType(self) }
     /// is Bool or not
     public var isBool:Bool{
-        return octype == .bool && (int8Value == 0) || (int8Value == 1)//OCType.bool == OCType.int8
+        return octype == .bool && (int8Value == 0 || int8Value == 1)//OCType.bool == OCType.int8
     }
     // double or float
     public var isDouble:Bool{

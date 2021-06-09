@@ -1,8 +1,9 @@
 //
-//  File.swift
-//  
+//  Response.swift
+//  Airmey
 //
-//  Created by supertext on 2021/6/6.
+//  Created by supertext on 2021/6/09.
+//  Copyright © 2021年 airmey. All rights reserved.
 //
 
 import Foundation
@@ -11,6 +12,7 @@ public struct Response<M>{
     public let result:Result<M,Error>
     public let request: URLRequest?
     public let response: HTTPURLResponse?
+    public let metrics: URLSessionTaskMetrics?
     public var value:M?{ result.value }
     public var error:Error?{ result.error }
     public var statusCode:Int?{ response?.statusCode }
@@ -18,15 +20,17 @@ public struct Response<M>{
         data:Data? = nil,
         result:Result<M,Error>,
         request:URLRequest? = nil,
+        metrics:URLSessionTaskMetrics?=nil,
         response:URLResponse? = nil) {
         self.data = data
         self.result = result
-        self.response = response as? HTTPURLResponse
+        self.metrics = metrics
         self.request = request
+        self.response = response as? HTTPURLResponse
     }
-    public lazy var headers:Headers? = {
+    public lazy var headers:HTTPHeaders? = {
         if let values = response?.allHeaderFields as? [String:String] {
-            return Headers(values)
+            return HTTPHeaders(values)
         }
         return nil
     }()
@@ -54,9 +58,11 @@ extension Response:CustomStringConvertible, CustomDebugStringConvertible{
         guard let urlRequest = request else { return "[Request]: None\n[Result]: \(result)" }
         let requestDescription = "[Request]:\(urlRequest.debugDescription)"
         let responseDescription = "[Response]: \(response==nil ? "None" :  response!.debugDescription)"
+        let networkDuration = metrics.map { "\($0.taskInterval.duration)s" } ?? "None"
         return """
         \(requestDescription)
         \(responseDescription)
+        [Network Duration]: \(networkDuration)
         [Result]: \(result)
         """
     }

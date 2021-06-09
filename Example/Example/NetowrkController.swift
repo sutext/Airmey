@@ -39,9 +39,9 @@ class NetowrkController: UIViewController {
         let token = "EAADvOD7Q7dQBAHrw4EKbpT1prranKTHz2Sl1TxAmNTRhHXdugZCh0JNRhrbeMbufxP0ONysuUMOxLOdZADO6LYOEnoaQf1EhZBJBWwS6pGjRPk2yCE3tSiOK4rJvfVSm6QZA8M4h7n5hlJgikUZCmZCBiUbq1rvmPBeHUZABU6qDu7m6VfhdLYhEIyUY3ferQ3Ts46bHl7afHcfLAyfZBphWPiFdDR7DC9l0miYFGmszXAZDZD"
         net.request(.login(token,type: type.rawValue)){
             pop.idle()
+            debugPrint($0)
             switch $0.result{
             case .success(let info):
-                debugPrint(info)
                 pop.remind("login succeed \(info["token"].stringValue)")
             case .failure(let err):
                 pop.remind("loing error:\(err)")

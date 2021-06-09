@@ -1,29 +1,29 @@
 ///
-//  Encoding.swift
+//  HTTPEncoder.swift
 //  Airmey
 //
-//  Created by supertext on 2020/6/24.
-//  Copyright © 2020年 airmey. All rights reserved.
+//  Created by supertext on 2021/6/09.
+//  Copyright © 2021年 airmey. All rights reserved.
 //
 
 import Foundation
 
-public protocol RequestEncoder{
+public protocol HTTPEncoder{
     func encode(
         _ url:URL,
-        method:Network.Method,
-        params:Network.Params?,
-        headers:Headers,
+        method:HTTPMethod,
+        params:HTTPParams?,
+        headers:HTTPHeaders,
         timeout:TimeInterval) -> URLRequest?
 }
-extension Network{
-    public struct JSONEncoder:RequestEncoder{
+extension HTTP{
+    public struct JSONEncoder:HTTPEncoder{
         public init(){}
         public func encode(
             _ url: URL,
-            method: Network.Method,
-            params: Network.Params?,
-            headers:Headers,
+            method: HTTPMethod,
+            params: HTTPParams?,
+            headers:HTTPHeaders,
             timeout: TimeInterval)  -> URLRequest?{
             var urlRequest = URLRequest(url:url , cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
             urlRequest.allHTTPHeaderFields = headers.values
@@ -55,7 +55,7 @@ extension Network{
     ///
     /// `BoolEncoding` can be used to configure how boolean values are encoded. The default behavior is to encode
     /// `true` as 1 and `false` as 0.
-    public struct URLEncoder {
+    public struct URLEncoder:HTTPEncoder {
         // MARK: Helper Types
 
         /// Defines whether the url-encoded query string is applied to the existing query string or HTTP body of the
@@ -69,7 +69,7 @@ extension Network{
             /// Sets encoded query string result as the HTTP body of the URL request.
             case httpBody
 
-            func encodesParametersInURL(for method: Method) -> Bool {
+            func encodesParametersInURL(for method: HTTPMethod) -> Bool {
                 switch self {
                 case .methodDependent: return [.get, .head, .delete].contains(method)
                 case .queryString: return true
@@ -153,14 +153,14 @@ extension Network{
         // MARK: Encoding
         public func encode(
             _ url:URL,
-            method:Network.Method,
-            params:Network.Params?,
-            headers:Headers,
+            method:HTTPMethod,
+            params:HTTPParams?,
+            headers:HTTPHeaders,
             timeout:TimeInterval)-> URLRequest? {
             var urlRequest = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
             urlRequest.httpMethod = method.rawValue
             urlRequest.allHTTPHeaderFields = headers.values
-            guard let params = params else {
+            guard let params = params?.mapValues(JSON.init) else {
                 return urlRequest
             }
             if destination.encodesParametersInURL(for: method) {
