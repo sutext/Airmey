@@ -7,7 +7,6 @@
 //
 
 import Foundation
-public enum HTTP{}
 
 public typealias HTTPParams = [String:Any]
 

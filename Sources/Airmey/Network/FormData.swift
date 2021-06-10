@@ -72,8 +72,9 @@ open class FormData {
 
     // MARK: - Properties
 
-    /// Default memory threshold used when encoding `MultipartFormData`, in bytes.
-    public static let encodingMemoryThreshold: UInt64 = 10_000_000
+    /// memory threshold used when encoding `FormData`, in bytes.
+    /// if out fo memory use temporary file
+    public let memoryLimit: UInt64
 
     /// The `Content-Type` header value containing the boundary used to generate the `multipart/form-data`.
     open lazy var contentType: String = "multipart/form-data; boundary=\(self.boundary)"
@@ -97,9 +98,10 @@ open class FormData {
     /// - Parameters:
     ///   - fileManager: `FileManager` to use for file operations, if needed.
     ///   - boundary: Boundary `String` used to separate body parts.
-    public init(fileManager: FileManager = .default, boundary: String? = nil) {
+    public init(fileManager: FileManager = .default, boundary: String? = nil,memoryLimit:UInt64 = 10_000_000) {
         self.fileManager = fileManager
         self.boundary = boundary ?? BoundaryGenerator.randomBoundary()
+        self.memoryLimit = memoryLimit
         bodyParts = []
 
         //
@@ -527,6 +529,30 @@ open class FormData {
     private func setBodyPartError(withReason reason: Error) {
         guard bodyPartError == nil else { return }
         bodyPartError = reason
+    }
+}
+extension FormData{
+    public enum Result{
+        case data(Data)
+        case file(URL)
+    }
+    public func toUpload()throws -> Result {
+        if self.memoryLimit<self.contentLength {
+            let data = try self.encode()
+            return .data(data)
+        }
+        let tempDirectoryURL = fileManager.temporaryDirectory
+        let directoryURL = tempDirectoryURL.appendingPathComponent("org.alamofire.manager/multipart.form.data")
+        let fileName = UUID().uuidString
+        let fileURL = directoryURL.appendingPathComponent(fileName)
+        try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+        do {
+            try self.writeEncodedData(to: fileURL)
+        } catch {
+            try? fileManager.removeItem(at: fileURL)
+            throw error
+        }
+        return .file(fileURL)
     }
 }
 

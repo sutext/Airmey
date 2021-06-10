@@ -33,12 +33,14 @@ open class AMNetwork {
     open var method:HTTPMethod{.get}
     /// global retryer  `nil` by default
     open var retrier:HTTPRetrier?{ nil }
-    /// global request encoder  `HTTP.JSONEncoder()` by default
-    open var encoder:HTTPEncoder{ HTTP.JSONEncoder() }
+    /// global request encoder  `JSONEncoding()` by default
+    open var encoder:HTTPEncoder{ JSNEncoder() }
     /// global http headers `[:]` by default
     open var headers:[String:String]{[:]}
     /// global timeout in secends `60` by default
     open var timeout:TimeInterval{ 60 }
+    /// global default fileManager
+    open var fileManager:FileManager{ .default }
     /// global response verifer @default map directly
     open func verify(_ old:Response<JSON>)->Response<JSON>{
         return old.map{.init($0)}
@@ -70,10 +72,15 @@ open class AMNetwork {
             headers: headers,
             encoder: encoder,
             retrier: retrier,
-            timeout: timeout) {resp in
-            let result = resp.map{try req.convert($0)}
+            timeout: timeout) {res in
+            var resp:Response<R.Model>
+            if let verify = req.options?.verifier{
+                resp = verify(res).map{try req.convert($0)}
+            }else{
+                resp = self.verify(res).map{try req.convert($0)}
+            }
             DispatchQueue.main.async {
-                completion?(result)
+                completion?(resp)
             }
         }
     }
@@ -105,64 +112,91 @@ open class AMNetwork {
             encoder: encoder,
             retrier: retrier,
             timeout: timeout) {res in
+            var resp:Response<JSON>
+            if let verify = options?.verifier{
+                resp = verify(res)
+            }else{
+                resp = self.verify(res)
+            }
             DispatchQueue.main.async {
-                completion?(res)
+                completion?(resp)
             }
         }
     }
-//    @discardableResult
-//    public func upload<R:AMUploadRequest>(_ req:R,completion:((AMResponse<R.Model>)->Void)? = nil)->UploadTask?{
-//        //Assert
-//        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
-//              let url = URL(string:req.path,relativeTo:baseURL) else {
-//            completion?(.init(DataResponse(
-//                                request: nil,
-//                                response: nil,
-//                                data: nil,
-//                                metrics:nil,
-//                                serializationDuration:0 ,
-//                                result: .failure(AFError.invalidURL(url:req.path)))))
-//            return nil
-//        }
-//        var headers = HTTPHeaders(self.headers)
-//        if let h = req.options?.headers {
-//            h.forEach {
-//                headers.add(name: $0.key, value: $0.value)
-//            }
-//        }
-//        //Assert
-//        guard let request = try? URLRequest(url: url, method: .post, headers: headers),
-//              var newreq = try? URLEncoding.queryString.encode(request, with: req.params) else {
-//            completion?(.init(DataResponse(request: nil, response: nil, data: nil,metrics:nil, serializationDuration:0 , result: .failure(AFError.parameterEncodingFailed(reason: .missingURL)))))
-//            return nil
-//        }
-//        newreq.timeoutInterval = req.options?.timeout ?? self.timeout
-//        //create task
-//        let task = self.session.upload(multipartFormData: { (data) in
-//            for object in req.uploads{
-//                data.append(object: object)
-//            }
-//        }, with: newreq)
-//        task.responseJSON(queue: .main) { (resp) in
-//            let amres:AMResponse<Any> = .init(resp.mapError{$0})
-//            var result:AMResponse<R.Model>! = nil
-//            if let verifier = req.options?.verifier{
-//                result = verifier(amres).tryMap{try req.convert($0)}
-//            }else{
-//                result = self.verify(amres).tryMap{try req.convert($0)}
-//            }
-//            if let error = result?.error {
-//                self.oncatch(error)
-//            }
-//            completion?(result)
-//        }
-//        if isDebug{
-//            task.responseJSON {
-//                debugPrint($0)
-//            }
-//        }
-//        return .init(task)
-//    }
+    @discardableResult
+    public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
+        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
+              let url = URL(string:req.path,relativeTo:baseURL) else {
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL)
+            completion?(Response(result: result))
+            return nil;
+        }
+        var headers = HTTPHeaders(self.headers)
+        if let h = req.options?.headers {
+            headers.merge(h)
+        }
+        return self.session.upload(
+            url,
+            form: req.form,
+            params: req.params,
+            headers: headers,
+            fileManager: fileManager) { res in
+            var resp:Response<R.Model>
+            if let verify = req.options?.verifier{
+                resp = verify(res).map{try req.convert($0)}
+            }else{
+                resp = self.verify(res).map{try req.convert($0)}
+            }
+            DispatchQueue.main.async {
+                completion?(resp)
+            }
+        }
+    }
+    @discardableResult
+    public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
+        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
+              let url = URL(string:req.path,relativeTo:baseURL) else {
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL)
+            completion?(Response(result: result))
+            return nil;
+        }
+        var headers = HTTPHeaders(self.headers)
+        if let h = req.options?.headers {
+            headers.merge(h)
+        }
+        return self.session.upload(
+            url,
+            file: req.file,
+            params: req.params,
+            headers: headers,
+            fileManager: fileManager) { res in
+            var resp:Response<R.Model>
+            if let verify = req.options?.verifier{
+                resp = verify(res).map{try req.convert($0)}
+            }else{
+                resp = self.verify(res).map{try req.convert($0)}
+            }
+            DispatchQueue.main.async {
+                completion?(resp)
+            }
+        }
+    }
+    @discardableResult
+    public func download<R:AMDownload>(_ req:R)->Download?{
+        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
+              let url = URL(string:req.path,relativeTo:baseURL) else {
+            return nil;
+        }
+        var headers = HTTPHeaders(self.headers)
+        if let h = req.options?.headers {
+            headers.merge(h)
+        }
+        return self.session.download(url, params: req.params, headers: headers, fileManager: fileManager, transfer: req.transfer)
+    }
+    @discardableResult
+    public func download(resume:Data,transfer:@escaping Download.URLTransfer)->Download?{
+        return self.session.download(resume: resume, fileManager: fileManager, transfer: transfer)
+    }
 }
 
 extension AMNetwork{

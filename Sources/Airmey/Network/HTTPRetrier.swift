@@ -307,6 +307,9 @@ public class HTTPRetrier {
               methods.contains(method) else {
             return .not
         }
+        guard let _ = request.request else {
+            return .not
+        }
         if let code = request.statusCode,statusCodes.contains(code) {
             self.count += 1
             return .delay(pow(Double(backoffBase), Double(count))*backoffScale)
@@ -319,7 +322,7 @@ public class HTTPRetrier {
     }
 }
 extension HTTPRetrier{
-    public enum Result{
+    public enum Result:Equatable{
         case not
         case now
         case delay(TimeInterval)

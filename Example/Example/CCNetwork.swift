@@ -154,7 +154,7 @@ struct CCRequest :ExpressibleByStringLiteral{
 extension CCRequest{
     static func login(_ token:String,type:String)->Self{
         var req:CCRequest = "account/thirdPartyLogin"
-        req.params = ["type":JSON(type),"credential":JSON(token)]
+        req.params = ["type":type,"credential":token]
         req.options = .post(.api)
         return req
     }

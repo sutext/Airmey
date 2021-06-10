@@ -6,7 +6,7 @@
 //  Copyright © 2021年 airmey. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 public protocol AMRequest{
     associatedtype Model
@@ -14,4 +14,17 @@ public protocol AMRequest{
     var params: HTTPParams?{get}
     var options: AMNetwork.Options?{get}
     func convert(_ json:JSON)throws ->Model
+}
+public protocol AMFileUpload:AMRequest{
+    var file:URL{get}
+}
+public protocol AMFormUpload:AMRequest{
+    var form:FormData{get}
+}
+
+public protocol AMDownload{
+    var path: String{get}
+    var params: HTTPParams?{get}
+    var options: AMNetwork.Options?{get}
+    var transfer:Download.URLTransfer{get}
 }
