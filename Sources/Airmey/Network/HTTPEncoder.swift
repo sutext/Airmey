@@ -19,6 +19,8 @@ public protocol HTTPEncoder{
 ///
 /// JSON body encoder.
 ///
+/// - Note JSNEncoder will use URLEncoder.query when method = HTTPMethod.get
+///
 public struct JSNEncoder:HTTPEncoder{
     public init(){}
     public func encode(
@@ -27,7 +29,7 @@ public struct JSNEncoder:HTTPEncoder{
         params: HTTPParams?,
         headers:HTTPHeaders?,
         timeout: TimeInterval) -> Result<URLRequest,Error>{
-        if case .get = method {// use force
+        if case .get = method {
             return URLEncoder.query.encode(url, method: method, params: params, headers: headers, timeout: timeout)
         }
         var urlRequest = URLRequest(url:url , cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
@@ -165,7 +167,7 @@ public struct URLEncoder:HTTPEncoder {
             return .success(urlRequest)
         }
         if destination.needEncodeInURL(for: method) {
-            if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true) {
                 let percentEncodedQuery = (urlComponents.percentEncodedQuery.map { $0 + "&" } ?? "") + query(params)
                 urlComponents.percentEncodedQuery = percentEncodedQuery
                 urlRequest.url = urlComponents.url

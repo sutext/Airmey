@@ -20,8 +20,8 @@ public struct HTTPHeaders {
         case userAgent = "User-Agent"
     }
     public private(set) var values: [String:String] = [:]
-    public init(_ values:[String:String] = [:]) {
-        self.values = values
+    public init(_ values:[String:String]? = nil) {
+        self.values = values ?? [:]
     }
     public mutating func merge(_ other:Self){
         self.merge(other.values)

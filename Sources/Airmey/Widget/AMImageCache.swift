@@ -46,7 +46,7 @@ extension AMImageCache{
             return
         }
         guard let url = URL(string: url) else {
-            finish?(.failure(AMError.network(.invalidURL)))
+            finish?(.failure(AMError.image(.invalidURL)))
             return
         }
         var request = URLRequest(url: url)
@@ -54,7 +54,7 @@ extension AMImageCache{
         request.addValue("image/*", forHTTPHeaderField: "Accept")
         self.downloader.dataTask(with: request) { data, resp, error in
             guard let data = data else{
-                finish?(.failure(error ?? AMError.network(.invalidData)))
+                finish?(.failure(error ?? AMError.image(.invalidData)))
                 return
             }
             guard let image:UIImage = .data(data, scale: scale) else{

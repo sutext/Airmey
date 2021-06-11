@@ -32,7 +32,7 @@ open class AMNetwork {
     /// global http method `.get` by default
     open var method:HTTPMethod{.get}
     /// global retryer  `nil` by default
-    open var retrier:HTTPRetrier?{ nil }
+    open var retrier:Retrier?{ nil }
     /// global request encoder  `JSONEncoding()` by default
     open var encoder:HTTPEncoder{ JSNEncoder() }
     /// global http headers `[:]` by default
@@ -53,7 +53,7 @@ open class AMNetwork {
     public func request<R:AMRequest>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Swift.Error> = .failure(HTTPError.invalidURL)
+            let result:Result<R.Model,Swift.Error> = .failure(HTTPError.invalidURL(req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -80,6 +80,9 @@ open class AMNetwork {
                 resp = self.verify(res).map{try req.convert($0)}
             }
             DispatchQueue.main.async {
+                if let error = resp.error{
+                    self.oncatch(error)
+                }
                 completion?(resp)
             }
         }
@@ -92,7 +95,7 @@ open class AMNetwork {
         completion:((Response<JSON>)->Void)? = nil)->Request?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
-            let result:Result<JSON,Swift.Error> = .failure(HTTPError.invalidURL)
+            let result:Result<JSON,Swift.Error> = .failure(HTTPError.invalidURL(path))
             completion?(.init(result: result))
             return nil;
         }
@@ -119,6 +122,9 @@ open class AMNetwork {
                 resp = self.verify(res)
             }
             DispatchQueue.main.async {
+                if let error = resp.error{
+                    self.oncatch(error)
+                }
                 completion?(resp)
             }
         }
@@ -127,7 +133,7 @@ open class AMNetwork {
     public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL)
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -148,6 +154,9 @@ open class AMNetwork {
                 resp = self.verify(res).map{try req.convert($0)}
             }
             DispatchQueue.main.async {
+                if let error = resp.error{
+                    self.oncatch(error)
+                }
                 completion?(resp)
             }
         }
@@ -156,7 +165,7 @@ open class AMNetwork {
     public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL)
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -177,25 +186,58 @@ open class AMNetwork {
                 resp = self.verify(res).map{try req.convert($0)}
             }
             DispatchQueue.main.async {
+                if let error = resp.error{
+                    self.oncatch(error)
+                }
                 completion?(resp)
             }
         }
     }
     @discardableResult
-    public func download<R:AMDownload>(_ req:R)->Download?{
-        guard let baseURL = req.options?.baseURL ?? self.baseURL ,
-              let url = URL(string:req.path,relativeTo:baseURL) else {
+    public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->Download?{
+        guard let url = URL(string:req.url) else {
             return nil;
         }
-        var headers = HTTPHeaders(self.headers)
-        if let h = req.options?.headers {
-            headers.merge(h)
+        return self.session.download(url, params: req.params, headers: HTTPHeaders(req.headers), fileManager: fileManager,transfer:{
+            req.target(for: $0, response: $1)
+        }) { resp in
+            DispatchQueue.main.async {
+                if let error = resp.error{
+                    self.oncatch(error)
+                }
+                completion?(resp)
+            }
         }
-        return self.session.download(url, params: req.params, headers: headers, fileManager: fileManager, transfer: req.transfer)
     }
     @discardableResult
-    public func download(resume:Data,transfer:@escaping Download.URLTransfer)->Download?{
-        return self.session.download(resume: resume, fileManager: fileManager, transfer: transfer)
+    public func download(
+        _ url:URL,
+        params:HTTPParams?=nil,
+        headers:HTTPHeaders?=nil,
+        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
+        completion:((Response<JSON>)->Void)?=nil)->Download?{
+        var aheaders = HTTPHeaders(self.headers)
+        if let newh = headers {
+            aheaders.merge(newh)
+        }
+        return self.session.download(url, params: params, headers: aheaders, fileManager: fileManager,transfer: transfer) { resp in
+            if let error = resp.error{
+                self.oncatch(error)
+            }
+            completion?(resp)
+        }
+    }
+    @discardableResult
+    public func download(
+        resume:Data,
+        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
+        completion:((Response<JSON>)->Void)?=nil)->Download?{
+        return self.session.download(resume: resume, fileManager: fileManager,transfer: transfer) { resp in
+            if let error = resp.error{
+                self.oncatch(error)
+            }
+            completion?(resp)
+        }
     }
 }
 
@@ -236,7 +278,7 @@ extension AMNetwork{
         /// overwrite the global encoder settings
         public var encoder:HTTPEncoder?
         /// overwrite the global retrier settings
-        public var retrier:HTTPRetrier?
+        public var retrier:Retrier?
         /// merge into global headers
         public var headers:[String:String]?
         /// overwrite global timeout settings
@@ -247,7 +289,7 @@ extension AMNetwork{
             _ method:HTTPMethod?=nil,
             baseURL:URL?=nil,
             encoder:HTTPEncoder?=nil,
-            retrier:HTTPRetrier?=nil,
+            retrier:Retrier?=nil,
             headers:[String:String]?=nil,
             timeout:TimeInterval?=nil,
             verifier:Verifier? = nil) {

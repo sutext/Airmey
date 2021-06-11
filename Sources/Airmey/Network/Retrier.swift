@@ -10,39 +10,35 @@ import Foundation
 
 /// A retry policy that retries requests using an exponential backoff for allowed HTTP methods and HTTP status codes
 /// as well as certain types of networking errors.
-public class HTTPRetrier {
+public class Retrier {
     /// A retry policy that automatically retries idempotent requests for network connection lost errors. For more
     /// information about retrying network connection lost errors, please refer to Apple's
     /// [technical document](https://developer.apple.com/library/content/qa/qa1941/_index.html).
-    public static var connectionLost:HTTPRetrier {
+    public static var connectionLost:Retrier {
         .init(statusCodes:[],urlErrorCodes: [.networkConnectionLost])
     }
     /// The default retry limit for retry policies.
     public static let defaultLimit: UInt = 2
 
-    /// The default exponential backoff base for retry policies (must be a minimum of 2).
-    public static let defualtBackoffBase: UInt = 2
-
-    /// The default exponential backoff scale for retry policies.
-    public static let defaultBackoffScale: Double = 0.5
-
     /// The default HTTP methods to retry.
     /// See [RFC 2616 - Section 9.1.2](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) for more information.
-    public static let defaultMethods: Set<HTTPMethod> = [.delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
-                                                                      .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
-                                                                      .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
-                                                                      .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
-                                                                      .put, // [PUT](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6) - not always idempotent
-                                                                      .trace // [TRACE](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8) - inherently idempotent
+    public static let defaultMethods: Set<HTTPMethod> = [
+        .delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
+        .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
+        .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
+        .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
+        .put, // [PUT](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6) - not always idempotent
+        .trace // [TRACE](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8) - inherently idempotent
     ]
 
     /// The default HTTP status codes to retry.
     /// See [RFC 2616 - Section 10](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10) for more information.
-    public static let defaultStatusCodes: Set<Int> = [408, // [Request Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.9)
-                                                                   500, // [Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1)
-                                                                   502, // [Bad Gateway](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.3)
-                                                                   503, // [Service Unavailable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
-                                                                   504 // [Gateway Timeout](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.5)
+    public static let defaultStatusCodes: Set<Int> = [
+        408, // [Request Timeout]
+        500, // [Internal Server Error]
+        502, // [Bad Gateway]
+        503, // [Service Unavailable]
+        504 // [Gateway Timeout]
     ]
 
     /// The default URL error codes to retry.
@@ -252,79 +248,84 @@ public class HTTPRetrier {
     public private(set) var count: UInt = 0
     /// The total number of times the request is allowed to be retried.
     public let limit: UInt
-
-    /// The base of the exponential backoff policy (should always be greater than or equal to 2).
-    public let backoffBase: UInt
-
-    /// The scale of the exponential backoff.
-    public let backoffScale: Double
-
+    /// The retry delay policy
+    public let policy:Policy
     /// The HTTP methods that are allowed to be retried.
     public let methods: Set<HTTPMethod>
-
     /// The HTTP status codes that are automatically retried by the policy.
     public let statusCodes: Set<Int>
-
     /// The URL error codes that are automatically retried by the policy.
-    public let errorCodes: Set<URLError.Code>
-
+    public let urlErrorCodes: Set<URLError.Code>
     /// Creates an `Retrier` from the specified parameters.
     ///
     /// - Parameters:
-    ///   - limit:               The total number of times the request is allowed to be retried. `2` by default.
-    ///   - backoffBase:   The base of the exponential backoff policy. `2` by default.
-    ///   - backoffScale:  The scale of the exponential backoff. `0.5` by default.
-    ///   - methods:     The HTTP methods that are allowed to be retried.`Retryer.methods` by default.
-    ///   - statusCodes: The HTTP status codes that are automatically retried by the policy. `Retryer.statusCodes` by default.
-    ///   - urlErrorCodes:   The URL error codes that are automatically retried by the policy.
-    ///                               `RetryPolicy.defaultRetryableURLErrorCodes` by default.
-    public init(limit: UInt = HTTPRetrier.defaultLimit,
-                backoffBase: UInt = HTTPRetrier.defualtBackoffBase,
-                backoffScale: Double = HTTPRetrier.defaultBackoffScale,
-                methods: Set<HTTPMethod> = HTTPRetrier.defaultMethods,
-                statusCodes: Set<Int> = HTTPRetrier.defaultStatusCodes,
-                urlErrorCodes: Set<URLError.Code> = HTTPRetrier.defaultURLErrorCodes) {
-        precondition(backoffBase >= 2, "The `backoffBase` must be a minimum of 2.")
+    ///   - limit:        The total number of times the request is allowed to be retried.
+    ///   - methods:      The HTTP methods that are allowed to be retried.
+    ///   - statusCodes:  The HTTP status codes that are automatically retried by the policy
+    ///   - urlErrorCodes:The URL error codes that are automatically retried by the policy.
+    public init(limit: UInt = Retrier.defaultLimit,
+                policy:Policy = .exponential(base: 2, scale: 0.5),
+                methods: Set<HTTPMethod> = Retrier.defaultMethods,
+                statusCodes: Set<Int> = Retrier.defaultStatusCodes,
+                urlErrorCodes: Set<URLError.Code> = Retrier.defaultURLErrorCodes) {
+        switch policy {
+        case .exponential(let base, _):
+            assert(base >= 2, "The `exponential base` must be a minimum of 2.")
+        case .fixedDelay(let delay):
+            assert(delay >= 0, "The `fixedDelay time` must be a minimum of 0.")
+        default:
+            break
+        }
         self.limit = limit
-        self.backoffBase = backoffBase
-        self.backoffScale = backoffScale
+        self.policy = policy
         self.methods = methods
         self.statusCodes = statusCodes
-        self.errorCodes = urlErrorCodes
+        self.urlErrorCodes = urlErrorCodes
     }
     /// Determines whether or not to retry the provided `Request`.
     ///
     /// - Parameters:
     ///     - request: `Request` that failed due to the provided `Error`.
     ///     - error:   `Error` encountered while executing the `Request`.
-    ///
-    /// - Returns:     `Result` determining whether or not to retry the `Request`.
-    func doRetry(_ request: Request, when error: Error) -> Result {
+    /// - Returns: delay timeinterval, if nill means never retry
+    func doRetry(_ request: Request, when error: Error) -> TimeInterval? {
         guard limit > count else {
-            return .not
+            return nil
         }
         guard let method = request.method,
               methods.contains(method) else {
-            return .not
+            return nil
         }
         guard let _ = request.request else {
-            return .not
+            return nil
         }
-        if let code = request.statusCode,statusCodes.contains(code) {
+        if let code = request.statusCode,
+           statusCodes.contains(code) {
             self.count += 1
-            return .delay(pow(Double(backoffBase), Double(count))*backoffScale)
+            return self.policy.delay(at: self.count)
         }
-        if let code = (error as? URLError)?.code,errorCodes.contains(code) {
+        if let code = (error as? URLError)?.code,
+           urlErrorCodes.contains(code) {
             self.count += 1
-            return .delay(pow(Double(backoffBase), Double(count))*backoffScale)
+            return self.policy.delay(at: self.count)
         }
-        return .not
+        return nil
     }
 }
-extension HTTPRetrier{
-    public enum Result:Equatable{
-        case not
-        case now
-        case delay(TimeInterval)
+extension Retrier{
+    public enum Policy:Equatable{
+        case immediately
+        case exponential(base:Int,scale:Double)
+        case fixedDelay(TimeInterval)
+        func delay(at count:UInt) -> TimeInterval {
+            switch self {
+            case .immediately:
+                return 0
+            case .fixedDelay(let time):
+                return time
+            case .exponential(let base, let scale):
+                return pow(Double(base),Double(count))*scale
+            }
+        }
     }
 }

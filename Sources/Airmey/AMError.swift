@@ -8,18 +8,10 @@
 import Foundation
 
 public enum AMError:Error{
-    case network(_ :Network)
     case sqlite(_ :Sqlite)
     case image(_ :Image)
 }
 
-extension AMError{
-    public enum Network{
-        case invalidURL
-        case invalidData
-        case invalidRespone(info:String)
-    }
-}
 extension AMError{
     public enum Sqlite{
         case momdNotFound
@@ -29,6 +21,7 @@ extension AMError{
 }
 extension AMError{
     public enum Image{
+        case invalidURL
         case invalidData
         case system(info:[AnyHashable:Any]?)
     }

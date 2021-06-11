@@ -23,6 +23,20 @@ public extension JSON{
         let obj = try JSONSerialization.jsonObject(with: data, options: [])
         return JSON(obj)
     }
+    init(parse string: String?){
+        guard let string = string,let json = try? JSON.parse(string) else {
+            self = .null
+            return
+        }
+        self = json
+    }
+    init(parse data: Data?){
+        guard let data = data,let json = try? JSON.parse(data) else {
+            self = .null
+            return
+        }
+        self = json
+    }
     init(_ json:Any?=nil){
         guard let json = json else {
             self = .null

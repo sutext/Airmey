@@ -11,6 +11,16 @@ import  Airmey
 
 class NetowrkController: UIViewController {
     let stackView = UIStackView()
+    var progress:Progress? = nil{
+        didSet{
+            
+            if let newval = progress{
+                newval.addObserver(self, forKeyPath: "fractionCompleted", options: [.new], context: nil)
+            }else{
+                oldValue?.removeObserver(self, forKeyPath: "fractionCompleted")
+            }
+        }
+    }
     init() {
         super.init(nibName: nil, bundle: nil)
         self.tabBarItem = UITabBarItem(title: "Network", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
@@ -33,6 +43,40 @@ class NetowrkController: UIViewController {
                 self.doLogin(type as! CCLoginType)
             }
         }
+        self.addTest("上传头像") {[weak self] in
+            self?.doUpload()
+        }
+        self.addTest("下载图片") {
+            self.progress = net.download(DownloadImage("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg"))?.progress
+        }
+        self.addTest("测试GET") {
+            net.request("app/checkPhoneRegistration",params: ["test":"xxx"],options: .get(.api)){
+                debugPrint($0)
+            }
+        }
+        self.addTest("测试异常解析") {
+            net.request("feeds/home-pull",options: .get(.ugc)){
+                debugPrint($0)
+                
+            }
+        }
+    }
+    func doUpload(){
+        guard let image = UIImage(named: "test_avatar") else {
+            return
+        }
+        pop.wait("uploading...")
+        net.request(.headerToken()){
+            guard let token = $0.value?.string else{
+                return
+            }
+            let req = net.upload(UploadAvatar(image,token: token)){
+                pop.idle()
+                debugPrint($0)
+            }
+            self.progress = req?.progress
+        }
+        
     }
     func doLogin(_ type:CCLoginType)  {
         pop.wait("login...")
@@ -42,7 +86,8 @@ class NetowrkController: UIViewController {
             debugPrint($0)
             switch $0.result{
             case .success(let info):
-                pop.remind("login succeed \(info["token"].stringValue)")
+                let token = info["token"].stringValue
+                pop.remind("login succeed \(token)")
             case .failure(let err):
                 pop.remind("loing error:\(err)")
             }
@@ -58,6 +103,9 @@ class NetowrkController: UIViewController {
         imageLabel.onclick = {_ in
             action?()
         }
+    }
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        print(self.progress?.fractionCompleted ?? 0)
     }
 }
 

@@ -10,11 +10,11 @@ import Airmey
 
 let env  = ENV()
 class ENV {
-    var isLogin = false
+    var isLogin = true
     var isProd = false
     var token:String?
     init() {
-        
+        self.token = "MTg5MzMwZjAtMWE1Ni00MGRkLWI1ZjItMjNhMWQxMmIxOWNl"
     }
 }
 public let net = CCNetwork()
@@ -30,6 +30,9 @@ public class CCNetwork: AMNetwork {
     }
     public override var method: HTTPMethod{
         .post
+    }
+    public override var retrier: Retrier?{
+        return Retrier(limit:1,policy:.immediately,methods:[.post],statusCodes: [404])
     }
     public override var headers: [String : String]{
         let device = UIDevice.current
@@ -93,9 +96,9 @@ extension CCNetwork.BaseURL{
     }()
     public static let feed:Self = {
         if env.isProd{
-            return "https://feeds.cc.lerjin.com"
+            return "https://newfeeds.cc.lerjin.com"
         }else{
-            return "https://feeds.ccdev.lerjin.com"
+            return "https://newfeeds.ccdev.lerjin.com"
         }
     }()
 }
@@ -108,7 +111,7 @@ extension AMNetwork.Options{
                     return json
                 }
                 guard let code = json["code"].int,code==1 else {
-                    throw CCNetwork.Error.invalidCode(code: json["code"].int)
+                    throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
                 }
                 let data = json["data"]
                 if case .null = data{
@@ -126,7 +129,7 @@ extension AMNetwork.Options{
                     return json
                 }
                 guard let code = json["code"].int,code==1 else {
-                    throw CCNetwork.Error.invalidCode(code: json["code"].int)
+                    throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
                 }
                 let data = json["data"]
                 if case .null = data{
@@ -151,10 +154,47 @@ struct CCRequest :ExpressibleByStringLiteral{
         self.path = value
     }
 }
+class UploadAvatar: AMFormUpload {
+    var path: String
+    var params: HTTPParams?
+    var options: AMNetwork.Options?
+    var form: FormData
+    func convert(_ json: JSON) throws -> JSON {
+        json
+    }
+    init(_ avatar:UIImage,token:String) {
+        self.path = "file/upload/headpic"
+        self.options = .post(.api)
+        self.form = FormData()
+        self.params = ["token":token,"extension":"jpg"]
+        if let data = avatar.jpegData(compressionQuality: 1){
+            self.form.append(data, withName: "headpic",fileName: "headpic.jpg",mimeType: "image/jpeg")
+        }
+    }
+}
+class DownloadImage: AMDownload {        
+    var url: String
+    var params: HTTPParams?
+    var headers: [String:String]?
+    init(_ url:String) {
+        self.url = url
+    }
+    func target(for tempURL: URL, response: HTTPURLResponse?) -> URL {
+        return URL(fileURLWithPath: "\(AMPhone.cacheDir)/testfile1/\(tempURL.lastPathComponent)")
+    }
+    
+    
+    
+}
 extension CCRequest{
     static func login(_ token:String,type:String)->Self{
         var req:CCRequest = "account/thirdPartyLogin"
         req.params = ["type":type,"credential":token]
+        req.options = .post(.api)
+        return req
+    }
+    static func headerToken()->Self{
+        var req:CCRequest = "file/upload/headpic/token"
         req.options = .post(.api)
         return req
     }

@@ -23,8 +23,8 @@ public protocol AMFormUpload:AMRequest{
 }
 
 public protocol AMDownload{
-    var path: String{get}
+    var url: String{get}
     var params: HTTPParams?{get}
-    var options: AMNetwork.Options?{get}
-    var transfer:Download.URLTransfer{get}
+    var headers: [String:String]?{get}
+    func target(for tempURL:URL,response:HTTPURLResponse?)->URL
 }

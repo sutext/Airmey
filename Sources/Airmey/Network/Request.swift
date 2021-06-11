@@ -7,23 +7,24 @@
 //
 
 import UIKit
+
+/// `Request` is the common superclass of all request types and provides common state  and callback handling.
+/// - Note provides progress interface for any request
 open class Request{
-    typealias Handler = (Response<JSON>)->Void
-    public typealias ONProgress = (Progress) -> Void
+    typealias Completion = (Response<JSON>)->Void
     private(set) var task:URLSessionTask
-    private let handler:Handler?
-    private var progressHandlers:[ONProgress] = []
-    var error:Error?
-    public private(set) var retrier:HTTPRetrier?
     @Protected
     private var mutableData: Data? = nil
-    var metrics:URLSessionTaskMetrics?
+    let completion:Completion?
+    public private(set) var retrier:Retrier?
+    public internal(set) var error:Error?
+    public internal(set) var metrics:URLSessionTaskMetrics?
     init(
         _ task:URLSessionTask,
-        handler:Handler?,
-        retrier:HTTPRetrier?){
+        retrier:Retrier?,
+        completion:Completion?){
         self.task = task
-        self.handler = handler
+        self.completion = completion
         self.retrier  = retrier
     }
     public var method:HTTPMethod? {
@@ -54,14 +55,6 @@ open class Request{
     public func suspend()  {
         task.suspend()
     }
-    public func onProgress(handler:ONProgress?){
-        if let handler = handler {
-            self.progressHandlers.append(handler)
-        }
-    }
-    func updateProgress(){
-        self.progressHandlers.forEach{$0(self.progress)}
-    }
     func append(_ data:Data) {
         if self.data == nil {
             mutableData = data
@@ -69,32 +62,49 @@ open class Request{
             $mutableData.write { $0?.append(data) }
         }
     }
-    func finish(_ error:Error?)->HTTPRetrier.Result {
-        guard task.state == .completed else {
-            fatalError("finis task when task did not completed")
+    func finish(_ error:Error?)->TimeInterval? {
+        guard case .completed = state else {
+            return nil
         }
         self.error = error
-        // success callback directly
-        guard let error = error else{
-            var result:Result<JSON,Error>
-            if let data = data {
-                result = .init{try JSON.parse(data)}
-            }else{
-                result = .success(.null)
-            }
-            let response = Response<JSON>(data: data, result: result, request: task.originalRequest, metrics: metrics,response: task.response)
-            self.handler?(response)
-            return .not
+        if let error = error {
+            return self.retry(when: error)
         }
-        // when some error consider retry
+        guard let code = statusCode,
+              [200,204,205].contains(code) else {
+            let error = HTTPError.status(statusCode, info:.init(parse: data))
+            self.error = error
+            return self.retry(when: error)
+        }
+        var result:Result<JSON,Error>
+        if let data = data {
+            result = .init{try JSON.parse(data)}
+        }else{
+            result = .success(.null)
+        }
+        let response = Response<JSON>(
+            data: data,
+            result: result,
+            request: request,
+            metrics: metrics,
+            response: response)
+        self.completion?(response)
+        return nil
         
-        guard let result = self.retrier?.doRetry(self, when: error),
-              result != .not else {
-            let response = Response<JSON>(data: data, result: .failure(error), request: task.originalRequest, metrics: metrics,response: task.response)
-            self.handler?(response)
-            return .not
+        
+    }
+    private func retry(when error:Error)->TimeInterval?{
+        guard let delay = self.retrier?.doRetry(self, when: error) else {
+            let response = Response<JSON>(
+                data: data,
+                result: .failure(HTTPError.system(error)),
+                request: request,
+                metrics: metrics,
+                response: task.response)
+            self.completion?(response)
+            return nil
         }
-        return result
+        return delay
     }
     func reset(task:URLSessionTask) {
         self.mutableData = nil
@@ -103,15 +113,14 @@ open class Request{
         self.task = task
     }
     func cleanup(){
-        progressHandlers = []
     }
 }
 public class Upload:Request{
     private var fileManager:FileManager
     var cleanupFile:URL?
-    init(_ task: URLSessionTask, handler: Request.Handler?, fileManager: FileManager) {
+    init(_ task: URLSessionTask, fileManager: FileManager,completion:Completion?) {
         self.fileManager = fileManager
-        super.init(task, handler: handler, retrier: nil)
+        super.init(task, retrier: nil,completion: completion)
     }
     override func cleanup() {
         super.cleanup()
@@ -134,21 +143,33 @@ public class Download:Request{
     private var fileManager:FileManager
     let transfer:URLTransfer
     var fileURL:URL?
-    init(_ task: URLSessionDownloadTask,transfer: @escaping URLTransfer,fileManager:FileManager) {
+    init(_ task: URLSessionDownloadTask,transfer: @escaping URLTransfer,fileManager:FileManager,completion:Completion?) {
         self.transfer = transfer
         self.fileManager = fileManager
-        super.init(task, handler: nil, retrier: nil)
+        super.init(task, retrier: nil,completion: completion)
     }
     func finishDownload(_ location:URL){
+        guard case .completed = state else {
+            return
+        }
         let destination = transfer(location,response)
         do {
-            try fileManager.removeItem(at: destination)
+            try? fileManager.removeItem(at: destination)
             let directory = destination.deletingLastPathComponent()
             try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
             try fileManager.moveItem(at: location, to: destination)
             self.fileURL = destination
+            let resp = Response<JSON>(data: data, result: .success(JSON(destination.absoluteString)), request: request, metrics: metrics, response: response)
+            self.completion?(resp)
         } catch {
             self.error = error
+            let resp = Response<JSON>(
+                data: data,
+                result: .failure(HTTPError.download(error)),
+                request: request,
+                metrics: metrics,
+                response: response)
+            self.completion?(resp)
         }
     }
     public override func cancel() {

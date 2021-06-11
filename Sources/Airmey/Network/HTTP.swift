@@ -11,10 +11,12 @@ import Foundation
 public typealias HTTPParams = [String:Any]
 
 public enum HTTPError:Error{
-    case unkown
-    case invalidURL
+    case status(Int?,info:JSON)
+    case encode(Error)
+    case system(Error)
+    case download(Error)
+    case invalidURL(String)
     case invalidData
-    case encodeFailure
 }
 public enum HTTPMethod:String{
     case get = "GET"

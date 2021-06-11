@@ -16,7 +16,7 @@ public struct Response<M>{
     public var value:M?{ result.value }
     public var error:Error?{ result.error }
     public var statusCode:Int?{ response?.statusCode }
-    public init(
+    init(
         data:Data? = nil,
         result:Result<M,Error>,
         request:URLRequest? = nil,
@@ -56,11 +56,10 @@ extension Response:CustomStringConvertible, CustomDebugStringConvertible{
     public var description: String {"\(result)"}
     public var debugDescription: String {
         guard let urlRequest = request else { return "[Request]: None\n[Result]: \(result)" }
-        let requestDescription = "[Request]:\(urlRequest.debugDescription)"
         let responseDescription = "[Response]: \(response==nil ? "None" :  response!.debugDescription)"
         let networkDuration = metrics.map { "\($0.taskInterval.duration)s" } ?? "None"
         return """
-        \(requestDescription)
+        [Request]:\(urlRequest.description)
         \(responseDescription)
         [Network Duration]: \(networkDuration)
         [Result]: \(result)
