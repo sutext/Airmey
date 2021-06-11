@@ -542,7 +542,7 @@ extension FormData{
             return .data(data)
         }
         let tempDirectoryURL = fileManager.temporaryDirectory
-        let directoryURL = tempDirectoryURL.appendingPathComponent("org.alamofire.manager/multipart.form.data")
+        let directoryURL = tempDirectoryURL.appendingPathComponent("com.airmey.manager/multipart.form.data")
         let fileName = UUID().uuidString
         let fileURL = directoryURL.appendingPathComponent(fileName)
         try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)

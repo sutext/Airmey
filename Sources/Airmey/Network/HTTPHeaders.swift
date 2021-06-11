@@ -94,9 +94,9 @@ public struct HTTPHeaders {
             let versionString = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
             return "iOS \(versionString)"
         }()
-        let alamofireVersion = "Airmey/\(osNameVersion)"
+        let AirmeyVersion = "Airmey/\(osNameVersion)"
 
-        return  "\(executable)/\(appVersion) (\(bundle); build:\(appBuild); \(osNameVersion)) \(alamofireVersion)"
+        return  "\(executable)/\(appVersion) (\(bundle); build:\(appBuild); \(osNameVersion)) \(AirmeyVersion)"
     }()
 }
 extension HTTPHeaders:ExpressibleByDictionaryLiteral{

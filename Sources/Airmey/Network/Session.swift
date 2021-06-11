@@ -161,9 +161,6 @@ extension Session:URLSessionDataDelegate{
         }
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-//        if let req = self.requests[task.taskIdentifier] {
-//            req.updateProgress()
-//        }
     }
 }
 

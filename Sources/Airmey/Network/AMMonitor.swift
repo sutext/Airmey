@@ -68,7 +68,7 @@ open class AMMonitor {
     open var isReachableOnEthernetOrWiFi: Bool { status == .reachable(.ethernetOrWiFi) }
 
     /// `DispatchQueue` on which reachability will update.
-    public let reachabilityQueue = DispatchQueue(label: "org.alamofire.reachabilityQueue")
+    public let reachabilityQueue = DispatchQueue(label: "com.airmey.reachabilityQueue")
 
     /// Flags of the current reachability type, if any.
     open var flags: SCNetworkReachabilityFlags? {
