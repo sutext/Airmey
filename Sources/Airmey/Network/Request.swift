@@ -6,7 +6,7 @@
 //  Copyright © 2021年 airmey. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 /// `Request` is the common superclass of all request types and provides common state  and callback handling.
 /// - Note provides progress interface for any request
@@ -16,9 +16,6 @@ open class Request{
     @Protected
     private var mutableData: Data? = nil
     let completion:Completion?
-    public private(set) var retrier:Retrier?
-    public internal(set) var error:Error?
-    public internal(set) var metrics:URLSessionTaskMetrics?
     init(
         _ task:URLSessionTask,
         retrier:Retrier?,
@@ -27,24 +24,21 @@ open class Request{
         self.completion = completion
         self.retrier  = retrier
     }
+    public internal(set) var error:Error?
+    public internal(set) var retrier:Retrier?
+    public internal(set) var metrics:URLSessionTaskMetrics?
+    public var id:Int { task.taskIdentifier }
+    public var data:Data?{ mutableData }
+    public var state:URLSessionTask.State{ task.state }
+    public var request:URLRequest?{ task.originalRequest }
+    public var progress:Progress { task.progress }
+    public var response:HTTPURLResponse?{ task.response as? HTTPURLResponse }
+    public var statusCode:Int?{  response?.statusCode  }
     public var method:HTTPMethod? {
         guard let str = request?.httpMethod else {
             return nil
         }
         return .init(rawValue: str)
-    }
-    public var statusCode:Int?{
-        response?.statusCode
-    }
-    public var response:HTTPURLResponse?{
-        task.response as? HTTPURLResponse
-    }
-    public var request:URLRequest?{ task.originalRequest }
-    public var progress:Progress { task.progress }
-    public var data:Data?{ mutableData }
-    public var taskIdentifier:Int { task.taskIdentifier }
-    public var state:URLSessionTask.State{
-        self.task.state
     }
     public func resume()  {
         task.resume()
@@ -72,7 +66,7 @@ open class Request{
         }
         guard let code = statusCode,
               [200,204,205].contains(code) else {
-            let error = HTTPError.status(statusCode, info:.init(parse: data))
+            let error = HTTPError.invalidStatus(code:statusCode, info:.init(parse: data))
             self.error = error
             return self.retry(when: error)
         }
@@ -90,17 +84,15 @@ open class Request{
             response: response)
         self.completion?(response)
         return nil
-        
-        
     }
-    private func retry(when error:Error)->TimeInterval?{
+    func retry(when error:Error)->TimeInterval?{
         guard let delay = self.retrier?.doRetry(self, when: error) else {
             let response = Response<JSON>(
                 data: data,
-                result: .failure(HTTPError.system(error)),
+                result: .failure(error),
                 request: request,
                 metrics: metrics,
-                response: task.response)
+                response: response)
             self.completion?(response)
             return nil
         }
@@ -148,10 +140,33 @@ public class Download:Request{
         self.fileManager = fileManager
         super.init(task, retrier: nil,completion: completion)
     }
-    func finishDownload(_ location:URL){
+    override func finish(_ error: Error?) -> TimeInterval? {
         guard case .completed = state else {
-            return
+            return nil
         }
+        if error != nil{
+            self.error = error
+        }
+        if let error = self.error {
+            return self.retry(when: error)
+        }
+        guard let code = statusCode,code == 200 else {
+            let error = HTTPError.invalidStatus(code:statusCode, info: .null)
+            return self.retry(when: error)
+        }
+        guard let location = self.fileURL?.absoluteString else {
+            return retry(when: HTTPError.download(info:"invalid destination file url"))
+        }
+        let resp = Response<JSON>(
+            data: data,
+            result: .success(JSON(location)),
+            request: request,
+            metrics: metrics,
+            response: response)
+        self.completion?(resp)
+        return nil
+    }
+    func finishDownload(_ location:URL){
         let destination = transfer(location,response)
         do {
             try? fileManager.removeItem(at: destination)
@@ -159,17 +174,8 @@ public class Download:Request{
             try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
             try fileManager.moveItem(at: location, to: destination)
             self.fileURL = destination
-            let resp = Response<JSON>(data: data, result: .success(JSON(destination.absoluteString)), request: request, metrics: metrics, response: response)
-            self.completion?(resp)
         } catch {
             self.error = error
-            let resp = Response<JSON>(
-                data: data,
-                result: .failure(HTTPError.download(error)),
-                request: request,
-                metrics: metrics,
-                response: response)
-            self.completion?(resp)
         }
     }
     public override func cancel() {

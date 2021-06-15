@@ -98,6 +98,7 @@ open class FormData {
     /// - Parameters:
     ///   - fileManager: `FileManager` to use for file operations, if needed.
     ///   - boundary: Boundary `String` used to separate body parts.
+    ///   - memoryLimit: Max bytes usage in memory when encoding
     public init(fileManager: FileManager = .default, boundary: String? = nil,memoryLimit:UInt64 = 10_000_000) {
         self.fileManager = fileManager
         self.boundary = boundary ?? BoundaryGenerator.randomBoundary()

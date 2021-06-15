@@ -53,7 +53,7 @@ open class AMNetwork {
     public func request<R:AMRequest>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Swift.Error> = .failure(HTTPError.invalidURL(req.path))
+            let result:Result<R.Model,Swift.Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -95,7 +95,7 @@ open class AMNetwork {
         completion:((Response<JSON>)->Void)? = nil)->Request?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
-            let result:Result<JSON,Swift.Error> = .failure(HTTPError.invalidURL(path))
+            let result:Result<JSON,Swift.Error> = .failure(HTTPError.invalidURL(url:path))
             completion?(.init(result: result))
             return nil;
         }
@@ -133,7 +133,7 @@ open class AMNetwork {
     public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(req.path))
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -165,7 +165,7 @@ open class AMNetwork {
     public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(req.path))
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -196,10 +196,12 @@ open class AMNetwork {
     @discardableResult
     public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->Download?{
         guard let url = URL(string:req.url) else {
+            let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:req.url))
+            completion?(Response(result: result))
             return nil;
         }
         return self.session.download(url, params: req.params, headers: HTTPHeaders(req.headers), fileManager: fileManager,transfer:{
-            req.target(for: $0, response: $1)
+            req.location(for: $0, and: $1)
         }) { resp in
             DispatchQueue.main.async {
                 if let error = resp.error{
@@ -211,12 +213,17 @@ open class AMNetwork {
     }
     @discardableResult
     public func download(
-        _ url:URL,
+        _ url:String,
         params:HTTPParams?=nil,
         headers:HTTPHeaders?=nil,
         transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
         completion:((Response<JSON>)->Void)?=nil)->Download?{
         var aheaders = HTTPHeaders(self.headers)
+        guard let url = URL(string:url) else {
+            let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:url))
+            completion?(Response(result: result))
+            return nil;
+        }
         if let newh = headers {
             aheaders.merge(newh)
         }

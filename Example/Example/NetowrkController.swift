@@ -47,7 +47,13 @@ class NetowrkController: UIViewController {
             self?.doUpload()
         }
         self.addTest("下载图片") {
-            self.progress = net.download(DownloadImage("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg"))?.progress
+            pop.wait("downloading...")
+            let req = net.download(DownloadImage("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg")){
+                pop.idle()
+                debugPrint($0)
+            }
+            self.progress = req?.progress
+            
         }
         self.addTest("测试GET") {
             net.request("app/checkPhoneRegistration",params: ["test":"xxx"],options: .get(.api)){

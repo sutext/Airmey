@@ -10,14 +10,14 @@ import Foundation
 
 public struct HTTPHeaders {
     public enum Field:String {
-        case accept = "Accept"
-        case acceptCharset = "Accept-Charset"
-        case acceptLanguage = "Accept-Language"
-        case acceptEncoding = "Accept-Encoding"
-        case contentType = "Content-Type"
+        case accept             = "Accept"
+        case acceptCharset      = "Accept-Charset"
+        case acceptLanguage     = "Accept-Language"
+        case acceptEncoding     = "Accept-Encoding"
+        case contentType        = "Content-Type"
         case contentDisposition = "Content-Disposition"
-        case authorization = "Authorization"
-        case userAgent = "User-Agent"
+        case authorization      = "Authorization"
+        case userAgent          = "User-Agent"
     }
     public private(set) var values: [String:String] = [:]
     public init(_ values:[String:String]? = nil) {
@@ -29,6 +29,11 @@ public struct HTTPHeaders {
     public mutating func merge(_ other:[String:String]){
         for item in other {
             self[item.key] = item.value
+        }
+    }
+    public mutating func merge(_ other:[Field:String]){
+        for item in other {
+            self[item.key.rawValue] = item.value
         }
     }
     public mutating func authorization(basic username:String,password:String){

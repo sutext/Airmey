@@ -6,7 +6,7 @@
 //  Copyright © 2021年 airmey. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public protocol AMRequest{
     associatedtype Model
@@ -26,5 +26,5 @@ public protocol AMDownload{
     var url: String{get}
     var params: HTTPParams?{get}
     var headers: [String:String]?{get}
-    func target(for tempURL:URL,response:HTTPURLResponse?)->URL
+    func location(for tempFile:URL,and response:HTTPURLResponse?)->URL
 }

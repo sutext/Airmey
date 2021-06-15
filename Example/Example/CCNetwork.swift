@@ -179,8 +179,8 @@ class DownloadImage: AMDownload {
     init(_ url:String) {
         self.url = url
     }
-    func target(for tempURL: URL, response: HTTPURLResponse?) -> URL {
-        return URL(fileURLWithPath: "\(AMPhone.cacheDir)/testfile1/\(tempURL.lastPathComponent)")
+    func location(for tempFile: URL, and response: HTTPURLResponse?) -> URL {
+        return URL(fileURLWithPath: "\(AMPhone.cacheDir)/testfile1/\(tempFile.lastPathComponent)")
     }
     
     

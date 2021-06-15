@@ -229,12 +229,12 @@ extension JSON: Collection {
     }
 }
 
-public protocol AMJsonKey:Codable{}
-extension String:AMJsonKey{}
-extension Int:AMJsonKey{}
+public protocol JSONIndex:Codable{}
+extension String:JSONIndex{}
+extension Int:JSONIndex{}
     
 extension JSON{
-    public subscript(key:AMJsonKey)->JSON{
+    public subscript(key:JSONIndex)->JSON{
         get{
             switch (self,key){
             case let (.array(ary),idx as Int):
@@ -270,7 +270,7 @@ extension JSON{
             }
         }
     }
-    private subscript(path: [AMJsonKey]) -> JSON {
+    private subscript(path: [JSONIndex]) -> JSON {
         get {
             return path.reduce(self){$0[$1]}
         }
@@ -289,7 +289,7 @@ extension JSON{
             }
         }
     }
-    public subscript(path: AMJsonKey...) -> JSON {
+    public subscript(path: JSONIndex...) -> JSON {
         get {
             return self[path]
         }
@@ -417,7 +417,7 @@ public extension JSON{
     }
 }
 extension JSON{
-    /// Using custom toString() serialization . That is slower than JSONEncoder
+    /// Convert rawData  to string  with utf8 encoding
     public var rawString: String{
         if let data = rawData,
            let str = String(data: data, encoding: .utf8){
@@ -425,7 +425,7 @@ extension JSON{
         }
         return "null"
     }
-    /// Use rawString Directly
+    /// Use JSONEncoder to encode it self
     public var rawData:Data?{ try? JSONEncoder().encode(self) }
 }
 extension JSON:CustomStringConvertible,CustomDebugStringConvertible{
@@ -551,13 +551,13 @@ extension JSON: Codable {
     }
 }
 extension NSNumber{
-    // gen objc type
+    // get objc type for current number
     public var octype:OCType{ OCType(self) }
-    /// is Bool or not
+    /// is bool or not
     public var isBool:Bool{
         return octype == .bool && (int8Value == 0 || int8Value == 1)//OCType.bool == OCType.int8
     }
-    // double or float
+    // is double or float
     public var isDouble:Bool{
         switch octype {
         case .float,.double:
@@ -575,13 +575,16 @@ extension NSNumber{
         public init(_ number:NSNumber) {
             self.init(rawValue: number.objCType.pointee)
         }
-        public static let bool:Self = OCType(rawValue: NSNumber(value:true).objCType.pointee)
-        public static let int8:Self = OCType(rawValue: NSNumber(value:Int8.max).objCType.pointee)
-        public static let int16:Self = OCType(rawValue: NSNumber(value:Int16.max).objCType.pointee)
-        public static let int32:Self = OCType(rawValue: NSNumber(value:Int32.max).objCType.pointee)
-        public static let int64:Self = OCType(rawValue: NSNumber(value:Int64.max).objCType.pointee)
-        public static let uint64:Self = OCType(rawValue: NSNumber(value:UInt64.max).objCType.pointee)
-        public static let float:Self = OCType(rawValue: NSNumber(value:Float(0)).objCType.pointee)
-        public static let double:Self = OCType(rawValue: NSNumber(value:Double(0)).objCType.pointee)
+        public static let bool     = OCType(.init(value:true))
+        public static let int8     = OCType(.init(value:Int8.max))
+        public static let int16    = OCType(.init(value:Int16.max))
+        public static let int32    = OCType(.init(value:Int32.max))
+        public static let int64    = OCType(.init(value:Int64.max))
+        public static let uint8    = OCType(.init(value:UInt8.max))
+        public static let uint16   = OCType(.init(value:UInt16.max))
+        public static let uint32   = OCType(.init(value:UInt32.max))
+        public static let uint64   = OCType(.init(value:UInt64.max))
+        public static let float    = OCType(.init(value:Float(0)))
+        public static let double   = OCType(.init(value:Double(0)))
     }
 }

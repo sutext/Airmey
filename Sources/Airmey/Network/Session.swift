@@ -7,6 +7,7 @@
 //
 
 import Foundation
+
 class Session:NSObject{
     private let rootQueue:DispatchQueue = .init(label: "com.airmey.network.rootQueue")
     private let retryQueue:DispatchQueue = .init(label: "com.airmey.network.retryQueue")
@@ -124,11 +125,11 @@ class Session:NSObject{
 
 extension Session{
     func add(_ req:Request) {
-        self.requests[req.taskIdentifier] = req
+        self.requests[req.id] = req
         req.resume()
     }
-    func remove(_ taskId:Int){
-        self.requests.removeValue(forKey: taskId)
+    func remove(_ req:Request){
+        self.requests.removeValue(forKey: req.id)
     }
     func restart(_ req:Request,after:TimeInterval = 0){
         retryQueue.asyncAfter(deadline: .now()+after) {
@@ -157,7 +158,7 @@ extension Session:URLSessionDataDelegate{
             }else{
                 req.cleanup()
             }
-            self.remove(task.taskIdentifier)
+            self.remove(req)
         }
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
@@ -168,8 +169,6 @@ extension Session : URLSessionDownloadDelegate{
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL){
         if let req = self.requests[downloadTask.taskIdentifier] as? Download{
             req.finishDownload(location)
-            req.cleanup()
-            self.remove(req.taskIdentifier)
         }
     }
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64){
