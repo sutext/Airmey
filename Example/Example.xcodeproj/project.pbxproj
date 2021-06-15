@@ -15,6 +15,10 @@
 		338E70E1265FD69600987BA7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */; };
 		33B649FE266A1C4200E04113 /* Airmey in Frameworks */ = {isa = PBXBuildFile; productRef = 33B649FD266A1C4200E04113 /* Airmey */; };
 		33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C26849266B5B3A0086F2B9 /* TestJsonController.swift */; };
+		33C2684C267897850086F2B9 /* SwiperController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C2684B267897840086F2B9 /* SwiperController.swift */; };
+		33C2684E267897AC0086F2B9 /* WidgetsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C2684D267897AC0086F2B9 /* WidgetsController.swift */; };
+		33C268502678A4390086F2B9 /* CCSegmentControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C2684F2678A4390086F2B9 /* CCSegmentControl.swift */; };
+		33C268522678A4A60086F2B9 /* CCBadgeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C268512678A4A60086F2B9 /* CCBadgeLabel.swift */; };
 		33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D922662B11B00D953D0 /* RootViewController.swift */; };
 		33E37D992662B14000D953D0 /* PopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D982662B14000D953D0 /* PopupController.swift */; };
 /* End PBXBuildFile section */
@@ -43,6 +47,10 @@
 		338E70E2265FD69600987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		33B649FC266A1BE500E04113 /* Airmey */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Airmey; path = ..; sourceTree = "<group>"; };
 		33C26849266B5B3A0086F2B9 /* TestJsonController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestJsonController.swift; sourceTree = "<group>"; };
+		33C2684B267897840086F2B9 /* SwiperController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiperController.swift; sourceTree = "<group>"; };
+		33C2684D267897AC0086F2B9 /* WidgetsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsController.swift; sourceTree = "<group>"; };
+		33C2684F2678A4390086F2B9 /* CCSegmentControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCSegmentControl.swift; sourceTree = "<group>"; };
+		33C268512678A4A60086F2B9 /* CCBadgeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCBadgeLabel.swift; sourceTree = "<group>"; };
 		33E37D922662B11B00D953D0 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		33E37D982662B14000D953D0 /* PopupController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -86,7 +94,11 @@
 				3372C6D22664A785007351D0 /* UpdateController.swift */,
 				338E70D8265FD69500987BA7 /* NetowrkController.swift */,
 				33C26849266B5B3A0086F2B9 /* TestJsonController.swift */,
+				33C2684B267897840086F2B9 /* SwiperController.swift */,
+				33C2684D267897AC0086F2B9 /* WidgetsController.swift */,
 				3372C6DA266502C4007351D0 /* CCNetwork.swift */,
+				33C2684F2678A4390086F2B9 /* CCSegmentControl.swift */,
+				33C268512678A4A60086F2B9 /* CCBadgeLabel.swift */,
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
 				338E70E2265FD69600987BA7 /* Info.plist */,
@@ -178,9 +190,13 @@
 				33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */,
 				3372C6D32664A785007351D0 /* UpdateController.swift in Sources */,
 				3372C6DB266502C4007351D0 /* CCNetwork.swift in Sources */,
+				33C2684E267897AC0086F2B9 /* WidgetsController.swift in Sources */,
 				338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */,
 				338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */,
 				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,
+				33C2684C267897850086F2B9 /* SwiperController.swift in Sources */,
+				33C268522678A4A60086F2B9 /* CCBadgeLabel.swift in Sources */,
+				33C268502678A4390086F2B9 /* CCSegmentControl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -56,6 +56,9 @@ class PopupController: UIViewController {
                 pop.idle()
             }
         }
+        self.addTest("show left") {
+            self.layoutViewController?.showLeftController(animated: true)
+        }
     }
     func addTest(_ text:String,action:(()->Void)?) {
         let imageLabel = AMImageLabel(.left)

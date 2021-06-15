@@ -3,12 +3,13 @@
 //  Airmey
 //
 //  Created by supertext on 2020/7/6.
-//  Copyright © 2020年 channeljin. All rights reserved.
+//  Copyright © 2020年 airmey. All rights reserved.
 //
 
 import UIKit
 
 public extension UIImage{
+    /// describe the image format from image data
     enum Format:UInt8 {
         case jpeg = 0xff
         case png = 0x89
@@ -22,6 +23,7 @@ public extension UIImage{
             self.init(rawValue: c)
         }
     }
+    /// Add gif data support
     static func data(_ data:Data,scale:CGFloat)->UIImage?{
         let format = Format(data)
         switch format {
@@ -61,6 +63,7 @@ public extension UIImage{
             return UIImage(data: data, scale: scale)
         }
     }
+    /// create single color rectangle image
     static func rect(_ color:UIColor,size:CGSize)->UIImage?{
         UIGraphicsBeginImageContextWithOptions(size, false, 3)
         let context = UIGraphicsGetCurrentContext()
@@ -71,6 +74,7 @@ public extension UIImage{
         context?.fill(CGRect(origin: .zero, size: size));
         return UIGraphicsGetImageFromCurrentImageContext()
     }
+    /// create single color circle image
     static func round(_ color:UIColor,radius:CGFloat)->UIImage?{
         let width = radius*2
         UIGraphicsBeginImageContextWithOptions(CGSize(width:width,height:width), false, 3)
@@ -82,7 +86,7 @@ public extension UIImage{
         context?.fillEllipse(in: CGRect(x: 0, y: 0, width: width, height: width))
         return UIGraphicsGetImageFromCurrentImageContext()
     }
-    
+    /// create qrcode image from string
     static func qrcode(_ string:String,size:CGSize = CGSize(width:200,height:200))->UIImage?{
         guard let filter = CIFilter(name: "CIQRCodeGenerator") else {
             return nil
@@ -107,6 +111,7 @@ public extension UIImage{
         context.draw(cgimage, in: context.boundingBoxOfClipPath)
         return UIGraphicsGetImageFromCurrentImageContext()
     }
+    /// transform an qrcode image to qrcode string
     var qrcode:String?{
         guard let ciimg = CIImage(image: self) else {
             return nil
@@ -119,6 +124,7 @@ public extension UIImage{
         }
         return feature.messageString
     }
+    /// Resize a UIImage
     func resize(scale:CGFloat)->UIImage?{
         UIGraphicsBeginImageContextWithOptions(self.size * (scale <> 0...1), false, self.scale)
         defer {
@@ -130,6 +136,7 @@ public extension UIImage{
         }
         return nil
     }
+    /// decode base64 string to UIImage instance
     static func base64(_ base64:String?)->UIImage?{
         guard let str = base64 ,
               let url = URL(string: str) ,
@@ -138,9 +145,11 @@ public extension UIImage{
         }
         return UIImage(data: data)
     }
+    /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:CALayer.GradualPoint...)->UIImage?{
         return CALayer.gradual(size, points: points)?.image
     }
+    /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
         return CALayer.gradual(size, points: points)?.image
     }

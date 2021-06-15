@@ -49,6 +49,9 @@ open class AMNetwork {
         return old.map{.init($0)}
     }
     /// global error catched here
+    /// - Parameters:
+    ///     - error: The input error
+    /// - Throws: Output a new Error if throws. otherwise keep origin
     open func oncatch (_ error:Error){
         
     }

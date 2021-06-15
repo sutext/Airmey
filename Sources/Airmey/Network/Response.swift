@@ -9,7 +9,7 @@
 import Foundation
 public struct Response<M>{
     public let data:Data?
-    public let result:Result<M,Error>
+    public private(set) var result:Result<M,Error>
     public let request: URLRequest?
     public let response: HTTPURLResponse?
     public let metrics: URLSessionTaskMetrics?
@@ -50,6 +50,9 @@ public struct Response<M>{
             }
         })
         return .init(data: data, result:newres , request: request, response: response)
+    }
+    mutating func setError(_ error:Error){
+        self.result = .failure(error)
     }
 }
 extension Response:CustomStringConvertible, CustomDebugStringConvertible{

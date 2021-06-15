@@ -31,13 +31,14 @@ class NetowrkController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.view.backgroundColor = .white
         self.title = "Network Tester"
         self.view.addSubview(self.stackView)
         self.stackView.axis = .vertical
         self.stackView.alignment = .leading
         self.stackView.distribution = .equalCentering
         self.stackView.spacing = 20
-        self.stackView.am.center.equal(to: 0)
+        self.stackView.am.center.equal(to: (100,0))
         self.addTest("Test Login") {
             pop.action(CCLoginType.allCases) { type, idx in
                 self.doLogin(type as! CCLoginType)

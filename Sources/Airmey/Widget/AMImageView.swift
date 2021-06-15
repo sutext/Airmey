@@ -3,7 +3,7 @@
 //  Airmey
 //
 //  Created by supertext on 2020/7/5.
-//  Copyright © 2020年 channeljin. All rights reserved.
+//  Copyright © 2020年 airmey. All rights reserved.
 //
 
 import UIKit

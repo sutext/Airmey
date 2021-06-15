@@ -3,7 +3,7 @@
 //  Airmey
 //
 //  Created by supertext on 2020/8/14.
-//  Copyright © 2020年 channeljin. All rights reserved.
+//  Copyright © 2020年 airmey. All rights reserved.
 //
 
 import UIKit
@@ -39,9 +39,9 @@ public class AMLoadmoreControl: UIControl {
     public override var isEnabled: Bool{
         didSet {
             if isEnabled {
-                self.textLabel.text = "上拉加载更多"
+                self.textLabel.text = "Load more ..."
             }else{
-                self.textLabel.text = "亲，没有啦～"
+                self.textLabel.text = "No more content"
             }
         }
     }
@@ -95,7 +95,7 @@ public class AMLoadmoreControl: UIControl {
         self.textLabel.font = UIFont.systemFont(ofSize: 15)
         self.textLabel.textAlignment = .center
         self.textLabel.backgroundColor = .clear
-        self.textLabel.text = "上拉加载更多..."
+        self.textLabel.text = "Load more..."
         self.addSubview(self.textLabel)
         self.addSubview(self.activityIndicator)
         self.textLabel.am.center.equal(to: self.am.center)

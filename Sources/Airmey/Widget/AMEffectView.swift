@@ -8,7 +8,7 @@
 
 import UIKit
 
-open class AMEffectView: UIView {
+open class AMEffectView: AMView {
     private let visualEffect:UIVisualEffectView
     /// innerView just an ref of visualEffectView's contentView
     public let innerView:UIView

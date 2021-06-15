@@ -44,5 +44,4 @@ class TestJsonController: UIViewController {
         json["null"] = nil
         print(json)
     }
-
 }
