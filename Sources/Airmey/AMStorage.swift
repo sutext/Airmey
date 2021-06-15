@@ -9,11 +9,20 @@
 import CoreData
 import Foundation
 
+/// `AMManagedObject` protocol describe a schema of managed object for orm structure
+///
+/// - Parameters:
+///     - IDValue: The primary key type
+///     - Model: The data source data type.
+///
 public protocol AMManagedObject:NSManagedObject{
     associatedtype IDValue:Codable&Hashable
     associatedtype Model
+    /// The primary id builder from model
     static func id(for model:Model)throws->IDValue
+    /// The current primary key
     var id:IDValue{get}
+    /// The model to managed object transfer.  Usualy it's a model initialize method
     func aweak(from model:Model)
 }
 
@@ -59,6 +68,12 @@ open class AMStorage{
 }
 //MARK: public sync methods
 extension AMStorage{
+    ///
+    /// Delete a managed object from database.
+    /// - Parameters:
+    ///     - object: The instance that will be delete
+    /// - Throws: some system error from moc.
+    ///
     public func delete(_ object:NSManagedObject?)throws{
         if let object = object {
             var err:Error? = nil
@@ -75,6 +90,12 @@ extension AMStorage{
             }
         }
     }
+    ///
+    /// Delete a managed object from database.
+    /// - Parameters:
+    ///     - objects: The instance array that will be delete
+    /// - Throws: some system error from moc.
+    ///
     public func delete(_ objects:[NSManagedObject]?)throws{
         if let objects = objects {
             var err:Error? = nil
@@ -93,6 +114,14 @@ extension AMStorage{
             }
         }
     }
+    ///
+    ///  Insert or update an managed object from model
+    /// - Parameters:
+    ///     - type: An `AMManagedObject` subclass type
+    ///     - model: The data source model instance
+    /// - Throws: some system error from moc.
+    /// - Returns: A newly or updated managed object instance
+    ///
     @discardableResult
     public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model)throws->Object{
         var obj:Object? = nil
@@ -113,6 +142,14 @@ extension AMStorage{
         }
         return obj
     }
+    ///
+    ///  Insert or update a group of managed object from models
+    /// - Parameters:
+    ///     - type: An `AMManagedObject` subclass type
+    ///     - models: The data source model instance list
+    /// - Throws: some system error from moc.
+    /// - Returns: A newly or updated managed object instance list
+    ///
     @discardableResult
     public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model])throws->[Object]{
         var results:[Object] = [];
@@ -130,26 +167,50 @@ extension AMStorage{
         }
         return results;
     }
+    ///
+    ///  Query a managed object form id
+    /// - Parameters:
+    ///     - type: An `AMManagedObject` subclass type
+    ///     - id: The object primary id
+    /// - Returns: The managed object  if matching the id
+    ///
     public func query<Object:AMManagedObject>(one type:Object.Type,for id:Object.IDValue)->Object?{
-        return self.query(all: type, where: NSPredicate(format: "id == %@","\(id)")).first
+        return self.query(type, where: NSPredicate(format: "id == %@","\(id)")).first
     }
-    public func query<Object:NSManagedObject>(all type:Object.Type,where predicate:NSPredicate?=nil,page:Int?=nil,size:Int=10,sorts:[NSSortDescriptor]? = nil)->[Object]{
+    ///
+    ///  Query all managed objects which match the predicate
+    /// - Parameters:
+    ///     - type: An `AMManagedObject` subclass type
+    ///     - predicate: The querey predicate
+    ///     - page: The pageable query parameters
+    ///     - sorts: A `NSSortDescriptor` instance. just like order by
+    /// - Returns: The managed objects matching the predicate
+    ///
+    public func query<Object:NSManagedObject>(_ type:Object.Type,where predicate:NSPredicate?=nil,page:(index:Int,size:Int)?=nil,sorts:[NSSortDescriptor]? = nil)->[Object]{
         let request = type.fetchRequest()
         request.predicate = predicate
         request.sortDescriptors = sorts
         if let page = page {
-            request.fetchLimit = size
-            request.fetchOffset = size * page
+            request.fetchLimit = page.size
+            request.fetchOffset = page.index * page.size
         }
         let objs = try? self.moc.fetch(request) as? [Object];
         return objs ?? []
     }
+    ///
+    ///  Query the count of objects that matching the predicate
+    /// - Parameters:
+    ///     - type: An `AMManagedObject` subclass type
+    ///     - predicate: The querey predicate
+    /// - Returns: The managed objects count that matching the predicate
+    ///
     public func count<Object:NSManagedObject>(for type:Object.Type,where predicate:NSPredicate?=nil)->Int{
         let request = type.fetchRequest()
         request.predicate = predicate
         let count = try? self.moc.count(for: request)
         return count ?? 0
     }
+    /// commit all the insert or update operation
     public func save(){
         self.moc.performAndWait{
             do{
@@ -215,7 +276,10 @@ extension AMStorage{
             }
         }
     }
-    public func query<Object:AMManagedObject>(one type:Object.Type,for id:Object.IDValue,block:((Object?) ->Void)?) {
+    public func query<Object:AMManagedObject>(
+        one type:Object.Type,
+        for id:Object.IDValue,
+        block:((Object?) ->Void)?) {
         self.queue.async {
             let obj = self.query(one: type, for: id)
             DispatchQueue.main.async {
@@ -223,9 +287,14 @@ extension AMStorage{
             }
         }
     }
-    public func query<Object:NSManagedObject>(all type:Object.Type,where predicate:NSPredicate?=nil,page:Int?=nil,sorts:[NSSortDescriptor]? = nil,block:(([Object])->Void)?){
+    public func query<Object:NSManagedObject>(
+        _ type:Object.Type,
+        where predicate:NSPredicate?=nil,
+        page:(index:Int,size:Int)?=nil,
+        sorts:[NSSortDescriptor]? = nil,
+        block:(([Object])->Void)?){
         self.queue.async {
-            let objs = self.query(all: type, where: predicate,page:page, sorts: sorts)
+            let objs = self.query(type, where: predicate,page:page, sorts: sorts)
             DispatchQueue.main.async {
                 block?(objs)
             }

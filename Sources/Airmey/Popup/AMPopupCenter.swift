@@ -31,6 +31,7 @@ extension AMPopupCenter{
     public func present(_ vc:UIViewController,animated:Bool=true,completion:AMBlock?=nil){
         self.add(.present(vc: vc, animated: animated, finish: completion))
     }
+    /// presnet a remindable controller
     public func remind(_ msg:String,
                 title:String?=nil,
                 duration:TimeInterval?=nil,
@@ -40,14 +41,12 @@ extension AMPopupCenter{
         vc.pop = self
         self.add(.remind(vc,duration:duration))
     }
+    /// presnet an actionable controller
     public func action(_ items:[AMTextConvertible],meta:AMActionable.Type?=nil,onhide:ActionHide?=nil){
         let vc = (meta ?? Self.Action).init(items,onhide:onhide)
         self.add(.action(vc))
     }
-    /// Clear all the presented controller base on keyWindow'rootViewController
-    public func clear() {
-        self.add(.clear)
-    }
+    /// present an alertable controller
     public func alert(
         _ msg:String,
         title:String? = nil,
@@ -58,14 +57,21 @@ extension AMPopupCenter{
         let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
         self.add(.alert(vc))
     }
+    /// present a waitable controller
     public func wait(_ msg:String?,meta:AMWaitable.Type?=nil)  {
         let vc = (meta ?? Self.Wait).init(msg)
         vc.pop = self
         self.add(.wait(vc))
     }
+    /// dismiss current wating controller
     public func idle() {
         self.add(.idle)
     }
+    /// Clear all the presented controller base on keyWindow'rootViewController
+    public func clear() {
+        self.add(.clear)
+    }
+    /// current top controller from the key window
     public var topvc:UIViewController?{
         var next:UIViewController? = UIApplication.shared.keyWindow?.rootViewController
         while next?.presentedViewController != nil {

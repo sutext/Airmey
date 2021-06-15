@@ -23,22 +23,22 @@ public class Retrier {
     /// The default HTTP methods to retry.
     /// See [RFC 2616 - Section 9.1.2](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) for more information.
     public static let defaultMethods: Set<HTTPMethod> = [
-        .delete, // [Delete](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.7) - not always idempotent
-        .get, // [GET](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3) - generally idempotent
-        .head, // [HEAD](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4) - generally idempotent
-        .options, // [OPTIONS](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.2) - inherently idempotent
-        .put, // [PUT](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6) - not always idempotent
-        .trace // [TRACE](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8) - inherently idempotent
+        .get,       // [GET] generally idempotent
+        .put,       // [PUT]ot always idempotent
+        .head,      // [HEAD] generally idempotent
+        .trace,     // [TRACE]inherently idempotent
+        .delete,    // [Delete]not always idempotent
+        .options,   // [OPTIONS] inherently idempotent
     ]
 
     /// The default HTTP status codes to retry.
-    /// See [RFC 2616 - Section 10](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10) for more information.
+    /// See [RFC 2616 - Section10](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10) for more information.
     public static let defaultStatusCodes: Set<Int> = [
         408, // [Request Timeout]
         500, // [Internal Server Error]
         502, // [Bad Gateway]
         503, // [Service Unavailable]
-        504 // [Gateway Timeout]
+        504  // [Gateway Timeout]
     ]
 
     /// The default URL error codes to retry.

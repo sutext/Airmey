@@ -10,7 +10,10 @@ import Foundation
 extension Notification.Name{
     public static let AMNetworkStatusChanged:Notification.Name = Notification.Name("com.airmey.network.status.changed")
 }
-
+///
+/// `AMNetwork` is network configure center.
+///  Usually you can inherit from `AMNetwork` and override the configuration params .
+///
 open class AMNetwork {
     public private(set) static var monitor:AMMonitor?
     public private(set) static var status:AMMonitor.Status = .unknown{
@@ -27,21 +30,21 @@ open class AMNetwork {
         self.baseURL = URL(string:baseURL);
     }
     private var baseURL:URL?
-
-    public var isDebug:Bool = false
-    /// global http method `.get` by default
+    /// print debug log or not. override for custom
+    open var debug:Bool{ false }
+    /// global http method `.get` by default. override for custom
     open var method:HTTPMethod{.get}
-    /// global retryer  `nil` by default
+    /// global retryer  `nil` by default . override for custom
     open var retrier:Retrier?{ nil }
-    /// global request encoder  `JSONEncoding()` by default
+    /// global request encoder  `JSNEncoder()` by default. override for custom
     open var encoder:HTTPEncoder{ JSNEncoder() }
-    /// global http headers `[:]` by default
-    open var headers:[String:String]{[:]}
-    /// global timeout in secends `60` by default
+    /// global http headers `[:]` by default, override for custom
+    open var headers:[String:String]{ [:] }
+    /// global timeout in secends `60` by default. override for custom
     open var timeout:TimeInterval{ 60 }
-    /// global default fileManager
+    /// global default fileManager. override for custom
     open var fileManager:FileManager{ .default }
-    /// global response verifer @default map directly
+    /// global response verifer @default map directly. override for custom
     open func verify(_ old:Response<JSON>)->Response<JSON>{
         return old.map{.init($0)}
     }
@@ -49,11 +52,19 @@ open class AMNetwork {
     open func oncatch (_ error:Error){
         
     }
+    ///
+    /// Send an common data request
+    /// 
+    /// - Parameters:
+    ///     - req: The `AMRequest` protocol instance
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func request<R:AMRequest>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
-            let result:Result<R.Model,Swift.Error> = .failure(HTTPError.invalidURL(url:req.path))
+            let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
@@ -79,6 +90,9 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if self.debug{
+                debugPrint(resp)
+            }
             DispatchQueue.main.async {
                 if let error = resp.error{
                     self.oncatch(error)
@@ -87,6 +101,16 @@ open class AMNetwork {
             }
         }
     }
+    ///
+    /// Send a simple data request directly
+    ///
+    /// - Parameters:
+    ///     - path: The request relative to th baseURL
+    ///     - params: The request params
+    ///     - options: The current request options
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func request(
         _  path:String,
@@ -95,7 +119,7 @@ open class AMNetwork {
         completion:((Response<JSON>)->Void)? = nil)->Request?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
-            let result:Result<JSON,Swift.Error> = .failure(HTTPError.invalidURL(url:path))
+            let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:path))
             completion?(.init(result: result))
             return nil;
         }
@@ -121,6 +145,9 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res)
             }
+            if self.debug{
+                debugPrint(resp)
+            }
             DispatchQueue.main.async {
                 if let error = resp.error{
                     self.oncatch(error)
@@ -129,6 +156,13 @@ open class AMNetwork {
             }
         }
     }
+    /// Send an `multipart/form-data` request
+    ///
+    /// - Parameters:
+    ///     - req: The `AMFormUpload` protocol instance
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
@@ -153,6 +187,9 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if self.debug{
+                debugPrint(resp)
+            }
             DispatchQueue.main.async {
                 if let error = resp.error{
                     self.oncatch(error)
@@ -161,6 +198,13 @@ open class AMNetwork {
             }
         }
     }
+    /// Send an file upload  request
+    ///
+    /// - Parameters:
+    ///     - req: The `AMFileUpload` protocol instance
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
@@ -185,6 +229,9 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if self.debug{
+                debugPrint(resp)
+            }
             DispatchQueue.main.async {
                 if let error = resp.error{
                     self.oncatch(error)
@@ -193,6 +240,13 @@ open class AMNetwork {
             }
         }
     }
+    /// Send an file download  request
+    /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
+    /// - Parameters:
+    ///     - req: The `AMDownload` protocol instance
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->Download?{
         guard let url = URL(string:req.url) else {
@@ -203,6 +257,9 @@ open class AMNetwork {
         return self.session.download(url, params: req.params, headers: HTTPHeaders(req.headers), fileManager: fileManager,transfer:{
             req.location(for: $0, and: $1)
         }) { resp in
+            if self.debug{
+                debugPrint(resp)
+            }
             DispatchQueue.main.async {
                 if let error = resp.error{
                     self.oncatch(error)
@@ -211,11 +268,22 @@ open class AMNetwork {
             }
         }
     }
+    /// Send a simple download  request
+    ///
+    /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
+    /// - Parameters:
+    ///     - url: A full resource url
+    ///     - params: The download request parameters
+    ///     - headers: The download request headers
+    ///     - transfer: A closure used to determine how and where the downloaded file should be moved.
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func download(
         _ url:String,
         params:HTTPParams?=nil,
-        headers:HTTPHeaders?=nil,
+        headers:[String:String]?=nil,
         transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
         completion:((Response<JSON>)->Void)?=nil)->Download?{
         var aheaders = HTTPHeaders(self.headers)
@@ -231,19 +299,37 @@ open class AMNetwork {
             if let error = resp.error{
                 self.oncatch(error)
             }
-            completion?(resp)
+            if self.debug{
+                debugPrint(resp)
+            }
+            DispatchQueue.main.async {
+                completion?(resp)
+            }
         }
     }
+    /// Send a resume download request
+    /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
+    /// - Parameters:
+    ///     - data: The resume data from a previously cancelled download request
+    ///     - transfer: A closure used to determine how and where the downloaded file should be moved.
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
     @discardableResult
     public func download(
-        resume:Data,
+        resume data:Data,
         transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
         completion:((Response<JSON>)->Void)?=nil)->Download?{
-        return self.session.download(resume: resume, fileManager: fileManager,transfer: transfer) { resp in
+        return self.session.download(resume: data, fileManager: fileManager,transfer: transfer) { resp in
             if let error = resp.error{
                 self.oncatch(error)
             }
-            completion?(resp)
+            if self.debug{
+                debugPrint(resp)
+            }
+            DispatchQueue.main.async {
+                completion?(resp)
+            }
         }
     }
 }

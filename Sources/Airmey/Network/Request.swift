@@ -24,16 +24,27 @@ open class Request{
         self.completion = completion
         self.retrier  = retrier
     }
+    /// some error if occured
     public internal(set) var error:Error?
+    /// current retrier if present
     public internal(set) var retrier:Retrier?
+    /// the metrics of current task
     public internal(set) var metrics:URLSessionTaskMetrics?
+    /// the unique identifier of current request
     public var id:Int { task.taskIdentifier }
+    /// the response data
     public var data:Data?{ mutableData }
+    /// the current task state
     public var state:URLSessionTask.State{ task.state }
+    /// the current url request
     public var request:URLRequest?{ task.originalRequest }
+    /// the curren task progress
     public var progress:Progress { task.progress }
+    /// the current http url respone
     public var response:HTTPURLResponse?{ task.response as? HTTPURLResponse }
+    /// the current http status code
     public var statusCode:Int?{  response?.statusCode  }
+    /// the current http method
     public var method:HTTPMethod? {
         guard let str = request?.httpMethod else {
             return nil
@@ -127,7 +138,9 @@ extension URLRequest{
     }
 }
 public class Download:Request{
+    /// temp file url transfer
     public typealias URLTransfer = (_ tempURL:URL,_ response:HTTPURLResponse?) -> URL
+    /// A default transfer managed by airmey in temp dir
     public static let defaultTransfer:URLTransfer = {url,_ in
         let filename = "Airmey_\(url.lastPathComponent)"
         return url.deletingLastPathComponent().appendingPathComponent(filename)
@@ -178,12 +191,11 @@ public class Download:Request{
             self.error = error
         }
     }
+    /// cancel dirctly without resume data
     public override func cancel() {
-        self.cancel(needResume: false)
+        self.cancel(resumer: nil)
     }
-    public func cancel(needResume:Bool){
-        self.cancel(resumer: needResume ? { _ in } : nil)
-    }
+    /// cancel a donwload task and get the resume data
     public func cancel(resumer:((Data?)->Void)?){
         guard task.state != .completed else {
             return
@@ -195,8 +207,6 @@ public class Download:Request{
             task.cancel { _ in }
             return
         }
-        task.cancel {
-            block($0)
-        }
+        task.cancel(byProducingResumeData: block)
     }
 }
