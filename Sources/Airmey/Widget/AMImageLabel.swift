@@ -16,7 +16,7 @@ public final class AMImageLabel: AMView {
         case bottom
     }
     private let stackView = UIStackView()
-    private let imageView = AMImageView()
+    private let imageView = UIImageView()
     private let textLabel = UILabel()
     private var imageConstt : AMSizeAnchor.Constraint?
     public private(set) var layout:Layout

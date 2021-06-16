@@ -183,15 +183,75 @@
 
   ### AMSwiper
 
-  - 继承自`UIVIew`，基于 UIPageViewController 实现常见的 banner 轮播视图，无限循环列表轮播等功能。详细 example 请运行 example 工程
+  - 基于 UIPageViewController 实现常见的 banner 轮播视图，
+  - 实现无限循环列表轮播等功能。详细请运行 example 工程
+
+  ```swift
+  let swiper = AMSwiper()
+  self.view.addSubview(swiper)
+  swiper.dataSource = self
+  swiper.delegate = self
+  swiper.reload()
+  ```
 
   ### AMToolBar
 
-  - 参考 UIToolBar。该类被设计为一个工具栏抽象类，只提供了设备兼容的视图层级架构，具体的外观需要自类自行实现。所有的 subview 都应该只被添加到 contentView 里面
+  - 继承自 `UIToolBar`该类被设计为一个工具栏抽象类，提供基本骨架和自动定位。
+  - 具体的外观需要子类实现，所有的 subview 都应该只被添加到 contentView 里面
+
+  ```swift
+  import UIKit
+  import Airmey
+
+  public class CCNavBar: AMToolBar {
+      public override class var position: Position{.top}
+      required convenience init?(coder aDecoder: NSCoder) {
+          fatalError("init(coder:) has not been implemented")
+      }
+      public lazy var titleLabel:AMLabel={
+          let label = AMLabel()
+          self.contentView.addSubview(label)
+          label.am.center.equal(to: 0)
+          return label
+      }()
+      public var title:String?{
+          get{
+              return self.titleLabel.text
+          }
+          set {
+              self.titleLabel.text = newValue
+          }
+      }
+      public var leftItem:UIView?{
+          didSet{
+              oldValue?.removeFromSuperview()
+              if let newval = leftItem {
+                  self.contentView.addSubview(newval)
+                  newval.amake { am in
+                      am.left.equal(to: 15)
+                      am.centerY.equal(to: 0)
+                  }
+              }
+          }
+      }
+      public var rightItem:UIView?{
+          didSet{
+              oldValue?.removeFromSuperview()
+              if let newval = leftItem {
+                  self.contentView.addSubview(newval)
+                  newval.amake { am in
+                      am.right.equal(to: 15)
+                      am.centerY.equal(to: 0)
+                  }
+              }
+          }
+      }
+  }
+  ```
 
   ### AMDigitLabel
 
-  - 继承自 `AMLabel` ，增加滚动数字的支持
+  - 继承自 `AMLabel` ，实现了滚动数字动画效果的支持
 
   ```swift
     let label = AMDigitLabel()
@@ -237,44 +297,146 @@
 
   ### AMLoadmoreControl
 
-  - 继承自 UIControl 实现了 AMRefreshControl 协议。提供默认的下拉刷新 UI
+  - 继承自 `UIControl` 实现了 AMRefreshControl 协议。提供默认的下拉刷新 UI
 
   ### AMTableView
 
-  - 继承自 UITableView 增加了 refresh control 的支持
+  - 继承自 `UITableView` 增加了 refresh control 的支持
+
+  ```swift
+  public class ViewController: UIViewController {
+      let tableView = AMTableView()
+      public override func viewDidLoad() {
+          super.viewDidLoad()
+          self.view.addSubview(self.tableView)
+          self.tableView.delegate = self
+          self.tableView.dataSource = self
+          self.tableView.am.edge.equal(to: 0)
+          self.navbar.title = "Videos"
+          self.tableView.register(FeedsCell.self)
+          self.tableView.using(refreshs: [.top,.bottom])
+          self.tableView.contentInset = UIEdgeInsets(top: CCNavBar.contentHeight, left: 0, bottom: 0, right: 0)
+          self.reloadData()
+      }
+      public func reloadData() {
+          pop.wait("loading...")
+          net.request(CCRequest.Feeds()){resp in
+              pop.idle()
+              self.tableView.refresh(at: .top)?.endRefreshing()
+              guard let objects = resp.value else{
+                  pop.remind("加载失败")
+                  return
+              }
+              self.videos = objects
+              self.tableView.reloadData()
+          }
+      }
+      public func loadMore() {
+          net.request(CCRequest.Feeds()){resp in
+              self.tableView.refresh(at: .bottom)?.endRefreshing()
+              guard let objects = resp.value,objects.count>0 else{
+                  return
+              }
+              self.videos.append(contentsOf: objects)
+              self.tableView.reloadData()
+          }
+      }
+  }
+  extension ViewController:AMTableViewDelegate,UITableViewDataSource{
+    func tableView(_ tableView: AMTableView, beginRefresh style: AMRefreshStyle, control: AMRefreshControl) {
+          switch style {
+          case .top:
+              self.reloadData()
+          case .bottom:
+              self.loadMore()
+          }
+      }
+  }
+  ```
 
   ### AMTableViewDelegate
 
-  - 继承自 UITableViewDelegate 增加 refresh control 的代理方法
+  - 继承自 `UITableViewDelegate` 增加 refresh control 的代理方法
 
   ### AMCollectionView
 
-  -继承自 UICollectionView 增加 refresh control 的支持
+  -继承自 `UICollectionView` 增加 refresh control 的支持
 
   ### AMCollectionViewDelegate
 
-  - 继承自 UICollectionViewDelegate 增加 refresh control 的代理方法
+  - 继承自 `UICollectionViewDelegate` 增加 refresh control 的代理方法
 
   ### AMLayoutViewController
 
-  - 继承自 UIViewController 实现侧边栏布局。具体用法请参考 Example 工程
+  - 继承自 `UIViewController` 实现侧边栏布局。具体用法请参考 Example 工程
 
 ## AMPhone
 
 - 设备尺寸常量
 - 设备唯一 ID 实现
 
+```swift
+let uuid = AMPhone.uuid
+let isSlim = AMPhone.isSlim//是否是长屏幕
+let isPlus = AMPhone.isPlus//是否是plus宽屏手机
+let isSmall = AMPhone.isSmall//是否是5，5s，SE，小屏手机
+let width = AMPhone.width//屏幕宽度 枚举类型
+let height = AMPhone.height//屏幕高度 枚举类型
+```
+
 ## AMImageCache
 
-- 基于 URLSession 实现的网络图片加载，缓存框架
+- 基于 URLSession 实现的网络图片加载，缓存框架类似于 SDWebImage
+- 单例类可提供缓存管理，和清空缓存等操作
+- `diskUseage` 查询缓存用量
+- `clearDisk` 清除所有缓存
+
+```swift
+ let imageView = UIImageView()
+ imageView.setImage(url:"https://xxxx.com/xx.jpg",placeholder:UIImage(named:"placeholder"))
+```
 
 ## AMTimer
 
-- 基于 NSTimer 封装计次 timer。处理多线程和循环引用内存泄露的问题。简化定时器的使用。
+- 基于 `NSTimer` 封装计次 timer。处理多线程和循环引用内存泄露的问题。简化定时器的使用。
+
+```swift
+final public class MyView:UIView{
+    private let timer:AMTimer
+    let label = UILabel()
+    deinit {
+        self.timer.stop()
+    }
+    init(_ frameRate:Double = 30) {
+        self.timer = AMTimer(interval: 1.0/frameRate)
+        super.init(frame: .zero)
+        self.timer.delegate = self
+        self.addSubview(label)
+        label.am.center.equl(to:0)
+    }
+    func start(){
+        self.timer.start()
+    }
+}
+extension MyView:AMTimerDelegate{
+    public func timer(_ timer: AMTimer, repeated times: Int) {
+        lable.text = "\(times)"
+    }
+}
+```
 
 ## AMDateStyle
 
 - 线程安全的日期时间格式化工具方法
+- 表现形式为扩展 String 和 Date 类型提供两个扩展方法
+
+```swift
+let string = "2020-09-10 20:20:00"
+let date = string.date(for: .full)//"2020-09-10 20:20:00"
+let str = date.string(for: .full)//"2020-09-10 20:20:00"
+let time:TimeInterval = 1623833102
+time.string(for: .full)//2021-06-16 16:45:02
+```
 
 ## AMImage
 
@@ -285,3 +447,9 @@
 - gradual 构造线性渐变的图片
 - qrcode 构造二维码图片
 - base64 构造 base64 图片
+
+```swift
+var image:UIImage = .rect(.red,size:CGSize(width:100,height:100))
+image = .round(.red,radius:100)
+image = .qrcode("https://xxx.com/xxx")
+```

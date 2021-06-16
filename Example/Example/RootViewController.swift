@@ -8,11 +8,13 @@
 import UIKit
 import Airmey
 
+var root:RootViewController? = nil
 class RootViewController: AMLayoutViewContrller {
     let tabbarController:UITabBarController = UITabBarController()
     init() {
         super.init(rootViewController: tabbarController)
         self.leftDisplayMode = .cover
+        root = self
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -26,5 +28,11 @@ class RootViewController: AMLayoutViewContrller {
         let widget = UINavigationController(rootViewController: WidgetsController())
         self.tabbarController.viewControllers = [popup,json,widget]
         self.leftViewController = NetowrkController()
+    }
+    func push(_ controller:UIViewController)  {
+        self.dismissCurrentController(animated: false)
+        if let nav = self.tabbarController.selectedViewController as? UINavigationController {
+            nav.pushViewController(controller, animated: true)
+        }
     }
 }

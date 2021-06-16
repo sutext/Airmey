@@ -399,15 +399,3 @@ extension AMLayoutViewContrller{
         static let `default`:DisplayMode = .background;
     }
 }
-extension UIViewController{
-    public var layoutViewController:AMLayoutViewContrller?{
-        var next:UIViewController? = self
-        while next?.parent != nil{
-            if let vc = next?.parent as? AMLayoutViewContrller {
-                return vc
-            }
-            next = next?.parent
-        }
-        return nil
-    }
-}

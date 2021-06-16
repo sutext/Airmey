@@ -67,6 +67,9 @@ class NetowrkController: UIViewController {
                 
             }
         }
+        self.addTest("测试webimage") {
+            root?.push(WebImageController())
+        }
     }
     func doUpload(){
         guard let image = UIImage(named: "test_avatar") else {

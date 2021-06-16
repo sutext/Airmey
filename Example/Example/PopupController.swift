@@ -57,7 +57,7 @@ class PopupController: UIViewController {
             }
         }
         self.addTest("show left") {
-            self.layoutViewController?.showLeftController(animated: true)
+            root?.showLeftController(animated: true)
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {
