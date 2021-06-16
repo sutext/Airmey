@@ -53,43 +53,133 @@
 - 基于 URLSession 实现的集网络数据请求，表单上传，文件下载一体的工具集。
 - 详细用法参考 Example
 
-  ### AMNetwork
+```swift
+public let net = MYNetwork()
 
-  - 网络请求全局参数配置控制类。具体项目需要以继承的方式重写默认参数
-  - 通常一个网络请求会包含一个 request 和 一个 response。 request 用于描述请求所需的参数。response 用于描述请求返回数据
+public class MYNetwork: AMNetwork {
+    fileprivate init(){
+        super.init(baseURL: "https://example.com")
+    }
+    public override var method: HTTPMethod{
+        .post
+    }
+    public override var retrier: Retrier?{
+        return Retrier(limit:1,policy:.immediately,methods:[.post],statusCodes: [404])
+    }
+    public override var headers: [String : String]{
+        let device = UIDevice.current
+        let info = Bundle.main.infoDictionary
+        var result:[String:String] = [
+            "ostype":"ios",
+            "sysver":device.systemVersion,
+            "apiver":"1",
+            "appver":(info?["CFBundleShortVersionString"] as? String) ?? "1.0.0",
+            "uuid":AMPhone.uuid,
+            "lang":"zh"
+        ]
+        if env.isLogin ,let token = env.token{
+            result["token"] = token
+        }
+        return result
+    }
+}
+class MyViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.backgroundColor = .white
+        self.title = "Network Test"
+        self.doLogin()
+    }
+    func doLogin(_ type:String)  {
+        pop.wait("login...")
+        let token = "xxxx"
+        net.request("user/login",["token":token]){
+            pop.idle()
+            debugPrint($0)
+            switch $0.result{
+            case .success(let info):
+                let token = info["token"].stringValue
+                pop.remind("login succeed \(token)")
+            case .failure(let err):
+                pop.remind("loing error:\(err)")
+            }
+        }
+    }
 
-  ### AMRequest
+}
 
-  - 一般的数据网络请求协议
-  - 主要负责完成请求地址，请求参数，请求头配置，以及返回数据如果序列化
+```
 
-  ### AMFileUpload
+### AMNetwork
 
-  - 继承自 AMRequest，新增文件上传 url 的属性配置
+- 网络请求全局参数配置控制类。具体项目需要以继承的方式重写默认参数
+- 通常一个网络请求会包含一个 request 和 一个 response。 request 用于描述请求所需的参数。response 用于描述请求返回数据
 
-  ### AMFormUpload
+### AMRequest
 
-  - 继承自 AMRequest，新增表单属性
+- 一般的数据网络请求协议
+- 主要负责完成请求地址，请求参数，请求头配置，以及返回数据如果序列化
 
-  ### AMMonitor
+### AMFileUpload
 
-  - 网络状态监听器，用于持续侦听网络状态。并发出全局广播
+- 继承自 AMRequest，新增文件上传 url 的属性配置
 
-  ### Request
+### AMFormUpload
 
-  - 网络请求返回的句柄。用于控制该次网络请求的时效，以及监控请求进度等
+- 继承自 AMRequest，新增表单属性
 
-  ### JSON
+### AMMonitor
 
-  - 提供基于 swift enum 的高效 json 数据模型。包括序列化和反序列化。已经各种快捷存取。
+- 网络状态监听器，用于持续侦听网络状态。并发出全局广播
+
+### Request
+
+- 网络请求返回的句柄。用于控制该次网络请求的时效，以及监控请求进度等
+
+### JSON
+
+- 提供基于 swift enum 的高效 json 数据模型。包括序列化和反序列化。已经各种快捷存取。
 
 ## Storage
 
 - 基于 CoreData 实现的 ORM 框架，包括对数据表增删改查的封装
-  ### AMStorage
-  - 数据存储控制类，用于管理 CoreData 上下文，线程队列。
-  ### AMMangedObjet
-  - ORM 框架数据模型 Schema 协议。需要使用 ORM 的 NSManagedObject 对象都必须实现这个协议
+
+```swift
+extension UserObject:AMManagedObject{
+    public static func id(for model: JSON) -> Int64 {
+        return model["id"].int64!
+    }
+    public func aweak(from model: JSON) {
+        name = model["username"].string
+        avatar = model["headpic"].string
+        gender = model["gender"].int16Value
+    }
+}
+public let orm = Storage()
+public class Storage: AMStorage {
+    fileprivate init() {
+        guard let url = Bundle.module.url(forResource: "Example", withExtension: "momd") else {
+            fatalError("momd file not found")
+        }
+        try! super.init(momd: url)
+    }
+}
+func test(){
+    var user = try? orm.insert(UserObject.self,["id":1,"username":"xxx","headpic":"xxxx"])
+    user.name = "Test"
+    orm.save()
+    user = orm.query(one:UserObject.self,id:1)
+    orm.delete(user)
+}
+```
+
+### AMStorage
+
+- 数据存储控制类，用于管理 CoreData 上下文，线程队列。
+
+### AMMangedObjet
+
+- ORM 框架数据模型 Schema 协议。需要使用 ORM 的 NSManagedObject 对象都必须实现这个协议
 
 ## Popup
 

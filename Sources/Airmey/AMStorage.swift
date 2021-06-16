@@ -174,7 +174,7 @@ extension AMStorage{
     ///     - id: The object primary id
     /// - Returns: The managed object  if matching the id
     ///
-    public func query<Object:AMManagedObject>(one type:Object.Type,for id:Object.IDValue)->Object?{
+    public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
         return self.query(type, where: NSPredicate(format: "id == %@","\(id)")).first
     }
     ///
@@ -278,10 +278,10 @@ extension AMStorage{
     }
     public func query<Object:AMManagedObject>(
         one type:Object.Type,
-        for id:Object.IDValue,
+        id:Object.IDValue,
         block:((Object?) ->Void)?) {
         self.queue.async {
-            let obj = self.query(one: type, for: id)
+            let obj = self.query(one: type, id: id)
             DispatchQueue.main.async {
                 block?(obj)
             }
