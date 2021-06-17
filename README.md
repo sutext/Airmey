@@ -9,7 +9,8 @@
     - [AMFileUpload](#amfileupload)
     - [AMFormUpload](#amformupload)
     - [AMMonitor](#ammonitor)
-    - [Request](#request)
+    - [HTTPTask](#httptask)
+    - [Retrier](#retrier)
     - [JSON](#json)
   - [Storage](#storage)
     - [AMStorage](#amstorage)
@@ -132,9 +133,20 @@ class MyViewController: UIViewController {
 
 - 网络状态监听器，用于持续侦听网络状态。并发出全局广播
 
-### Request
+### HTTPTask
 
-- 网络请求返回的句柄。用于控制该次网络请求的时效，以及监控请求进度等
+- 网络请求返回的句柄。用于控制该次网络请求的时效，以及进度观察等
+
+```swift
+    let task = net.request("https://example.com/login",["username":"test"])
+    task.suspend()//暂停请求
+    task.resume()//恢复请求
+    task.addObserver(self, forKeyPath: "fractionCompleted", options: [.new], context: nil)//add progress observer
+```
+
+### Retrier
+
+- 请求重试器，负责描述重试规则
 
 ### JSON
 
@@ -183,295 +195,318 @@ func test(){
 
 ## Popup
 
-- 应用弹窗标准化
-  ### AMPresenter
-  - 主要实现`UIViewControllerTransitioningDelegate`和`UIViewControllerAnimatedTransitioning`
-  - 用于实现 UIViewController 的自定义交互
-  ### AMFramePresenter
-  - 继承自 AMPresenter 快捷实现视图位移动画弹窗效果，例如 ActionSheet
-  ### AMDimmingPresenter
-  - 继承自 AMPresenter 仅实现变暗的背景是的动画效果，多数用于和业务相关的自定义弹窗
-  ### AMFadeinPresenter
-  - 继承自 AMPresenter 仅实现整体弹窗视图的淡入和淡出效果
-  ### AMPopupCenter
-  - 全局弹窗控制类，主要负责打开和关闭各种弹窗
-  ```swift
-  let pop = PopupCenter()
-  class PopupCenter:AMPopupCenter{
-      public override class var Alert: AMAlertable.Type{AMAlertController.self}
-      public override class var Action: AMActionable.Type{AMActionController.self}
-  }
-  class PopupController: UIViewController {
-      override func viewDidLoad() {
-        pop.wait("loading....")
-        pop.idle()
-        pop.remind("test1")
-        pop.action(["apple","facebook"])
-        pop.action(["facebook","apple"])
-        pop.remind("testing....")
-        pop.alert("test alert",confirm: "确定",cancel: "取消")
-        pop.present(PopupController())
-      }
-  }
-  ```
-  ### AMPopupController
-  - 自定义弹窗控制器基类，多数自定义弹窗可以考虑从此类继承
-  ### AMAlertable
-  - 对话框类弹窗标准协议
-  - 提供一个默认样式的实现 AMAlertController 和一个系统样式弹窗的实现 AMPopupCenter.UIAlert
-  ### AMActionable
-  - Action sheet 类弹窗标准协议
-  - 提供一个默认样式实现 AMActionController 和一个系统样式 acctionsheet 实现。
-  ### AMWaitable
-  - Loading 类阻塞弹窗标准协议
-  - 提供默认样式的实现 AMWaitController
-  ### AMRemindable
-  - 一闪而过提示性弹窗标准协议
-  - 提供默认样式的实现 AMRemindController
+- 一套弹窗标准化协议
+
+```swift
+let pop = PopupCenter()
+class PopupCenter:AMPopupCenter{
+    public override class var Alert: AMAlertable.Type{AMAlertController.self}
+    public override class var Action: AMActionable.Type{AMActionController.self}
+}
+class PopupController: UIViewController {
+    override func viewDidLoad() {
+      pop.wait("loading....")
+      pop.idle()
+      pop.remind("test1")
+      pop.action(["apple","facebook"])
+      pop.action(["facebook","apple"])
+      pop.remind("testing....")
+      pop.alert("test alert",confirm: "确定",cancel: "取消")
+      pop.present(PopupController())
+    }
+}
+```
+
+### AMPresenter
+
+- 主要实现`UIViewControllerTransitioningDelegate`和`UIViewControllerAnimatedTransitioning`
+- 用于实现 UIViewController 的自定义交互
+
+### AMFramePresenter
+
+- 继承自 AMPresenter 快捷实现视图位移动画弹窗效果，例如 ActionSheet
+
+### AMDimmingPresenter
+
+- 继承自 AMPresenter 仅实现变暗的背景是的动画效果，多数用于和业务相关的自定义弹窗
+
+### AMFadeinPresenter
+
+- 继承自 AMPresenter 仅实现整体弹窗视图的淡入和淡出效果
+
+### AMPopupCenter
+
+- 全局弹窗控制类，主要负责打开和关闭各种弹窗
+
+### AMPopupController
+
+- 自定义弹窗控制器基类，多数自定义弹窗可以考虑从此类继承
+
+### AMAlertable
+
+- 对话框类弹窗标准协议
+- 提供一个默认样式的实现 AMAlertController 和一个系统样式弹窗的实现 AMPopupCenter.UIAlert
+
+### AMActionable
+
+- Action sheet 类弹窗标准协议
+- 提供一个默认样式实现 AMActionController 和一个系统样式 acctionsheet 实现。
+
+### AMWaitable
+
+- Loading 类阻塞弹窗标准协议
+- 提供默认样式的实现 AMWaitController
+
+### AMRemindable
+
+- 一闪而过提示性弹窗标准协议
+- 提供默认样式的实现 AMRemindController
 
 ## Widgets
 
 - 提供常用的 UI 组件的基本实现
 
-  ### AMView
+### AMView
 
-  - 继承自 `UIView`，提供 onclick（单击）和 doubleClick（双击） 点击事件快捷添加
+- 继承自 `UIView`，提供 onclick（单击）和 doubleClick（双击） 点击事件快捷添加
 
-  ```swift
-  let view = AMView()
-  view.onclick = {_ in }
-  view.doubleClick = {_ in }
-  ```
+```swift
+let view = AMView()
+view.onclick = {_ in }
+view.doubleClick = {_ in }
+```
 
-  ### AMLabel
+### AMLabel
 
-  - 继承自 `UILabel`，提供 onclick 点击事件快捷添加
-  - 提供 textInsets 属性以扩展 label 边界
+- 继承自 `UILabel`，提供 onclick 点击事件快捷添加
+- 提供 textInsets 属性以扩展 label 边界
 
-  ```swift
-  let label = AMLabel()
-  label.text = "test"
-  label.textInsets = UIEdgeInsets(top: 10, left: 10, bottom: 0, right: 0)
-  label.onclick = {_ in
-    // do some click action
-  }
-  ```
+```swift
+let label = AMLabel()
+label.text = "test"
+label.textInsets = UIEdgeInsets(top: 10, left: 10, bottom: 0, right: 0)
+label.onclick = {_ in
+  // do some click action
+}
+```
 
-  ### AMButton
+### AMButton
 
-  - 增加快捷点击事件 onclick 点击事件快捷添加
-  - 扩展 `UIButton` 布局实现。提供图文上下排列以及重叠排列方式
+- 增加快捷点击事件 onclick 点击事件快捷添加
+- 扩展 `UIButton` 布局实现。提供图文上下排列以及重叠排列方式
 
-  ```swift
-  let item = AMButtonItem()
-  item.title = "test"
-  item.image = UIImage(named:"test")
-  let button = AMButton(.bottom)
-  button.apply(item:item, for: .normal)
-  button.onclick = {_ in }
-  ```
+```swift
+let item = AMButtonItem()
+item.title = "test"
+item.image = UIImage(named:"test")
+let button = AMButton(.bottom)
+button.apply(item:item, for: .normal)
+button.onclick = {_ in }
+```
 
-  ### AMSwiper
+### AMSwiper
 
-  - 基于 UIPageViewController 实现常见的 banner 轮播视图，
-  - 实现无限循环列表轮播等功能。详细请运行 example 工程
+- 基于 UIPageViewController 实现常见的 banner 轮播视图，
+- 实现无限循环列表轮播等功能。详细请运行 example 工程
 
-  ```swift
-  let swiper = AMSwiper()
-  self.view.addSubview(swiper)
-  swiper.dataSource = self
-  swiper.delegate = self
-  swiper.reload()
-  ```
+```swift
+let swiper = AMSwiper()
+self.view.addSubview(swiper)
+swiper.dataSource = self
+swiper.delegate = self
+swiper.reload()
+```
 
-  ### AMToolBar
+### AMToolBar
 
-  - 继承自 `UIToolBar`该类被设计为一个工具栏抽象类，提供基本骨架和自动定位。
-  - 具体的外观需要子类实现，所有的 subview 都应该只被添加到 contentView 里面
+- 继承自 `UIToolBar`该类被设计为一个工具栏抽象类，提供基本骨架和自动定位。
+- 具体的外观需要子类实现，所有的 subview 都应该只被添加到 contentView 里面
 
-  ```swift
-  import UIKit
-  import Airmey
+```swift
+import UIKit
+import Airmey
 
-  public class CCNavBar: AMToolBar {
-      public override class var position: Position{.top}
-      required convenience init?(coder aDecoder: NSCoder) {
-          fatalError("init(coder:) has not been implemented")
-      }
-      public lazy var titleLabel:AMLabel={
-          let label = AMLabel()
-          self.contentView.addSubview(label)
-          label.am.center.equal(to: 0)
-          return label
-      }()
-      public var title:String?{
-          get{
-              return self.titleLabel.text
-          }
-          set {
-              self.titleLabel.text = newValue
-          }
-      }
-      public var leftItem:UIView?{
-          didSet{
-              oldValue?.removeFromSuperview()
-              if let newval = leftItem {
-                  self.contentView.addSubview(newval)
-                  newval.amake { am in
-                      am.left.equal(to: 15)
-                      am.centerY.equal(to: 0)
-                  }
-              }
-          }
-      }
-      public var rightItem:UIView?{
-          didSet{
-              oldValue?.removeFromSuperview()
-              if let newval = leftItem {
-                  self.contentView.addSubview(newval)
-                  newval.amake { am in
-                      am.right.equal(to: 15)
-                      am.centerY.equal(to: 0)
-                  }
-              }
-          }
-      }
-  }
-  ```
+public class CCNavBar: AMToolBar {
+    public override class var position: Position{.top}
+    required convenience init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    public lazy var titleLabel:AMLabel={
+        let label = AMLabel()
+        self.contentView.addSubview(label)
+        label.am.center.equal(to: 0)
+        return label
+    }()
+    public var title:String?{
+        get{
+            return self.titleLabel.text
+        }
+        set {
+            self.titleLabel.text = newValue
+        }
+    }
+    public var leftItem:UIView?{
+        didSet{
+            oldValue?.removeFromSuperview()
+            if let newval = leftItem {
+                self.contentView.addSubview(newval)
+                newval.amake { am in
+                    am.left.equal(to: 15)
+                    am.centerY.equal(to: 0)
+                }
+            }
+        }
+    }
+    public var rightItem:UIView?{
+        didSet{
+            oldValue?.removeFromSuperview()
+            if let newval = leftItem {
+                self.contentView.addSubview(newval)
+                newval.amake { am in
+                    am.right.equal(to: 15)
+                    am.centerY.equal(to: 0)
+                }
+            }
+        }
+    }
+}
+```
 
-  ### AMDigitLabel
+### AMDigitLabel
 
-  - 继承自 `AMLabel` ，实现了滚动数字动画效果的支持
+- 继承自 `AMLabel` ，实现了滚动数字动画效果的支持
 
-  ```swift
-    let label = AMDigitLabel()
-    label.digit = 1000
-  ```
+```swift
+  let label = AMDigitLabel()
+  label.digit = 1000
+```
 
-  ### AMImageLabel
+### AMImageLabel
 
-  - 继承自 `AMView`，增加图片文字快捷组合布局视图
+- 继承自 `AMView`，增加图片文字快捷组合布局视图
 
-  ```swift
-  let label = AMImageLabel()
-  label.font = .systemFont(ofSize: 14)
-  label.textColor = .black
-  label.text = "test"
-  label.spacing = 10
-  label.image = UIImage(named:"test")
-  label.onclick = {_ in }
-  ```
+```swift
+let label = AMImageLabel()
+label.font = .systemFont(ofSize: 14)
+label.textColor = .black
+label.text = "test"
+label.spacing = 10
+label.image = UIImage(named:"test")
+label.onclick = {_ in }
+```
 
-  ### AMImageView
+### AMImageView
 
-  - 继承自 `UIImageView`，提供 onclick（单击）和 doubleClick（双击） 点击事件快捷添加
+- 继承自 `UIImageView`，提供 onclick（单击）和 doubleClick（双击） 点击事件快捷添加
 
-  ```swift
-  let view = AMImageView()
-  view.onclick = {_ in }
-  view.doubleClick = {_ in }
-  ```
+```swift
+let view = AMImageView()
+view.onclick = {_ in }
+view.doubleClick = {_ in }
+```
 
-  ### AMEffectView
+### AMEffectView
 
-  - 继承自`AMView`，增加对`UIVisualEffectView`的封装，可快速添加模糊效果
+- 继承自`AMView`，增加对`UIVisualEffectView`的封装，可快速添加模糊效果
 
-  ```swift
-  let contentView = AMEffectView(.light)
-  contentView.addSubview(label)
-  ```
+```swift
+let contentView = AMEffectView(.light)
+contentView.addSubview(label)
+```
 
-  ### AMRefreshControl
+### AMRefreshControl
 
-  - 定义下拉或者上拉刷新的协议，具体刷新的 UI 需要自行实现
+- 定义下拉或者上拉刷新的协议，具体刷新的 UI 需要自行实现
 
-  ### AMLoadmoreControl
+### AMLoadmoreControl
 
-  - 继承自 `UIControl` 实现了 AMRefreshControl 协议。提供默认的下拉刷新 UI
+- 继承自 `UIControl` 实现了 AMRefreshControl 协议。提供默认的下拉刷新 UI
 
-  ### AMTableView
+### AMTableView
 
-  - 继承自 `UITableView` 增加了 refresh control 的支持
+- 继承自 `UITableView` 增加了 refresh control 的支持
 
-  ```swift
-  public class ViewController: UIViewController {
-      let tableView = AMTableView()
-      public override func viewDidLoad() {
-          super.viewDidLoad()
-          self.view.addSubview(self.tableView)
-          self.tableView.delegate = self
-          self.tableView.dataSource = self
-          self.tableView.am.edge.equal(to: 0)
-          self.navbar.title = "Videos"
-          self.tableView.register(FeedsCell.self)
-          self.tableView.using(refreshs: [.top,.bottom])
-          self.tableView.contentInset = UIEdgeInsets(top: CCNavBar.contentHeight, left: 0, bottom: 0, right: 0)
-          self.reloadData()
-      }
-      public func reloadData() {
-          pop.wait("loading...")
-          net.request(CCRequest.Feeds()){resp in
-              pop.idle()
-              self.tableView.refresh(at: .top)?.endRefreshing()
-              guard let objects = resp.value else{
-                  pop.remind("加载失败")
-                  return
-              }
-              self.videos = objects
-              self.tableView.reloadData()
-          }
-      }
-      public func loadMore() {
-          net.request(CCRequest.Feeds()){resp in
-              self.tableView.refresh(at: .bottom)?.endRefreshing()
-              guard let objects = resp.value,objects.count>0 else{
-                  return
-              }
-              self.videos.append(contentsOf: objects)
-              self.tableView.reloadData()
-          }
-      }
-  }
-  extension ViewController:AMTableViewDelegate,UITableViewDataSource{
-    func tableView(_ tableView: AMTableView, beginRefresh style: AMRefreshStyle, control: AMRefreshControl) {
-          switch style {
-          case .top:
-              self.reloadData()
-          case .bottom:
-              self.loadMore()
-          }
-      }
-  }
-  ```
+```swift
+public class ViewController: UIViewController {
+    let tableView = AMTableView()
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.addSubview(self.tableView)
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+        self.tableView.am.edge.equal(to: 0)
+        self.navbar.title = "Videos"
+        self.tableView.register(FeedsCell.self)
+        self.tableView.using(refreshs: [.top,.bottom])
+        self.tableView.contentInset = UIEdgeInsets(top: CCNavBar.contentHeight, left: 0, bottom: 0, right: 0)
+        self.reloadData()
+    }
+    public func reloadData() {
+        pop.wait("loading...")
+        net.request(CCRequest.Feeds()){resp in
+            pop.idle()
+            self.tableView.refresh(at: .top)?.endRefreshing()
+            guard let objects = resp.value else{
+                pop.remind("加载失败")
+                return
+            }
+            self.videos = objects
+            self.tableView.reloadData()
+        }
+    }
+    public func loadMore() {
+        net.request(CCRequest.Feeds()){resp in
+            self.tableView.refresh(at: .bottom)?.endRefreshing()
+            guard let objects = resp.value,objects.count>0 else{
+                return
+            }
+            self.videos.append(contentsOf: objects)
+            self.tableView.reloadData()
+        }
+    }
+}
+extension ViewController:AMTableViewDelegate,UITableViewDataSource{
+  func tableView(_ tableView: AMTableView, beginRefresh style: AMRefreshStyle, control: AMRefreshControl) {
+        switch style {
+        case .top:
+            self.reloadData()
+        case .bottom:
+            self.loadMore()
+        }
+    }
+}
+```
 
-  ### AMTableViewDelegate
+### AMTableViewDelegate
 
-  - 继承自 `UITableViewDelegate` 增加 refresh control 的代理方法
+- 继承自 `UITableViewDelegate` 增加 refresh control 的代理方法
 
-  ### AMCollectionView
+### AMCollectionView
 
-  -继承自 `UICollectionView` 增加 refresh control 的支持
+-继承自 `UICollectionView` 增加 refresh control 的支持
 
-  ### AMCollectionViewDelegate
+### AMCollectionViewDelegate
 
-  - 继承自 `UICollectionViewDelegate` 增加 refresh control 的代理方法
+- 继承自 `UICollectionViewDelegate` 增加 refresh control 的代理方法
 
-  ### AMLayoutViewController
+### AMLayoutViewController
 
-  - 继承自 `UIViewController` 实现侧边栏布局。具体用法请参考 Example 工程
+- 继承自 `UIViewController` 实现侧边栏布局。具体用法请参考 Example 工程
 
 ## AMPhone
 
-- 设备尺寸常量
-- 设备唯一 ID 实现
+- 维护一些和iPhone设备相关的常量
 
 ```swift
 let uuid = AMPhone.uuid
-let isSlim = AMPhone.isSlim//是否是长屏幕
+let isSlim = AMPhone.isSlim//是否是全面屏手机
 let isPlus = AMPhone.isPlus//是否是plus宽屏手机
 let isSmall = AMPhone.isSmall//是否是5，5s，SE，小屏手机
 let width = AMPhone.width//屏幕宽度 枚举类型
 let height = AMPhone.height//屏幕高度 枚举类型
+let cache = AMPhone.cacheDir//沙盒缓存目录
+let doc = AMPhone.docDir//沙盒document 目录
+let tmp = AMPHone.temDir//沙盒临时目录
 ```
 
 ## AMImageCache
@@ -539,7 +574,12 @@ time.string(for: .full)//2021-06-16 16:45:02
 - base64 构造 base64 图片
 
 ```swift
-var image:UIImage = .rect(.red,size:CGSize(width:100,height:100))
+var image:UIImage?
+image = .data(gifData)
+image = .rect(.red,size:CGSize(width:100,height:100))
 image = .round(.red,radius:100)
 image = .qrcode("https://xxx.com/xxx")
+print(image.qrcode!)//https://xxx.com/xxx
+image = .base64(base64String)
+image = .gradual(CGSize(width:100,height:100),points: .ymin(.red),.ymax(.blue))
 ```

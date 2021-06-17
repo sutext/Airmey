@@ -288,7 +288,7 @@ public class Retrier {
     ///     - request: `Request` that failed due to the provided `Error`.
     ///     - error:   `Error` encountered while executing the `Request`.
     /// - Returns: delay timeinterval, if nill means never retry
-    func doRetry(_ request: Request, when error: Error) -> TimeInterval? {
+    func doRetry(_ request: HTTPTask, when error: Error) -> TimeInterval? {
         guard limit > count else {
             return nil
         }

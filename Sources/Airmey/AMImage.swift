@@ -24,7 +24,7 @@ public extension UIImage{
         }
     }
     /// Add gif data support
-    static func data(_ data:Data,scale:CGFloat)->UIImage?{
+    static func data(_ data:Data,scale:CGFloat=UIScreen.main.scale)->UIImage?{
         let format = Format(data)
         switch format {
         case .gif:
@@ -64,8 +64,8 @@ public extension UIImage{
         }
     }
     /// create single color rectangle image
-    static func rect(_ color:UIColor,size:CGSize)->UIImage?{
-        UIGraphicsBeginImageContextWithOptions(size, false, 3)
+    static func rect(_ color:UIColor,size:CGSize,scale:CGFloat=UIScreen.main.scale)->UIImage?{
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
         let context = UIGraphicsGetCurrentContext()
         defer {
             UIGraphicsEndImageContext()
@@ -75,9 +75,9 @@ public extension UIImage{
         return UIGraphicsGetImageFromCurrentImageContext()
     }
     /// create single color circle image
-    static func round(_ color:UIColor,radius:CGFloat)->UIImage?{
+    static func round(_ color:UIColor,radius:CGFloat,scale:CGFloat=UIScreen.main.scale)->UIImage?{
         let width = radius*2
-        UIGraphicsBeginImageContextWithOptions(CGSize(width:width,height:width), false, 3)
+        UIGraphicsBeginImageContextWithOptions(CGSize(width:width,height:width), false, scale)
         let context = UIGraphicsGetCurrentContext()
         defer {
             UIGraphicsEndImageContext()
@@ -87,7 +87,7 @@ public extension UIImage{
         return UIGraphicsGetImageFromCurrentImageContext()
     }
     /// create qrcode image from string
-    static func qrcode(_ string:String,size:CGSize = CGSize(width:200,height:200))->UIImage?{
+    static func qrcode(_ string:String,size:CGSize = CGSize(width:200,height:200),scale:CGFloat=UIScreen.main.scale)->UIImage?{
         guard let filter = CIFilter(name: "CIQRCodeGenerator") else {
             return nil
         }
@@ -100,7 +100,7 @@ public extension UIImage{
         guard let cgimage = CIContext().createCGImage(ciimage, from: ciimage.extent) else{
             return nil
         }
-        UIGraphicsBeginImageContextWithOptions(size, false, 3)
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
         defer {
             UIGraphicsEndImageContext()
         }

@@ -23,7 +23,7 @@ public protocol AMManagedObject:NSManagedObject{
     /// The current primary key
     var id:IDValue{get}
     /// The model to managed object transfer.  Usualy it's a model initialize method
-    func aweak(from model:Model)
+    func awake(from model:Model)
 }
 
 public protocol AMFetchPropertyConfigure:NSManagedObject{
@@ -241,7 +241,7 @@ extension AMStorage{
         let request = type.fetchRequest()
         request.predicate = NSPredicate(format:"id == %@","\(id)");
         let object = (try? self.moc.fetch(request))?.first as? Object ?? type.init(context: self.moc)
-        object.aweak(from: model)
+        object.awake(from: model)
         object.setValue(id, forKey: "id")
         return object
     }

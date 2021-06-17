@@ -34,6 +34,7 @@ public class CCNetwork: AMNetwork {
     public override var retrier: Retrier?{
         return Retrier(limit:1,policy:.immediately,methods:[.post],statusCodes: [404])
     }
+    
     public override var headers: [String : String]{
         let device = UIDevice.current
         let info = Bundle.main.infoDictionary
@@ -50,8 +51,14 @@ public class CCNetwork: AMNetwork {
         }
         return result
     }
+    public override func `catch`(_ error: Swift.Error) throws {
+        throw Error.invalidData
+    }
+    public override func verify(_ old: Response<JSON>) -> Response<JSON> {
+        old
+    }
     @discardableResult
-    func request(_ req: CCRequest, completion: ((Response<JSON>) -> Void)? = nil) -> Request? {
+    func request(_ req: CCRequest, completion: ((Response<JSON>) -> Void)? = nil) -> HTTPTask? {
         return self.request(req.path, params: req.params, options: req.options) { resp in
             DispatchQueue.main.async {
                 completion?(resp)
@@ -122,7 +129,7 @@ extension AMNetwork.Options{
         }
     }
     public static func get(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
-        .init(.get,baseURL: base.url) { old in
+        .init(.get,baseURL: base.url,headers: ["test":"testxxx"]) { old in
             return old.map {
                 let json = JSON($0)
                 guard case .api = base else{
@@ -174,6 +181,7 @@ class UploadAvatar: AMFormUpload {
 }
 class DownloadImage: AMDownload {        
     var url: String
+    var queue: DispatchQueue?
     var params: HTTPParams?
     var headers: [String:String]?
     init(_ url:String) {

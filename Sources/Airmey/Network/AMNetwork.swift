@@ -32,12 +32,16 @@ open class AMNetwork {
     private var baseURL:URL?
     /// print debug log or not. override for custom
     open var debug:Bool{ false }
+    /// global callback queue by default use main queue.
+    open var queue:DispatchQueue { .main }
     /// global http method `.get` by default. override for custom
     open var method:HTTPMethod{.get}
     /// global retryer  `nil` by default . override for custom
     open var retrier:Retrier?{ nil }
     /// global request encoder  `JSNEncoder()` by default. override for custom
     open var encoder:HTTPEncoder{ JSNEncoder() }
+    /// global request encoder  `JSNEncoder()` by default. override for custom
+    open var decoder:HTTPDecoder{ JSNDecoder() }
     /// global http headers `[:]` by default, override for custom
     open var headers:[String:String]{ [:] }
     /// global timeout in secends `60` by default. override for custom
@@ -51,8 +55,9 @@ open class AMNetwork {
     /// global error catched here
     /// - Parameters:
     ///     - error: The input error
-    /// - Throws: Output a new Error if throws. otherwise keep origin
-    open func oncatch (_ error:Error){
+    /// - Throws: Output a new Error if throws. otherwise keep origin error
+    /// - Note: this method called in airmey delegate queue
+    open func `catch` (_ error:Error) throws{
         
     }
     ///
@@ -64,16 +69,18 @@ open class AMNetwork {
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
-    public func request<R:AMRequest>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
+    public func request<R:AMRequest>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->HTTPTask?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
             let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
+        let queue = req.options?.queue ?? self.queue
         let method = req.options?.method ?? self.method
         let timeout = req.options?.timeout ?? self.timeout
         let encoder = req.options?.encoder ?? self.encoder
+        let decoder = req.options?.decoder ?? self.decoder
         let retrier = req.options?.retrier ?? self.retrier
         var headers = HTTPHeaders(self.headers)
         if let h = req.options?.headers {
@@ -85,6 +92,7 @@ open class AMNetwork {
             params: req.params,
             headers: headers,
             encoder: encoder,
+            decoder: decoder,
             retrier: retrier,
             timeout: timeout) {res in
             var resp:Response<R.Model>
@@ -93,15 +101,17 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                if let error = resp.error{
-                    self.oncatch(error)
-                }
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     ///
@@ -119,16 +129,18 @@ open class AMNetwork {
         _  path:String,
         params:HTTPParams?=nil,
         options:Options?=nil,
-        completion:((Response<JSON>)->Void)? = nil)->Request?{
+        completion:((Response<JSON>)->Void)? = nil)->HTTPTask?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:path))
             completion?(.init(result: result))
             return nil;
         }
+        let queue = options?.queue ?? self.queue
         let method = options?.method ?? self.method
         let timeout = options?.timeout ?? self.timeout
         let encoder = options?.encoder ?? self.encoder
+        let decoder = options?.decoder ?? self.decoder
         let retrier = options?.retrier ?? self.retrier
         var headers = HTTPHeaders(self.headers)
         if let h = options?.headers {
@@ -140,6 +152,7 @@ open class AMNetwork {
             params: params,
             headers: headers,
             encoder: encoder,
+            decoder: decoder,
             retrier: retrier,
             timeout: timeout) {res in
             var resp:Response<JSON>
@@ -148,15 +161,17 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res)
             }
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                if let error = resp.error{
-                    self.oncatch(error)
-                }
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     /// Send an `multipart/form-data` request
@@ -167,13 +182,15 @@ open class AMNetwork {
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
-    public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
+    public func upload<R:AMFormUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->HTTPTask?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
             let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
+        let queue = req.options?.queue ?? self.queue
+        let decoder = req.options?.decoder ?? self.decoder
         var headers = HTTPHeaders(self.headers)
         if let h = req.options?.headers {
             headers.merge(h)
@@ -182,6 +199,7 @@ open class AMNetwork {
             url,
             form: req.form,
             params: req.params,
+            decoder: decoder,
             headers: headers,
             fileManager: fileManager) { res in
             var resp:Response<R.Model>
@@ -190,15 +208,17 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                if let error = resp.error{
-                    self.oncatch(error)
-                }
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     /// Send an file upload  request
@@ -209,13 +229,15 @@ open class AMNetwork {
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
-    public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->Request?{
+    public func upload<R:AMFileUpload>(_ req:R,completion:((Response<R.Model>)->Void)? = nil)->HTTPTask?{
         guard let baseURL = req.options?.baseURL ?? self.baseURL ,
               let url = URL(string:req.path,relativeTo:baseURL) else {
             let result:Result<R.Model,Error> = .failure(HTTPError.invalidURL(url:req.path))
             completion?(Response(result: result))
             return nil;
         }
+        let queue = req.options?.queue ?? self.queue
+        let decoder = req.options?.decoder ?? self.decoder
         var headers = HTTPHeaders(self.headers)
         if let h = req.options?.headers {
             headers.merge(h)
@@ -225,6 +247,7 @@ open class AMNetwork {
             file: req.file,
             params: req.params,
             headers: headers,
+            decoder: decoder,
             fileManager: fileManager) { res in
             var resp:Response<R.Model>
             if let verify = req.options?.verifier{
@@ -232,15 +255,17 @@ open class AMNetwork {
             }else{
                 resp = self.verify(res).map{try req.convert($0)}
             }
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                if let error = resp.error{
-                    self.oncatch(error)
-                }
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     /// Send an file download  request
@@ -251,24 +276,31 @@ open class AMNetwork {
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
-    public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->Download?{
+    public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
         guard let url = URL(string:req.url) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:req.url))
             completion?(Response(result: result))
             return nil;
         }
-        return self.session.download(url, params: req.params, headers: HTTPHeaders(req.headers), fileManager: fileManager,transfer:{
-            req.location(for: $0, and: $1)
-        }) { resp in
+        let queue = req.queue ?? self.queue
+        return self.session.download(
+            url,
+            params: req.params,
+            headers: HTTPHeaders(req.headers),
+            fileManager: fileManager,
+            transfer:{ req.location(for: $0, and: $1) }) { resp in
+            var resp = resp
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                if let error = resp.error{
-                    self.oncatch(error)
-                }
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     /// Send a simple download  request
@@ -285,10 +317,12 @@ open class AMNetwork {
     @discardableResult
     public func download(
         _ url:String,
+        queue:DispatchQueue?=nil,
         params:HTTPParams?=nil,
         headers:[String:String]?=nil,
-        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
-        completion:((Response<JSON>)->Void)?=nil)->Download?{
+        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
+        let queue = queue ?? self.queue
         var aheaders = HTTPHeaders(self.headers)
         guard let url = URL(string:url) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:url))
@@ -298,16 +332,24 @@ open class AMNetwork {
         if let newh = headers {
             aheaders.merge(newh)
         }
-        return self.session.download(url, params: params, headers: aheaders, fileManager: fileManager,transfer: transfer) { resp in
-            if let error = resp.error{
-                self.oncatch(error)
+        return self.session.download(
+            url,
+            params: params,
+            headers: aheaders,
+            fileManager: fileManager,
+            transfer: transfer) { resp in
+            var resp = resp
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
             }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
     /// Send a resume download request
@@ -321,18 +363,26 @@ open class AMNetwork {
     @discardableResult
     public func download(
         resume data:Data,
-        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
-        completion:((Response<JSON>)->Void)?=nil)->Download?{
-        return self.session.download(resume: data, fileManager: fileManager,transfer: transfer) { resp in
-            if let error = resp.error{
-                self.oncatch(error)
+        queue:DispatchQueue?=nil,
+        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
+        let queue = queue ?? self.queue
+        return self.session.download(
+            resume: data,
+            fileManager: fileManager,
+            transfer: transfer) { resp in
+            var resp = resp
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
             }
             if self.debug{
                 debugPrint(resp)
             }
-            DispatchQueue.main.async {
-                completion?(resp)
-            }
+            queue.async { completion?(resp) }
         }
     }
 }
@@ -367,12 +417,16 @@ extension AMNetwork{
 extension AMNetwork{
     public typealias Verifier = (Response<JSON>) -> Response<JSON>
     public struct Options{
+        /// overwrite the global callback queue settings
+        public var queue:DispatchQueue?
         /// overwrite the global method settings
         public var method:HTTPMethod?
         /// overwrite the global baseURL settings
         public var baseURL:URL?
         /// overwrite the global encoder settings
         public var encoder:HTTPEncoder?
+        /// overwrite the global decoder settings
+        public var decoder:HTTPDecoder?
         /// overwrite the global retrier settings
         public var retrier:Retrier?
         /// merge into global headers

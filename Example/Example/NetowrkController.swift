@@ -57,14 +57,13 @@ class NetowrkController: UIViewController {
             
         }
         self.addTest("测试GET") {
-            net.request("app/checkPhoneRegistration",params: ["test":"xxx"],options: .get(.api)){
+            net.request("app/checkPhoneRegistration",options: .get(.api)){
                 debugPrint($0)
             }
         }
         self.addTest("测试异常解析") {
             net.request("feeds/home-pull",options: .get(.ugc)){
                 debugPrint($0)
-                
             }
         }
         self.addTest("测试webimage") {

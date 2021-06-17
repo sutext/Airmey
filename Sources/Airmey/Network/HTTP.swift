@@ -14,7 +14,8 @@ public enum HTTPError:Error{
     case encode(Error)
     case download(info:String)
     case invalidURL(url:String)
-    case invalidStatus(code:Int?,info:JSON)
+    case invalidStatus(code:Int,info:JSON)
+    case invalidResponse(resp:URLResponse?)
 }
 public enum HTTPMethod:String{
     case get = "GET"

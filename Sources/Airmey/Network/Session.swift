@@ -11,7 +11,7 @@ import Foundation
 class Session:NSObject{
     private let rootQueue:DispatchQueue = .init(label: "com.airmey.network.rootQueue")
     private let retryQueue:DispatchQueue = .init(label: "com.airmey.network.retryQueue")
-    private var requests:[Int:Request] = [:]
+    private var requests:[Int:HTTPTask] = [:]
     private lazy var session:URLSession = {
         let config = URLSessionConfiguration.default
         let queue = OperationQueue()
@@ -23,13 +23,14 @@ class Session:NSObject{
     }()
     func request(
         _ url:URL,
-        method:HTTPMethod = .post,
-        params:HTTPParams?=nil,
-        headers:HTTPHeaders = .default,
-        encoder:HTTPEncoder = JSNEncoder(),
+        method:HTTPMethod,
+        params:HTTPParams?,
+        headers:HTTPHeaders,
+        encoder:HTTPEncoder,
+        decoder:HTTPDecoder,
         retrier:Retrier? = nil,
         timeout:TimeInterval = 60,
-        completion:((Response<JSON>)->Void)?=nil)->Request?{
+        completion:((Response<JSON>)->Void)?=nil)->HTTPTask?{
         let result = encoder.encode(url, method: method, params: params, headers: headers, timeout: timeout)
         guard let urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
@@ -37,17 +38,18 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.dataTask(with: urlreq)
-        let req = Request(task,retrier: retrier,completion: completion)
+        let req = HTTPTask(task,retrier: retrier,decoder: decoder,completion: completion)
         self.add(req)
         return req
     }
     func upload(
         _ url:URL,
         file:URL,
-        params:HTTPParams? = nil,
-        headers:HTTPHeaders? = nil,
+        params:HTTPParams?,
+        headers:HTTPHeaders?,
+        decoder:HTTPDecoder,
         fileManager:FileManager = .default,
-        completion:((Response<JSON>)->Void)?=nil)->Request?{
+        completion:((Response<JSON>)->Void)?=nil)->HTTPTask?{
         let result = URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
         guard let urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
@@ -55,17 +57,18 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.uploadTask(with: urlreq, fromFile: file)
-        let req = Upload(task,fileManager: fileManager,completion: completion)
+        let req = UploadTask(task,decoder: decoder,fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
     func upload(
         _ url:URL,
         form:FormData,
-        params:HTTPParams?=nil,
-        headers:HTTPHeaders? = nil,
+        params:HTTPParams?,
+        decoder:HTTPDecoder,
+        headers:HTTPHeaders?,
         fileManager:FileManager = .default,
-        completion:((Response<JSON>)->Void)?=nil)->Request?{
+        completion:((Response<JSON>)->Void)?=nil)->HTTPTask?{
         let result = URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
         guard var urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
@@ -75,14 +78,14 @@ class Session:NSObject{
         urlreq.setHeader(form.contentType, for: .contentType)
         do {
             let upload = try form.toUpload()
-            var req:Upload
+            var req:UploadTask
             switch upload {
             case .data(let data):
                 let task = self.session.uploadTask(with: urlreq, from: data)
-                req = Upload(task,fileManager: form.fileManager,completion: completion)
+                req = UploadTask(task,decoder: decoder,fileManager: form.fileManager,completion: completion)
             case .file(let fileURL):
                 let task = self.session.uploadTask(with: urlreq, fromFile: fileURL)
-                req = Upload(task,fileManager: form.fileManager,completion: completion)
+                req = UploadTask(task,decoder: decoder,fileManager: form.fileManager,completion: completion)
                 req.cleanupFile = fileURL
             }
             self.add(req)
@@ -96,20 +99,20 @@ class Session:NSObject{
     func download(
         resume data: Data,
         fileManager:FileManager = .default,
-        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
-        completion:((Response<JSON>)->Void)?)->Download?{
+        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        completion:((Response<JSON>)->Void)?)->DownloadTask?{
         let task = self.session.downloadTask(withResumeData: data)
-        let req = Download(task, transfer: transfer, fileManager: fileManager,completion: completion)
+        let req = DownloadTask(task, transfer: transfer, fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
     func download(
         _ url: URL,
-        params:HTTPParams? = nil,
-        headers:HTTPHeaders? = nil,
+        params:HTTPParams?,
+        headers:HTTPHeaders?,
         fileManager:FileManager = .default,
-        transfer:@escaping Download.URLTransfer = Download.defaultTransfer,
-        completion:((Response<JSON>)->Void)?)->Download?{
+        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        completion:((Response<JSON>)->Void)?)->DownloadTask?{
         let result = URLEncoder.query.encode(url, method: .get, params: params, headers: headers, timeout: 0)
         guard let urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
@@ -117,21 +120,21 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.downloadTask(with: urlreq)
-        let req = Download(task, transfer: transfer, fileManager: fileManager,completion: completion)
+        let req = DownloadTask(task, transfer: transfer, fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
 }
 
 extension Session{
-    func add(_ req:Request) {
+    func add(_ req:HTTPTask) {
         self.requests[req.id] = req
         req.resume()
     }
-    func remove(_ req:Request){
+    func remove(_ req:HTTPTask){
         self.requests.removeValue(forKey: req.id)
     }
-    func restart(_ req:Request,after:TimeInterval = 0){
+    func restart(_ req:HTTPTask,after:TimeInterval = 0){
         retryQueue.asyncAfter(deadline: .now()+after) {
             req.reset(task: self.session.dataTask(with: req.request!))
             self.add(req)
@@ -167,7 +170,7 @@ extension Session:URLSessionDataDelegate{
 
 extension Session : URLSessionDownloadDelegate{
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL){
-        if let req = self.requests[downloadTask.taskIdentifier] as? Download{
+        if let req = self.requests[downloadTask.taskIdentifier] as? DownloadTask{
             req.finishDownload(location)
         }
     }

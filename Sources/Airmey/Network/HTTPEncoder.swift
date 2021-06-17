@@ -1,5 +1,5 @@
 ///
-//  HTTPEncoding.swift
+//  HTTPEncoder.swift
 //  Airmey
 //
 //  Created by supertext on 2021/6/09.

@@ -1,5 +1,5 @@
 //
-//  Request.swift
+//  HTTPTask.swift
 //  Airmey
 //
 //  Created by supertext on 2021/6/09.
@@ -10,19 +10,22 @@ import Foundation
 
 /// `Request` is the common superclass of all request types and provides common state  and callback handling.
 /// - Note provides progress interface for any request
-open class Request{
+open class HTTPTask{
     typealias Completion = (Response<JSON>)->Void
     private(set) var task:URLSessionTask
     @Protected
     private var mutableData: Data? = nil
+    let decoder:HTTPDecoder
     let completion:Completion?
     init(
         _ task:URLSessionTask,
         retrier:Retrier?,
+        decoder:HTTPDecoder,
         completion:Completion?){
         self.task = task
         self.completion = completion
         self.retrier  = retrier
+        self.decoder = decoder
     }
     /// some error if occured
     public internal(set) var error:Error?
@@ -75,26 +78,25 @@ open class Request{
         if let error = error {
             return self.retry(when: error)
         }
-        guard let code = statusCode,
-              [200,204,205].contains(code) else {
-            let error = HTTPError.invalidStatus(code:statusCode, info:.init(parse: data))
+        guard let resp = response else {
+            let error = HTTPError.invalidResponse(resp: task.response)
             self.error = error
             return self.retry(when: error)
         }
-        var result:Result<JSON,Error>
-        if let data = data {
-            result = .init{try JSON.parse(data)}
-        }else{
-            result = .success(.null)
+        do {
+            let json = try decoder.decode(data,response: resp)
+            let response = Response<JSON>(
+                data: data,
+                result: .success(json),
+                request: request,
+                metrics: metrics,
+                response: response)
+            self.completion?(response)
+            return nil
+        } catch {
+            self.error = error
+            return self.retry(when: error)
         }
-        let response = Response<JSON>(
-            data: data,
-            result: result,
-            request: request,
-            metrics: metrics,
-            response: response)
-        self.completion?(response)
-        return nil
     }
     func retry(when error:Error)->TimeInterval?{
         guard let delay = self.retrier?.doRetry(self, when: error) else {
@@ -116,14 +118,19 @@ open class Request{
         self.task = task
     }
     func cleanup(){
+        
     }
 }
-public class Upload:Request{
+public class UploadTask:HTTPTask{
     private var fileManager:FileManager
     var cleanupFile:URL?
-    init(_ task: URLSessionTask, fileManager: FileManager,completion:Completion?) {
+    init(
+        _ task: URLSessionTask,
+        decoder:HTTPDecoder,
+        fileManager: FileManager,
+        completion:Completion?) {
         self.fileManager = fileManager
-        super.init(task, retrier: nil,completion: completion)
+        super.init(task, retrier: nil,decoder: decoder,completion: completion)
     }
     override func cleanup() {
         super.cleanup()
@@ -137,7 +144,7 @@ extension URLRequest{
         setValue(value, forHTTPHeaderField: field.rawValue)
     }
 }
-public class Download:Request{
+public class DownloadTask:HTTPTask{
     /// temp file url transfer
     public typealias URLTransfer = (_ tempURL:URL,_ response:HTTPURLResponse?) -> URL
     /// A default transfer managed by airmey in temp dir
@@ -151,7 +158,7 @@ public class Download:Request{
     init(_ task: URLSessionDownloadTask,transfer: @escaping URLTransfer,fileManager:FileManager,completion:Completion?) {
         self.transfer = transfer
         self.fileManager = fileManager
-        super.init(task, retrier: nil,completion: completion)
+        super.init(task, retrier: nil,decoder: JSNDecoder(),completion: completion)
     }
     override func finish(_ error: Error?) -> TimeInterval? {
         guard case .completed = state else {
@@ -163,20 +170,22 @@ public class Download:Request{
         if let error = self.error {
             return self.retry(when: error)
         }
+        guard let resp = response else {
+            return self.retry(when: HTTPError.invalidResponse(resp: task.response))
+        }
         guard let code = statusCode,code == 200 else {
-            let error = HTTPError.invalidStatus(code:statusCode, info: .null)
+            let error = HTTPError.invalidStatus(code:resp.statusCode, info: .null)
             return self.retry(when: error)
         }
         guard let location = self.fileURL?.absoluteString else {
             return retry(when: HTTPError.download(info:"invalid destination file url"))
         }
-        let resp = Response<JSON>(
-            data: data,
-            result: .success(JSON(location)),
-            request: request,
-            metrics: metrics,
-            response: response)
-        self.completion?(resp)
+        self.completion?(Response<JSON>(
+                            data: data,
+                            result: .success(JSON(location)),
+                            request: request,
+                            metrics: metrics,
+                            response: response))
         return nil
     }
     func finishDownload(_ location:URL){

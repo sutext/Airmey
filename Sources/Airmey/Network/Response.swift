@@ -58,11 +58,12 @@ public struct Response<M>{
 extension Response:CustomStringConvertible, CustomDebugStringConvertible{
     public var description: String {"\(result)"}
     public var debugDescription: String {
-        guard let urlRequest = request else { return "[Request]: None\n[Result]: \(result)" }
+        guard let url = request?.url?.absoluteString else { return "[Request]: None\n[Result]: \(result)" }
         let responseDescription = "[Response]: \(response==nil ? "None" :  response!.debugDescription)"
         let networkDuration = metrics.map { "\($0.taskInterval.duration)s" } ?? "None"
         return """
-        [Request]:\(urlRequest.description)
+        [Request URL]: \(url)
+        [Request Methods]: \(request?.allHTTPHeaderFields ?? [:])
         \(responseDescription)
         [Network Duration]: \(networkDuration)
         [Result]: \(result)
