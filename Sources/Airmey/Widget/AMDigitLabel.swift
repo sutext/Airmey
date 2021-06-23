@@ -21,7 +21,7 @@ final public class AMDigitLabel:AMLabel{
     deinit {
         self.timer.stop()
     }
-    init(_ frameRate:Double = 30) {
+    public init(_ frameRate:Double = 30) {
         self.rate = frameRate
         self.timer = AMTimer(interval: 1.0/frameRate)
         self.formater = Self.defaultFormater

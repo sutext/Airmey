@@ -228,7 +228,8 @@ extension JSON: Collection {
         }
     }
 }
-
+/// Do not declare new conformances to this protocol; they will not
+/// work as expected.
 public protocol JSONIndex:Codable{}
 extension String:JSONIndex{}
 extension Int:JSONIndex{}
