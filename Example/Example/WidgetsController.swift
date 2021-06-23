@@ -12,7 +12,7 @@ import Airmey
 class WidgetsController: UIViewController {
     let contentView = AMEffectView(.light)
     let stackView = UIStackView()
-
+    let digitLabel  = AMDigitLabel()
     init() {
         super.init(nibName: nil, bundle: nil)
         self.tabBarItem = UITabBarItem(title: "Widgets", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
@@ -31,8 +31,17 @@ class WidgetsController: UIViewController {
         self.stackView.distribution = .equalCentering
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: 0)
+        digitLabel.textColor = .black
+        digitLabel.digit = 0
+        digitLabel.formater = {
+            String(format: "$%.2f", Float($0)/100)
+        }
+        self.stackView.addArrangedSubview(digitLabel)
         self.addTest("测试swiper") {[weak self] in
             self?.navigationController?.pushViewController(SwiperController(), animated: true)
+        }
+        self.addTest("digitLabel") {
+            self.digitLabel.digit += 1000
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {
