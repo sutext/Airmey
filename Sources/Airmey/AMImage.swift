@@ -8,6 +8,71 @@
 
 import UIKit
 
+extension CALayer{
+    ///create a capture image of layer
+    public var capture: UIImage?{
+        UIGraphicsBeginImageContextWithOptions(self.bounds.size, false, 3)
+        defer {
+            UIGraphicsEndImageContext()
+        }
+        if let context = UIGraphicsGetCurrentContext(){
+            self.render(in: context)
+            return UIGraphicsGetImageFromCurrentImageContext()
+        }
+        return nil
+    }
+}
+extension CALayer{
+    public struct GradualPoint {
+        let color:UIColor
+        let location:NSNumber
+        let point:CGPoint
+        public init(color: UIColor, location: NSNumber, point: CGPoint) {
+            self.color = color
+            self.location = location
+            self.point = point
+        }
+        /// The start point:(0,y) loc:0 user for horizontal gradual
+        @inlinable public static func xmin(_ color:UIColor,y:CGFloat=0)->GradualPoint{
+            GradualPoint(color: color, location: 0, point: CGPoint(x: 0, y: y))
+        }
+        /// The start point:(x,0) loc:0 user for vertical gradual
+        @inlinable public static func ymin(_ color:UIColor,x:CGFloat=0)->GradualPoint{
+            GradualPoint(color: color, location: 0, point: CGPoint(x: x, y: 0))
+        }
+        /// The middle point:none loc:location user for middle point
+        @inlinable public static func mid(_ color:UIColor,_ location:Float)->GradualPoint{
+            assert(location>0&&location<1,"location must between in (0,1)")
+            return GradualPoint(color: color, location: NSNumber(value: location), point: .zero)
+        }
+        /// The end point (1,y) loc:1 user for horizontal gradual
+        @inlinable public static func xmax(_ color:UIColor,y:CGFloat=0)->GradualPoint{
+            GradualPoint(color: color, location: 1, point: CGPoint(x: 1, y: y))
+        }
+        /// The end point (x,1) loc:1 user for vertical gradual
+        @inlinable public static func ymax(_ color:UIColor,x:CGFloat = 0)->GradualPoint{
+            GradualPoint(color: color, location: 1, point: CGPoint(x: x, y: 1))
+        }
+    }
+    /// create gradual color layer
+    public static func gradual(_ size:CGSize,points:GradualPoint...)->CALayer?{
+        return Self.gradual(size, points: points)
+    }
+    /// create gradual color layer
+    public static func gradual(_ size:CGSize,points:[GradualPoint])->CALayer?{
+        guard points.count>=1 else {
+            return nil
+        }
+        let layer = CAGradientLayer()
+        layer.bounds = CGRect(origin: .zero, size: size)
+        layer.colors = points.map{$0.color.cgColor}
+        layer.locations = points.map{$0.location}
+        layer.startPoint = points[0].point
+        layer.endPoint = points[points.count-1].point
+        return layer
+    }
+}
+
 public extension UIImage{
     /// describe the image format from image data
     enum Format:UInt8 {
@@ -147,10 +212,10 @@ public extension UIImage{
     }
     /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:CALayer.GradualPoint...)->UIImage?{
-        return CALayer.gradual(size, points: points)?.image
+        return CALayer.gradual(size, points: points)?.capture
     }
     /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
-        return CALayer.gradual(size, points: points)?.image
+        return CALayer.gradual(size, points: points)?.capture
     }
 }

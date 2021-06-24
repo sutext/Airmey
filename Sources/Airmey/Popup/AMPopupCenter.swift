@@ -10,7 +10,7 @@ import UIKit
 ///Add an  popup operation queue
 open class AMPopupCenter {
     /// default Wait controller  override it for custom
-    open class var Wait:AMWaitable.Type{AMWaitiController.self}
+    open class var Wait:AMWaitable.Type{AMWaitController.self}
     /// default Alert controller  override it for custom. By defualt use system Impl
     open class var Alert:AMAlertable.Type{UIAlert.self}
     /// default Remind controller  override it for custom
@@ -72,7 +72,7 @@ extension AMPopupCenter{
         self.add(.clear)
     }
     /// current top controller from the key window
-    public var topvc:UIViewController?{
+    public var top:UIViewController?{
         var next:UIViewController? = UIApplication.shared.keyWindow?.rootViewController
         while next?.presentedViewController != nil {
             next = next?.presentedViewController
@@ -180,7 +180,7 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        guard let top = self.topvc else {
+        guard let top = self.top else {
             fatalError("rootViewController not found in keywindow!")
         }
         top.present(vc, animated: animated, completion: completion)

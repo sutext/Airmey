@@ -21,7 +21,7 @@ open class AMView: UIView {
         return tap;
     }()
     private var doubleTaped = false;
-    public var onclick:((_ sender:AMView)->Void)?{
+    public var onclick:ONClick?{
         didSet{
             if let _ = self.onclick {
                 self.addGestureRecognizer(self.sigleTapGesture)

@@ -22,7 +22,7 @@ open class AMImageView: UIImageView {
         return tap;
     }()
     private var doubleTaped = false;
-    public var onclick:((_ sender:AMImageView)->Void)?{
+    public var onclick:ONClick?{
         didSet{
             if let _ = self.onclick {
                 self.addGestureRecognizer(self.sigleTapGesture)

@@ -14,7 +14,7 @@ public protocol HTTPDecoder{
 ///
 ///  application/json respone decoder
 ///
-/// - Note JSNDecoder
+/// - Note JSNDecoder named 
 ///
 public struct JSNDecoder:HTTPDecoder{
     public func decode(_ data: Data?, response: HTTPURLResponse) throws -> JSON {

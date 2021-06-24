@@ -26,9 +26,10 @@ public protocol AMManagedObject:NSManagedObject{
     func awake(from model:Model)
 }
 
-public protocol AMFetchPropertyConfigure:NSManagedObject{
+public protocol AMEntityConfigure:NSManagedObject{
     static func config(for entity:NSEntityDescription)
 }
+/// global stoage config class
 open class AMStorage{
     private let mom:NSManagedObjectModel
     private let moc:NSManagedObjectContext
@@ -60,7 +61,7 @@ open class AMStorage{
             guard let type = NSClassFromString(entity.managedObjectClassName) else{
                 return
             }
-            if let configType = type as? AMFetchPropertyConfigure.Type{
+            if let configType = type as? AMEntityConfigure.Type{
                 configType.config(for: entity)
             }
         }

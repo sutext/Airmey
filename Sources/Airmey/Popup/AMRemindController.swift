@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// Default buildin Remind appearence
 open class AMRemindController: AMPopupController ,AMRemindable{
     private lazy var blurView:UIView = {
         let view = UIView(frame: .zero)

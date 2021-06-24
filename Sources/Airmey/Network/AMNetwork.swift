@@ -15,7 +15,9 @@ extension Notification.Name{
 ///  Usually you can inherit from `AMNetwork` and override the configuration params .
 ///
 open class AMNetwork {
+    /// global network monitor
     public private(set) static var monitor:AMMonitor?
+    /// global network status 
     public private(set) static var status:AMMonitor.Status = .unknown{
         didSet{
             if status != oldValue{
@@ -48,18 +50,14 @@ open class AMNetwork {
     open var timeout:TimeInterval{ 60 }
     /// global default fileManager. override for custom
     open var fileManager:FileManager{ .default }
-    /// global response verifer @default map directly. override for custom
-    open func verify(_ old:Response<JSON>)->Response<JSON>{
-        return old.map{.init($0)}
-    }
+    /// global response verifer return directly. override for custom
+    open func verify(_ old:Response<JSON>)->Response<JSON>{ old }
     /// global error catched here
     /// - Parameters:
     ///     - error: The input error
     /// - Throws: Output a new Error if throws. otherwise keep origin error
     /// - Note: this method called in airmey delegate queue
-    open func `catch` (_ error:Error) throws{
-        
-    }
+    open func `catch` (_ error:Error) throws{}
     ///
     /// Send an common data request
     /// 

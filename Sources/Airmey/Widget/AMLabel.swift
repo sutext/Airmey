@@ -17,7 +17,7 @@ open class AMLabel: UILabel {
     @objc private func tapsel() {
         self.onclick?(self)
     }
-    open var onclick: ((_ sender:AMLabel) -> Swift.Void)?{
+    open var onclick: ONClick?{
         didSet{
             if let _ = self.onclick {
                 self.isUserInteractionEnabled = true;
@@ -48,7 +48,7 @@ open class AMLabel: UILabel {
         rect.origin.x    -= insets.left
         rect.origin.y    -= insets.top
         rect.size.width  += (insets.left + insets.right)
-        rect.size.height += (insets.top + insets.bottom)
+        rect.size.height += (insets.top  + insets.bottom)
         return rect
     }
 }

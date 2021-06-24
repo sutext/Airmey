@@ -36,7 +36,7 @@ open class AMButton: UIButton {
     public private(set) var style:TitleStyle = .default;
     public private(set) var imageSize:CGSize = CGSize.zero;
     private var innerLabel:UILabel?
-    public var onclick :((_ sender:AMButton)->Void)?{
+    public var onclick :ONClick?{
         didSet{
             if let _ = self.onclick {
                 self.addTarget(self, action: #selector(AMButton.clicked), for: .touchUpInside)

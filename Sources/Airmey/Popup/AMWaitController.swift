@@ -7,7 +7,7 @@
 
 import UIKit
 
-open class AMWaitiController: AMPopupController,AMWaitable {
+open class AMWaitController: AMPopupController,AMWaitable {
     private lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)

@@ -18,7 +18,7 @@ extension Thread{
     }()
     private class Airmey:NSObject{
         @objc func entry(){
-            Thread.current.name = "com.airmey.global.daemon"
+            Thread.current.name = "com.airmey.thread.daemon"
             RunLoop.current.add(NSMachPort(), forMode: RunLoop.Mode.default)
             RunLoop.current.run()
         }
@@ -104,7 +104,7 @@ public class AMTimer :NSObject{
     }
     @objc private func innerStart(){
         if let tmer = self.timer,tmer.isValid{
-            self.timer?.fireDate = Date()
+            tmer.fireDate = Date()
             return
         }
         self.timer = Timer(timeInterval: interval, target: self, selector: #selector(AMTimer.timerFunction(sender:)), userInfo: nil, repeats: repeats)

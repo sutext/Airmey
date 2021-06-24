@@ -8,6 +8,8 @@
 
 import UIKit
 
+/// rolling number label
+/// It will auto rolling when update digit
 final public class AMDigitLabel:AMLabel{
     public typealias Formater = (Int)->String
     public static var defaultFormater:Formater = { String($0) }
@@ -21,6 +23,10 @@ final public class AMDigitLabel:AMLabel{
     deinit {
         self.timer.stop()
     }
+    /// Designed initialization for digit label
+    /// - Parameters:
+    ///     - frameRate:The animation update frequency
+    ///
     public init(_ frameRate:Double = 30) {
         self.rate = frameRate
         self.timer = AMTimer(interval: 1.0/frameRate)
@@ -31,48 +37,52 @@ final public class AMDigitLabel:AMLabel{
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    /// Provide a number formater for digit label
+    /// This function decide how  to display the digit number
     public var formater:Formater{
         didSet{
-            self.text = self.formater(self.goal)
+            self.text = self.formater(goal)
         }
     }
+    /// The digit property.  User should not set `text` property directy.
+    /// Set digit will update text automatic.
+    /// if new value is greater than old then animation occurred.
     public var digit:Int{
         get{
-            if self.stack.count>0 {
-                return self.stack.last ?? 0
+            if stack.count>0 {
+                return stack.last ?? 0
             }
-            return self.goal
+            return goal
         }
         set{
-            self.stack.append(newValue)
-            self.next()
+            stack.append(newValue)
+            next()
         }
     }
     private func next(){
-        if (self.step > 0 || self.stack.count == 0) {
-            return;
+        if step > 0 || stack.count == 0 {
+            return
         }
-        let goal = self.stack[0]
-        self.stack .remove(at: 0)
-        if (self.goal == goal) {
-            self.next()
+        let goal = stack.remove(at: 0)
+        if self.goal == goal {
+            next()
             return
         }
         self.goal = goal;
-        if (self.value == 0 || self.value>=self.goal) {
-            self.setText(goal)
-        }else{
-            let delta = Double(self.goal - self.value);
-            self.step = delta < self.rate ? 1 : (Int)(delta/self.rate);
-            self.timer.start()
+        if value == 0 || value >= goal {
+            setText(goal)
+            next()
+            return
         }
+        let delta = Double(goal - value);
+        step = (delta < rate ? 1 : Int(delta/rate));
+        timer.start()
     }
     private func setText(_ value:Int){
-        if (self.value == value) {
-            return;
+        if self.value != value {
+            self.value = value
+            self.text = self.formater(value)
         }
-        self.value = value;
-        self.text = self.formater(value);
     }
 }
 extension AMDigitLabel:AMTimerDelegate{
@@ -81,11 +91,11 @@ extension AMDigitLabel:AMTimerDelegate{
         if v > goal {
             v = goal
         }
-        self.setText(v)
+        setText(v)
         if v == goal {
+            timer.stop()
             step = 0
-            self.next()
-            self.timer.stop()
+            next()
         }
     }
 }
