@@ -24,7 +24,6 @@ open class AMToolBar: UIView {
     }()
     open class var position:Position{.bottom}
     public let contentView = UIView()
-    public let shadowLine = UIView()
     public let style:Style
     ///available when effect style
     public private(set) var effectView:AMEffectView?
@@ -35,31 +34,20 @@ open class AMToolBar: UIView {
         super.init(frame: .zero)
         switch style {
         case .effect:
-            self.shadowLine.backgroundColor = .hex(0xe6e6e6,alpha:0.8)
             self.effectView = AMEffectView()
             self.addSubview(self.effectView!)
             self.addSubview(self.contentView)
-            self.addSubview(self.shadowLine)
             self.effectView?.am.edge.equal(to: 0)
         case .normal:
             self.addSubview(self.contentView)
-            self.addSubview(self.shadowLine)
         }
         switch Self.position{
         case .top:
-            self.shadowLine.amake {
-                $0.edge.equal(left: 0,bottom: 0, right: 0)
-                $0.height.equal(to: 0.5)
-            }
             self.contentView.amake {
                 $0.edge.equal(top:.headerHeight,left: 0,bottom: 0,right: 0)
                 self.heightConstraint = $0.height.equal(to: Self.contentHeight)
             }
         case .bottom:
-            self.shadowLine.amake {
-                $0.edge.equal(top: 0, left: 0, right: 0)
-                $0.height.equal(to: 0.5)
-            }
             self.contentView.amake {
                 $0.edge.equal(top:0,left: 0,bottom: -.footerHeight,right: 0)
                 self.heightConstraint = $0.height.equal(to: Self.contentHeight)
@@ -84,6 +72,24 @@ open class AMToolBar: UIView {
             }
         }
     }
+    public lazy var shadowLine:UIView={
+        let view = UIView()
+        view.backgroundColor = .hex(0xe6e6e6,alpha:0.8)
+        self.addSubview(view)
+        switch Self.position{
+        case .top:
+            view.amake {
+                $0.edge.equal(left: 0,bottom: 0, right: 0)
+                $0.height.equal(to: 0.5)
+            }
+        case .bottom:
+            view.amake {
+                $0.edge.equal(top: 0, left: 0, right: 0)
+                $0.height.equal(to: 0.5)
+            }
+        }
+        return view
+    }()
 }
 extension AMToolBar{
     public func setup(position:CGFloat){

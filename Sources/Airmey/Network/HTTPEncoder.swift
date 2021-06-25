@@ -36,7 +36,7 @@ public struct JSNEncoder:HTTPEncoder{
         urlRequest.allHTTPHeaderFields = headers?.values
         urlRequest.httpMethod = method.rawValue
         urlRequest.setHeader("application/json", for: .contentType)
-        guard let params = params else {
+        guard let params = params, params.count>0 else {
             return .success(urlRequest)
         }
         return .init{

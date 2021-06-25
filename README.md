@@ -345,30 +345,6 @@ public class CCNavBar: AMToolBar {
             self.titleLabel.text = newValue
         }
     }
-    public var leftItem:UIView?{
-        didSet{
-            oldValue?.removeFromSuperview()
-            if let newval = leftItem {
-                self.contentView.addSubview(newval)
-                newval.amake { am in
-                    am.left.equal(to: 15)
-                    am.centerY.equal(to: 0)
-                }
-            }
-        }
-    }
-    public var rightItem:UIView?{
-        didSet{
-            oldValue?.removeFromSuperview()
-            if let newval = leftItem {
-                self.contentView.addSubview(newval)
-                newval.amake { am in
-                    am.right.equal(to: 15)
-                    am.centerY.equal(to: 0)
-                }
-            }
-        }
-    }
 }
 ```
 
