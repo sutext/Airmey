@@ -8,46 +8,25 @@
 
 import UIKit
 
-
-public enum AMRefreshStyle:Int{
-    case top 
-    case bottom
-}
-
-public protocol AMRefreshControl:UIControl{
-    init()
-    static var style:AMRefreshStyle {get}
-    var isRefreshing:Bool {get}
-    var attributedTitle:NSAttributedString?{get set}
-    func beginRefreshing()
-    func endRefreshing()
-}
-extension UIRefreshControl:AMRefreshControl{
-    public static var style: AMRefreshStyle {
-        return .top
-    }
-}
 /*
  * contentInset control the scorllView contentView.frame
  * contentSize and contentOffset never been change by contentInset
  */
-public class AMLoadmoreControl: UIControl {
+public class AMRefreshControl: UIControl {
     private let textLabel = AMLabel()
     private let activityIndicator = UIActivityIndicatorView(style: .gray)
     private weak var scorllView:UIScrollView?
     private var topConstt:NSLayoutConstraint?
+    private var texts:[Bool:String] = [
+        true:NSLocalizedString("am_load_more", value: "Load more content",comment: ""),
+        false:NSLocalizedString("am_no_more", value: "No more content",comment: ""),
+    ]
     public override var isEnabled: Bool{
         didSet {
-            if isEnabled {
-                self.textLabel.text = "Load more ..."
-            }else{
-                self.textLabel.text = "No more content"
+            guard oldValue != isEnabled else {
+                return
             }
-        }
-    }
-    public var attributedTitle:NSAttributedString?{
-        didSet{
-            self.textLabel.attributedText = self.attributedTitle
+            self.textLabel.text = self.texts[isEnabled]
         }
     }
     public var isRefreshing:Bool = false{
@@ -95,7 +74,7 @@ public class AMLoadmoreControl: UIControl {
         self.textLabel.font = UIFont.systemFont(ofSize: 15)
         self.textLabel.textAlignment = .center
         self.textLabel.backgroundColor = .clear
-        self.textLabel.text = "Load more..."
+        self.textLabel.text = self.texts[true]
         self.addSubview(self.textLabel)
         self.addSubview(self.activityIndicator)
         self.textLabel.am.center.equal(to: self.am.center)
@@ -135,7 +114,7 @@ public class AMLoadmoreControl: UIControl {
             if striveOffset < 0 {
                 return
             }
-            if scview.isDragging{
+            if !scview.isDragging{
                 self.isRefreshing = true
             }
         case "contentSize":
@@ -148,7 +127,7 @@ public class AMLoadmoreControl: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 }
-extension AMLoadmoreControl:AMRefreshControl{
+extension AMRefreshControl:AMRefresh{
     public func endRefreshing() {
         self.isRefreshing = false
     }
@@ -157,5 +136,10 @@ extension AMLoadmoreControl:AMRefreshControl{
     }
     public static var style: AMRefreshStyle {
         return .bottom
+    }
+}
+extension UIRefreshControl:AMRefresh{
+    public static var style: AMRefreshStyle {
+        return .top
     }
 }

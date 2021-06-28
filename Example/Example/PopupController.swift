@@ -22,16 +22,27 @@ class PopupController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     let stackView = UIStackView()
+    let scrollView = UIScrollView()
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         self.title = "Popup Tester"
-        self.view.addSubview(self.stackView)
+        self.view.addSubview(self.scrollView)
+        self.scrollView.am.edge.equal(to: 0)
+        self.scrollView.usingRefresh([.top,.bottom])
+        self.scrollView.usingRefresh([.top,.bottom])
+
+        self.scrollView.addSubview(self.stackView)
+        self.scrollView.delegate = self
         self.stackView.axis = .vertical
         self.stackView.alignment = .leading
         self.stackView.distribution = .equalSpacing
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: 0)
+        self.stackView.amake { am in
+            am.centerX.equal(to: 0)
+            am.edge.equal(top: 0, bottom: 0)
+        }
         self.addTest("Test multiple popup") {
             pop.wait("loading....")
             pop.idle()
@@ -73,3 +84,11 @@ class PopupController: UIViewController {
     }
 }
 
+extension PopupController:AMScrollViewDelegate{
+    func scrollView(_ scrollView: UIScrollView, willBegin refresh: AMRefresh, style: AMRefreshStyle) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5){
+            refresh.endRefreshing()
+            refresh.isEnabled = false
+        }
+    }
+}
