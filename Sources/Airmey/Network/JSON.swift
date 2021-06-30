@@ -114,6 +114,14 @@ extension JSON:Equatable{
         }
     }
 }
+extension JSON:ExpressibleByStringInterpolation{
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+    public init(stringInterpolation: DefaultStringInterpolation) {
+        self = .string(stringInterpolation.description)
+    }
+}
 extension JSON:ExpressibleByArrayLiteral{
     public init(arrayLiteral elements: Any...) {
         self = .array(elements.map(JSON.init))
@@ -132,11 +140,6 @@ extension JSON:ExpressibleByFloatLiteral{
 extension JSON:ExpressibleByIntegerLiteral{
     public init(integerLiteral value: IntegerLiteralType) {
         self = .number(NSNumber(value:value))
-    }
-}
-extension JSON:ExpressibleByStringLiteral{
-    public init(stringLiteral value: StringLiteralType) {
-        self = .string(value)
     }
 }
 extension JSON:ExpressibleByBooleanLiteral{

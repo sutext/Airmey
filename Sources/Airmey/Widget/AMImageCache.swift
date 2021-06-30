@@ -153,65 +153,77 @@ extension AMImageCache{
     }
 }
 extension UIImageView{
-    public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:ResultBlock<UIImage>? = nil)  {
+    public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil)  {
         if let placeholder = placeholder {
             self.image = placeholder;
         }
         AMImageCache.shared.image(with: url,scale:scale) { result in
-            switch result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let image):
-                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                    self.image = image
-                }, completion: nil)
+            guard case .success(let image) = result else{
+                finish?(self,result)
+                return
+            }
+            UIView.transition(
+                with: self,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: { self.image = image }) { _ in
+                finish?(self,result)
             }
         }
     }
-    public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:ResultBlock<UIImage>? = nil){
+    public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
         AMImageCache.shared.image(with: asset) { result in
-            switch result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let image):
-                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                    self.image = image
-                }, completion: nil)
+            guard case .success(let image) = result else{
+                finish?(self,result)
+                return
+            }
+            UIView.transition(
+                with: self,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: { self.image = image }) { _ in
+                finish?(self,result)
             }
         }
     }
-    public func setThumb(with asset:PHAsset,size:CGSize,placeholder:UIImage?  = nil,finish:ResultBlock<UIImage>? = nil){
+    public func setThumb(with asset:PHAsset,size:CGSize,placeholder:UIImage?  = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
         if let placeholder = placeholder {
             self.image = placeholder;
         }
         AMImageCache.shared.thumb(with: asset,size:size) { result in
-            switch result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let image):
-                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                    self.image = image
-                }, completion: nil)
+            guard case .success(let image) = result else{
+                finish?(self,result)
+                return
+            }
+            UIView.transition(
+                with: self,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: { self.image = image }) { _ in
+                finish?(self,result)
             }
         }
     }
 }
 extension UIButton{
-    public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:ResultBlock<UIImage>? = nil)  {
+    public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:((UIButton,Result<UIImage,Error>)->Void)? = nil)  {
         if let placeholder = placeholder {
             self.setImage(placeholder, for: state)
         }
         AMImageCache.shared.image(with: url,scale:scale) { result in
-            switch result{
-            case .failure(let err):
-                finish?(.failure(err))
-            case .success(let image):
-                UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-                    self.setImage(image, for: .normal)
-                }, completion: nil)
+            guard case .success(let image) = result else{
+                finish?(self,result)
+                return
+            }
+            UIView.transition(
+                with: self,
+                duration: 0.5,
+                options: .transitionCrossDissolve,
+                animations: { self.setImage(image, for: .normal) }) { _ in
+                finish?(self,result)
             }
         }
     }

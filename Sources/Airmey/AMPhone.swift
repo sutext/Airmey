@@ -17,7 +17,7 @@ public enum AMPhone {
     ///Is slim screen device eg. X XS XSMAX 11 11Pro 11ProMAx 12mini 12 12Pro 12ProMax
     public static let isSlim:Bool = {
         switch height {
-        case .h693,.h812,.h844,.h896:
+        case .h693,.h812,.h844,.h896,.h926:
             return true
         case .none:
             let size = UIScreen.main.bounds.size
