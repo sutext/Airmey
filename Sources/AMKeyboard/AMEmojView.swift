@@ -52,6 +52,29 @@ class AMEmojView: UIView {
     }
 }
 extension AMEmojView:AMSwiperDataSource{
+    func headNode(for swiper: AMSwiper) -> UIViewController? {
+        if let first = self.ranges.first {
+            return self.createChild(first)
+        }
+        return nil
+    }
+    func swiper(_ swiper: AMSwiper, nodeAfter node: UIViewController) -> UIViewController? {
+        if let idx = (node as? ChildControler)?.index {
+            if idx < self.ranges.count - 1 {
+                return self.createChild(self.ranges[idx+1])
+            }
+        }
+        return nil
+    }
+    func swiper(_ swiper: AMSwiper, nodeBefore node: UIViewController) -> UIViewController? {
+        if let idx = (node as? ChildControler)?.index {
+            if idx > 0 {
+                return self.createChild(self.ranges[idx-1])
+            }
+        }
+        return nil
+    }
+    
     private func createChild(_ range:Range<Int>)->ChildControler{
         let vc = ChildControler(self.emoj, range: range)
         vc.didSelected = {[weak self] text in
@@ -62,28 +85,6 @@ extension AMEmojView:AMSwiperDataSource{
         }
         vc.loadViewIfNeeded()
         return vc
-    }
-    func head() -> UIViewController? {
-        if let first = self.ranges.first {
-            return self.createChild(first)
-        }
-        return nil
-    }
-    func next(for current: UIViewController) -> UIViewController? {
-        if let idx = (current as? ChildControler)?.index {
-            if idx < self.ranges.count - 1 {
-                return self.createChild(self.ranges[idx+1])
-            }
-        }
-        return nil
-    }
-    func prev(for current: UIViewController) -> UIViewController? {
-        if let idx = (current as? ChildControler)?.index {
-            if idx > 0 {
-                return self.createChild(self.ranges[idx-1])
-            }
-        }
-        return nil
     }
 }
 extension AMEmojView:AMSwiperDelegate{

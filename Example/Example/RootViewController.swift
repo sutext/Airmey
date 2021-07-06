@@ -26,7 +26,9 @@ class RootViewController: AMLayoutViewContrller {
         let popup = UINavigationController(rootViewController: PopupController())
         let json = UINavigationController(rootViewController: TestJsonController())
         let widget = UINavigationController(rootViewController: WidgetsController())
-        print(AMPhone.isSlim)
+        popup.setNavigationBarHidden(true, animated: false)
+        json.setNavigationBarHidden(true, animated: false)
+        widget.setNavigationBarHidden(true, animated: false)
         self.tabbarController.viewControllers = [popup,json,widget]
         self.leftViewController = NetowrkController()
     }

@@ -131,15 +131,15 @@ public class AMPhotoView: UIView {
         
         self.addGestureRecognizer(self.doubleTapGesture)
         
-        if case .local = self.model.sourceType {
-            self.thumbView.image = model.thumb
-            self.imageView.image = model.image
-            self.resize(with: model.image!)
+        if case .local(let image,let thumb) = self.model.source {
+            self.thumbView.image = thumb
+            self.imageView.image = image
+            self.resize(with: image)
             self.setImageView(hidden: false)
             self.thumbView.frame = self.imageView.frame
         }else{
             self.setImageView(hidden: true)
-            self.thumbView.setThumb(with: self.model, thumbSize: self.thumbView.frame.size)
+            self.thumbView.setThumb(with: self.model, size: self.thumbView.frame.size)
         }
     }
     required public init?(coder aDecoder: NSCoder) {
@@ -148,8 +148,8 @@ public class AMPhotoView: UIView {
 }
 extension AMPhotoView{
     public func preloadImage(){
-        self.imageView.setImage(with: self.model) {[weak self] (image, error) in
-            if let img = image{
+        self.imageView.setImage(with: self.model) {[weak self] (view, result) in
+            if let img = result.value{
                 guard let wself = self else{
                     return
                 }
@@ -175,16 +175,14 @@ extension AMPhotoView{
         self.animating = true
         if self.image == nil{
             self.startAnimating()
-            self.imageView.setImage(with: self.model, placeholder: nil) {[weak self] (image, error) in
+            self.imageView.setImage(with: self.model, placeholder: nil) {[weak self] (view, result) in
                 self?.stopAnimating()
-                if let img = image{
-                    self?.resize(with: img)
-                }
-                if let err = error {
-                    self?.zoomviewDidAppear(error: err)
-                }
-                else{
+                switch result{
+                case .success(let image):
+                    self?.resize(with: image)
                     self?.startZoomAnimating()
+                case .failure(let err):
+                    self?.zoomviewDidAppear(error: err)
                 }
             }
         }else{

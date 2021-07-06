@@ -12,7 +12,7 @@ public enum AMKeyboardType {
     case system
     case custom(AMKeyboardIdentifer)
 }
-public struct AMKeyboardIdentifer:RawRepresentable,Equatable, Hashable{
+public struct AMKeyboardIdentifer:RawRepresentable,Equatable,Hashable{
     public var rawValue: String
     public init(rawValue: String) {
         self.rawValue = rawValue

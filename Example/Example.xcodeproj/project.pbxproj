@@ -22,6 +22,7 @@
 		33C268542679D1D90086F2B9 /* WebImageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C268532679D1D90086F2B9 /* WebImageController.swift */; };
 		33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D922662B11B00D953D0 /* RootViewController.swift */; };
 		33E37D992662B14000D953D0 /* PopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E37D982662B14000D953D0 /* PopupController.swift */; };
+		33E7266126932A7400FCFCC8 /* CCNavBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E7266026932A7400FCFCC8 /* CCNavBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,6 +56,7 @@
 		33C268532679D1D90086F2B9 /* WebImageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebImageController.swift; sourceTree = "<group>"; };
 		33E37D922662B11B00D953D0 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		33E37D982662B14000D953D0 /* PopupController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupController.swift; sourceTree = "<group>"; };
+		33E7266026932A7400FCFCC8 /* CCNavBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCNavBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +107,7 @@
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
 				338E70E2265FD69600987BA7 /* Info.plist */,
+				33E7266026932A7400FCFCC8 /* CCNavBar.swift */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -199,6 +202,7 @@
 				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,
 				33C268542679D1D90086F2B9 /* WebImageController.swift in Sources */,
 				33C2684C267897850086F2B9 /* SwiperController.swift in Sources */,
+				33E7266126932A7400FCFCC8 /* CCNavBar.swift in Sources */,
 				33C268522678A4A60086F2B9 /* CCBadgeLabel.swift in Sources */,
 				33C268502678A4390086F2B9 /* CCSegmentControl.swift in Sources */,
 			);

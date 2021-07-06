@@ -29,7 +29,8 @@ public protocol AMManagedObject:NSManagedObject{
 public protocol AMEntityConfigure:NSManagedObject{
     static func config(for entity:NSEntityDescription)
 }
-/// global stoage config class
+/// global stoage configure
+/// User can inherit from this class for custom and extensions。
 open class AMStorage{
     private let mom:NSManagedObjectModel
     private let moc:NSManagedObjectContext
@@ -114,6 +115,42 @@ extension AMStorage{
                 throw err
             }
         }
+    }
+    /// overlay all the object of the AMManagedObject Type
+    /// Unlike insert , This method will remove all the object which not exsit in the `models`
+    ///
+    /// - Parameters:
+    ///     - type: type of AMManagedObject
+    ///     - models: source models that need to been insert
+    ///     - where: the qurey condition tha will been overlay
+    /// - Throws: Some error from moc or id not exsit
+    /// - Returns: The result object list
+    ///
+    @discardableResult
+    public func overlay<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],where predicate:NSPredicate?=nil)throws->[Object]{
+        var results:[Object] = [];
+        var err:Error? = nil
+        self.moc.performAndWait {
+            do {
+                results = try self.create(type, models:models)
+                let olds = self.query(type, where: predicate)
+                olds.forEach{ old in
+                    let idx = results.firstIndex { new in
+                        new.id == old.id
+                    }
+                    if idx == nil{
+                        self.moc.delete(old)
+                    }
+                }
+                try self.moc.save();
+            } catch{
+                err = error
+            }
+        }
+        if let err = err {
+            throw err
+        }
+        return results;
     }
     ///
     ///  Insert or update an managed object from model

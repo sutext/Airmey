@@ -18,7 +18,7 @@ open class AMKeyboardController: UIInputViewController {
         self.textView = textView
         super.init(nibName: nil, bundle: nil)
         self.textView.delegate = self
-        self.automaticallyAdjustsScrollViewInsets = false
+        self.textView.contentInsetAdjustmentBehavior = .never
         self.extendedLayoutIncludesOpaqueBars = false
     }
     required public init?(coder aDecoder: NSCoder) {

@@ -25,10 +25,14 @@ public extension CGFloat{
     }()
     ///The scree header height. got 44 when iphonex like. otherwise got 20.
     static let headerHeight:CGFloat  = {
-        if (AMPhone.isSlim){
-            return 44
+        if #available(iOS 13.0, *) {
+            if let height =  UIApplication.shared.keyWindow?.windowScene?.statusBarManager?.statusBarFrame.size.height{
+                return height
+            }
+            return AMPhone.isSlim ? 44 : 20
+        } else {
+            return  UIApplication.shared.statusBarFrame.size.height
         }
-        return 20
     }()
     ///The scree footer height. got 34 when iphonex like. otherwise got 0.
     static let footerHeight:CGFloat  = {

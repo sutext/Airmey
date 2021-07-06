@@ -14,14 +14,14 @@ import UIKit
 ///you must inherit from this class and implment your appearance
 
 open class AMToolBar: UIView {
-    public static let contentHeight:CGFloat = {
+    open class var contentHeight:CGFloat{
         switch position{
         case .top:
             return .navbarHeight - .headerHeight
         case .bottom:
             return .tabbarHeight - .footerHeight
         }
-    }()
+    }
     open class var position:Position{.bottom}
     public let contentView = UIView()
     public let style:Style
@@ -72,9 +72,20 @@ open class AMToolBar: UIView {
             }
         }
     }
+    public lazy var height:CGFloat {
+        switch Self.position {
+        case .top:
+            return .navbarHeight
+        case .bottom:
+            return .tabbarHeight
+        }
+    }
+    public lazy var contentHeight:CGFloat = {
+        Self.contentHeight
+    }()
     public lazy var shadowLine:UIView={
         let view = UIView()
-        view.backgroundColor = .hex(0xe6e6e6,alpha:0.8)
+        view.backgroundColor = .hex(0xe6e6e6,alpha:0.9)
         self.addSubview(view)
         switch Self.position{
         case .top:

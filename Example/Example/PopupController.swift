@@ -26,7 +26,7 @@ class PopupController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-        self.title = "Popup Tester"
+        navbar.title = "Popup Tester"
         self.view.addSubview(self.scrollView)
         self.scrollView.am.edge.equal(to: 0)
         self.scrollView.usingRefresh([.top,.bottom])

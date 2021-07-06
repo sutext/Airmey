@@ -8,56 +8,46 @@
 import UIKit
 import Photos
 import Airmey
-
-open class AMPhoto: NSObject {
-    public enum SourceType {
-        case local
-        case album
-        case remote
+public class AMPhoto:NSObject{
+    public enum Source {
+        case local(image:UIImage,thumb:UIImage)
+        case album(asset:PHAsset)
+        case remote(imageURL:String,thumbURL:String)
     }
-    public private(set) var asset:PHAsset?
-    public private(set) var thumb:UIImage?
-    public private(set) var image:UIImage?
-    public private(set) var thumbURL:String?
-    public private(set) var imageURL:String?
-    public private(set) var sourceType:SourceType
+    public let source:Source
     public init(asset:PHAsset) {
-        self.sourceType = .album
-        self.asset = asset
+        self.source = .album(asset: asset)
         super.init()
     }
     public init(image:UIImage,thumb:UIImage) {
-        self.sourceType = .local
+        self.source = .local(image: image, thumb: thumb)
         super.init()
-        self.image = image
-        self.thumb = thumb
     }
     public init (imageURL:String,thumbURL:String){
-        self.sourceType = .remote
+        self.source = .remote(imageURL: imageURL, thumbURL: thumbURL)
         super.init()
-        self.imageURL = imageURL
-        self.thumbURL = thumbURL
     }
 }
+
 extension UIImageView{
-    @nonobjc public func setImage(with model:AMPhoto,placeholder:UIImage?  = nil,finish:AMImageCache.FinishLoadHandler? = nil){
-        switch model.sourceType {
-        case .local:
-            self.image = model.image
-        case .album:
-            self.setImage(with: model.asset!, placeholder: placeholder, finish: finish)
-        case .remote:
-            self.setImage(with: model.imageURL!, placeholder: placeholder, finish: finish)
+    @nonobjc public func setImage(with model:AMPhoto,placeholder:UIImage?  = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
+        switch model.source {
+        case .local(let image,_):
+            self.image = image
+        case .album(let asset):
+            self.setImage(with: asset, placeholder: placeholder, finish: finish)
+        case .remote(let imageURL,_):
+            self.setImage(with: imageURL, placeholder: placeholder, finish: finish)
         }
     }
-    @nonobjc public func setThumb(with model:AMPhoto,thumbSize:CGSize,placeholder:UIImage?  = nil,finish:AMImageCache.FinishLoadHandler? = nil){
-        switch model.sourceType {
-        case .local:
-            self.image = model.thumb
-        case .album:
-            self.setThumb(with: model.asset!, thumbSize: thumbSize, placeholder: placeholder, finish: finish)
-        case .remote:
-            self.setImage(with: model.thumbURL!, placeholder: placeholder, finish: finish)
+    @nonobjc public func setThumb(with model:AMPhoto,size:CGSize,placeholder:UIImage?  = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
+        switch model.source {
+        case .local(_,let thumb):
+            self.image = thumb
+        case .album(let asset):
+            self.setThumb(with: asset, size: size, placeholder: placeholder, finish: finish)
+        case .remote(_,let thumbURL):
+            self.setImage(with: thumbURL, placeholder: placeholder, finish: finish)
         }
     }
 }
