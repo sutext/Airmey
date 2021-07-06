@@ -72,14 +72,14 @@ open class AMToolBar: UIView {
             }
         }
     }
-    public lazy var height:CGFloat {
+    public lazy var height:CGFloat = {
         switch Self.position {
         case .top:
             return .navbarHeight
         case .bottom:
             return .tabbarHeight
         }
-    }
+    }()
     public lazy var contentHeight:CGFloat = {
         Self.contentHeight
     }()
