@@ -31,17 +31,25 @@ class TestJsonController: UIViewController {
         print(NSNumber.OCType.uint64)
         print(NSNumber.OCType.float)
         print(NSNumber.OCType.double)
+        let bool:Bool? = true
+        let int:Int? = nil
         var json:JSON = (try? JSON.parse("{\"int8\":1.844674407370955e+20}")) ?? nil
-        json["bool"] = true
         json["int16"] = JSON(Int16.max)
         json["int32"] = JSON(Int32.max)
         json["int_min"] = JSON(Int64.min)
         json["int_max"] = JSON(Int64.max)
         json["uint_max"] = JSON(UInt64.max)
-        json["array"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max]
-        json["dic"] = ["name":"jackson","age":18,"obj":json]
+        json["array"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max,int,[bool],[int]]
+        json["dic"] = ["name":"jackson","age":18,"obj":json,"int":int]
         json["empty"] = [:]
         json["null"] = nil
-        print(json)
+        
+
+        let params:HTTPParams = ["json":json,"key":"text","bool":bool,"int":int]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
+        if let data = try? encoder.encode(JSON(params)) {
+            print(String(data:data,encoding: .utf8) ?? "")
+        }
     }
 }

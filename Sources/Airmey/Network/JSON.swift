@@ -7,14 +7,21 @@
 //
 import Foundation
 
+///
+/// Common value type JSON data model stucture
+/// Add Collection Codable subscript ... implementions
+///
 public enum JSON {
     case null
     case bool(Bool)
-    case array([JSON])
+    case array(Array)
+    case object(Object)
     case string(String)
     case number(NSNumber)
-    case object([String:JSON])
+    public typealias Array = [JSON]
+    public typealias Object = [String:JSON]
 }
+
 public extension JSON{
     static func parse(_ string:String)throws->JSON{
         return try JSON.parse(Data(string.utf8))
@@ -64,7 +71,7 @@ public extension JSON{
         case let value as [String: Any]:
             self = .object(value.mapValues(JSON.init))
         case let value as NSDictionary:
-            let result = value.reduce(into: [:] as [String:JSON]) { map, ele in
+            let result = value.reduce(into:Object()) { map, ele in
                 if let key = ele.key as? String{
                     map[key] = JSON(ele.value)
                 }
@@ -72,7 +79,6 @@ public extension JSON{
             self = .object(result)
         default:
             self = .null
-            print("⚠️[Airmey JSON]: Unsupport json type of \(type(of: json)) !!!!!")
         }
     }
     mutating func merge(_ other:JSON){
@@ -114,6 +120,33 @@ extension JSON:Equatable{
         }
     }
 }
+/// Simple JSON Value
+/// Do not declare new conformances to this protocol
+/// they will not work as expected.
+public protocol JSONValue:Codable{}
+
+extension Int:JSONValue{}
+extension Int8:JSONValue{}
+extension Int16:JSONValue{}
+extension Int32:JSONValue{}
+extension Int64:JSONValue{}
+
+extension UInt:JSONValue{}
+extension UInt8:JSONValue{}
+extension UInt16:JSONValue{}
+extension UInt32:JSONValue{}
+extension UInt64:JSONValue{}
+
+extension Bool:JSONValue{}
+extension Float:JSONValue{}
+extension Double:JSONValue{}
+extension String:JSONValue{}
+
+extension JSON:JSONValue{}
+extension Array:JSONValue where Element:JSONValue{}
+extension Optional:JSONValue where Wrapped:JSONValue{}
+extension Dictionary:JSONValue where Key==String,Value:JSONValue{}
+
 extension JSON:ExpressibleByStringInterpolation{
     public init(stringLiteral value: String) {
         self = .string(value)
@@ -123,13 +156,16 @@ extension JSON:ExpressibleByStringInterpolation{
     }
 }
 extension JSON:ExpressibleByArrayLiteral{
-    public init(arrayLiteral elements: Any...) {
+    public init(arrayLiteral elements: JSONValue...) {
         self = .array(elements.map(JSON.init))
     }
 }
 extension JSON:ExpressibleByDictionaryLiteral{
-    public init(dictionaryLiteral elements: (String, Any)...) {
-        self = .object(elements.reduce(into: [:]) { $0[$1.0] = JSON($1.1) })
+    public init(dictionaryLiteral elements: (String, JSONValue)...) {
+        let obj = elements.reduce(into: Object()) {
+            $0[$1.0] = JSON($1.1)
+        }
+        self = .object(obj)
     }
 }
 extension JSON:ExpressibleByFloatLiteral{
@@ -152,91 +188,13 @@ extension JSON:ExpressibleByNilLiteral{
         self = .null
     }
 }
-extension JSON: Collection {
-    public enum Index: Comparable {
-        case array(Int)
-        case object(DictionaryIndex<String, JSON>)
-        case null
-        static public func == (lhs: Index, rhs: Index) -> Bool {
-            switch (lhs, rhs) {
-            case (.array(let left), .array(let right)):
-                return left == right
-            case (.object(let left), .object(let right)):
-                return left == right
-            case (.null, .null):
-                return true
-            default:
-                return false
-            }
-        }
-        static public func < (lhs: Index, rhs: Index) -> Bool {
-            switch (lhs, rhs) {
-            case (.array(let left), .array(let right)):
-                return left < right
-            case (.object(let left), .object(let right)):
-                return left < right
-            default:
-                return false
-            }
-        }
-    }
-    public var startIndex: Index {
-        switch self {
-        case .array(let ary):
-            return .array(ary.startIndex)
-        case .object(let dic):
-            return .object(dic.startIndex)
-        default:
-            return .null
-        }
-    }
-    public var endIndex: Index {
-        switch self {
-        case .array(let ary):
-            return .array(ary.endIndex)
-        case .object(let dic):
-            return .object(dic.endIndex)
-        default:
-            return .null
-        }
-    }
-    public func index(after i: Index) -> Index {
-        switch (self,i) {
-        case let (.array(ary),.array(idx)):
-            return .array(ary.index(after: idx))
-        case let (.object(dic),.object(idx)):
-            return .object(dic.index(after: idx))
-        default:
-            return .null
-        }
-    }
-    public var count: Int{
-        switch self {
-        case .array(let ary):
-            return ary.count
-        case .object(let obj):
-            return obj.count
-        default:
-            return 0
-        }
-    }
-    public subscript (position: Index) -> (String, JSON) {
-        switch (self,position) {
-        case let (.array(ary),.array(idx)):
-            return (String(idx), ary[idx])
-        case let (.object(dic),.object(idx)):
-            return dic[idx]
-        default:
-            return ("", .null)
-        }
-    }
-}
-/// Do not declare new conformances to this protocol; they will not
-/// work as expected.
+
+/// Do not declare new conformances to this protocol;
+/// they will not work as expected.
 public protocol JSONIndex:Codable{}
 extension String:JSONIndex{}
 extension Int:JSONIndex{}
-    
+
 extension JSON{
     public subscript(key:JSONIndex)->JSON{
         get{
@@ -401,22 +359,22 @@ public extension JSON{
     @inlinable var boolValue:Bool{
         return self.bool ?? false
     }
-    @inlinable var array:[JSON]?{
+    @inlinable var array:Array?{
         if case .array(let ary) = self {
             return ary
         }
         return nil
     }
-    @inlinable var arrayValue:[JSON]{
+    @inlinable var arrayValue:Array{
         return self.array ?? []
     }
-    @inlinable var object:[String:JSON]?{
+    @inlinable var object:Object?{
         if case .object(let dic) = self {
             return dic
         }
         return nil
     }
-    @inlinable var objectValue:[String:JSON]{
+    @inlinable var objectValue:Object{
         return self.object ?? [:]
     }
 }
@@ -519,11 +477,11 @@ extension JSON: Codable {
             self = .string(value)
             return
         }
-        if let value = try? container.decode([JSON].self) {
+        if let value = try? container.decode(Array.self) {
             self = .array(value)
             return
         }
-        if let value = try? container.decode([String:JSON].self) {
+        if let value = try? container.decode(Object.self) {
             self = .object(value)
             return
         }
@@ -548,9 +506,9 @@ extension JSON: Codable {
         case .string(let string):
             try container.encode(string)
         case .array(let ary):
-            try container.encode(ary)
+            try container.encode(ary.filter{$0 != .null})
         case .object(let dic):
-            try container.encode(dic)
+            try container.encode(dic.filter{$0.value != .null})
         }
     }
 }

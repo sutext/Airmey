@@ -44,12 +44,13 @@ public struct Response<M>{
     public func map<NewModel>(_ transform: (M) throws -> NewModel) -> Response<NewModel> {
         let newres = result.flatMap({m -> Result<NewModel,Error> in
             do {
-                return .success(try transform(m))
+                let res = try transform(m)
+                return .success(res)
             }catch{
                 return .failure(error)
             }
         })
-        return .init(data: data, result:newres , request: request, response: response)
+        return .init(data: data, result:newres , request: request,metrics: metrics, response: response)
     }
     mutating func setError(_ error:Error){
         self.result = .failure(error)
@@ -58,15 +59,24 @@ public struct Response<M>{
 extension Response:CustomStringConvertible, CustomDebugStringConvertible{
     public var description: String {"\(result)"}
     public var debugDescription: String {
-        guard let url = request?.url?.absoluteString else { return "[Request]: None\n[Result]: \(result)" }
-        let responseDescription = "[Response]: \(response==nil ? "None" :  response!.debugDescription)"
-        let networkDuration = metrics.map { "\($0.taskInterval.duration)s" } ?? "None"
+        var body = ""
+        if let contentType = request?.header(for: .contentType) {
+            if contentType.contains("application/json") {
+                body = JSON(parse: request?.httpBody).description
+            }else if contentType.contains("form-data"){
+                body = "multipart/form-data"
+            }
+        }
         return """
-        [Request URL]: \(url)
-        [Request Methods]: \(request?.allHTTPHeaderFields ?? [:])
-        \(responseDescription)
-        [Network Duration]: \(networkDuration)
-        [Result]: \(result)
+        -----------DEUBG START------------
+        [\(request?.httpMethod ?? "") URL]:  \(request?.url?.absoluteString ?? "None")
+        [Request Data]: \(body)
+        [Request Headers]: \(JSON(request?.allHTTPHeaderFields))
+        [Request Duration]: \(metrics?.taskInterval.duration ?? 0)s
+        [Response Data]: \(result)
+        [Response Status]: \(response?.statusCode ?? 0)
+        [Response Headers]: \(JSON(response?.allHeaderFields))
+        -----------DEUBG   END------------
         """
     }
 }

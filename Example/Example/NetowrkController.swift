@@ -62,7 +62,8 @@ class NetowrkController: UIViewController {
             }
         }
         self.addTest("测试异常解析") {
-            net.request("feeds/home-pull",options: .get(.ugc)){
+            let bool:Bool? = nil
+            net.request("feeds/home-pull",params: ["test":["hello":"world"],"testkey":JSON(true),"bool":bool],options: .post(.ugc)){
                 debugPrint($0)
             }
         }

@@ -97,7 +97,7 @@ extension Array {
     ///
     /// Remove some element form Array
     ///
-    /// - Note: Any value in the set that out of self bounds will be ignore!
+    /// - Note: Any value in the set that out of  bounds will be ignore!
     /// - Parameter  indexSet  An set of index.
     /// - Returns: An array of elements that has been removed.
     ///
@@ -141,16 +141,20 @@ public extension UIColor{
     }
 }
 
+/// All empty closure
 public typealias AMBlock = ()->Void
+/// Common click closure
 public typealias ONClick = (UIView)->Void
+/// Common Result closure
 public typealias ResultBlock<D> = (Result<D,Error>)->Void
+
 extension Result{
     ///
     /// Get error from result
     /// Just make our code succinctly
     ///
     ///        let result:Result<Int,Error> = .success(1)
-    ///        guard let value = result.value esle{
+    ///        guard let value = result.value else{
     ///             print(result.error!)//At this time error not nil surely
     ///             retrun
     ///        }

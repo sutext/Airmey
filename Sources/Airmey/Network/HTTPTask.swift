@@ -143,6 +143,9 @@ extension URLRequest{
     public mutating func setHeader(_ value:String,for field:HTTPHeaders.Field){
         setValue(value, forHTTPHeaderField: field.rawValue)
     }
+    public func header(for field:HTTPHeaders.Field)->String?{
+        return value(forHTTPHeaderField: field.rawValue)
+    }
 }
 public class DownloadTask:HTTPTask{
     /// temp file url transfer

@@ -40,8 +40,7 @@ public struct JSNEncoder:HTTPEncoder{
             return .success(urlRequest)
         }
         return .init{
-            let data = try JSONSerialization.data(withJSONObject: params, options: [])
-            urlRequest.httpBody = data
+            urlRequest.httpBody = try JSONEncoder().encode(JSON(params))
             return urlRequest
         }
     }

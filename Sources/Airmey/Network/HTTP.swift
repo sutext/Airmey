@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias HTTPParams = [String:Any]
+public typealias HTTPParams = [String:JSONValue]
 
 public enum HTTPError:Error{
     case encode(Error)

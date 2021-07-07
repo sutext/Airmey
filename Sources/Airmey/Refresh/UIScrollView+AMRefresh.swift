@@ -1,5 +1,5 @@
 //
-//  AMRefresh.swift
+//  UIScrollView+AMRefresh.swift
 //  Airmey
 //
 //  Created by supertext on 2020/8/14.
@@ -8,26 +8,14 @@
 
 import UIKit
 
-
-public enum AMRefreshStyle:String{
-    case top
-    case bottom
-}
 public protocol AMScrollViewDelegate: UIScrollViewDelegate {
-    func scrollView(_ scrollView:UIScrollView, willBegin refresh:AMRefresh, style:AMRefreshStyle)
+    func scrollView(_ scrollView:UIScrollView, willBegin refresh:AMRefresh)
 }
 public protocol AMTableViewDelegate:UITableViewDelegate{
-    func tableView(_ tableView:UITableView, willBegin refresh:AMRefresh, style:AMRefreshStyle)
+    func tableView(_ tableView:UITableView, willBegin refresh:AMRefresh)
 }
 public protocol AMCollectionViewDelegate:UICollectionViewDelegate{
-    func collectionView(_ collectionView:UICollectionView, willBegin style:AMRefresh, style:AMRefreshStyle)
-}
-public protocol AMRefresh:UIControl{
-    init()
-    static var style:AMRefreshStyle {get}
-    var isRefreshing:Bool {get}
-    func beginRefreshing()
-    func endRefreshing()
+    func collectionView(_ collectionView:UICollectionView, willBegin refresh:AMRefresh)
 }
 extension UIScrollView {
     private var controls:NSMutableDictionary{
@@ -42,28 +30,27 @@ extension UIScrollView {
     open override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         if newSuperview == nil {
-            self.removeRefresh([.top,.bottom])
+            self.removeRefresh([.header,.footer])
         }
     }
     ///using default refresh control.
-    public func usingRefresh(_ styles:Set<AMRefreshStyle>){
-        if styles.contains(.top) {
-            self.usingRefresh(UIRefreshControl.self)
+    public func usingRefresh(_ styles:Set<AMRefresh.Style>){
+        if styles.contains(.header) {
+            self.usingRefresh(AMRefreshHeader())
         }
-        if styles.contains(.bottom) {
-            self.usingRefresh(AMRefreshControl.self)
+        if styles.contains(.footer) {
+            self.usingRefresh(AMRefreshFooter())
         }
     }
-    public func usingRefresh<Control:AMRefresh>(_ type:Control.Type){
-        guard self.controls.object(forKey: type.style.rawValue as NSString) == nil else {
+    public func usingRefresh(_ refresh:AMRefresh){
+        guard self.controls.object(forKey: refresh.style.rawValue as NSString) == nil else {
             return
         }
-        let refresh = type.init()
         refresh.addTarget(self, action: #selector(beginRefresh(sender:)), for: .valueChanged)
-        self.controls.setObject(refresh, forKey: type.style.rawValue as NSString)
+        self.controls.setObject(refresh, forKey: refresh.style.rawValue as NSString)
         self.addSubview(refresh)
     }
-    public func removeRefresh(_ styles:Set<AMRefreshStyle>){
+    public func removeRefresh(_ styles:Set<AMRefresh.Style>){
         for style in styles {
             if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
                 refresh.removeFromSuperview()
@@ -71,21 +58,21 @@ extension UIScrollView {
             }
         }
     }
-    public func enableRefresh(_ styles :Set<AMRefreshStyle>){
+    public func enableRefresh(_ styles :Set<AMRefresh.Style>){
         for style in styles {
             if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
                 refresh.isEnabled = true
             }
         }
     }
-    public func disableRefresh(_ styles:Set<AMRefreshStyle>){
+    public func disableRefresh(_ styles:Set<AMRefresh.Style>){
         for style in styles {
             if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
                 refresh.isEnabled = false
             }
         }
     }
-    public func refresh(of style:AMRefreshStyle)->AMRefresh?{
+    public func refresh(of style:AMRefresh.Style)->AMRefresh?{
         return self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh
     }
     @objc func beginRefresh(sender:AnyObject) {
@@ -99,17 +86,16 @@ extension UIScrollView {
         guard let delegate  = self.delegate else {
             return
         }
-        let style = type(of: refresh).style
         switch delegate {
         case let d as AMScrollViewDelegate:
-            d.scrollView(self, willBegin: refresh, style: style)
+            d.scrollView(self, willBegin: refresh)
         case let d as AMTableViewDelegate:
             if let tableView = self as? UITableView {
-                d.tableView(tableView, willBegin: refresh, style: style)
+                d.tableView(tableView, willBegin: refresh)
             }
         case let d as AMCollectionViewDelegate:
             if let collectionView = self as? UICollectionView {
-                d.collectionView(collectionView, willBegin: refresh, style: style)
+                d.collectionView(collectionView, willBegin: refresh)
             }
         default:
             break

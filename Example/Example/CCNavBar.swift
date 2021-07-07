@@ -14,8 +14,8 @@ import Airmey
 ///提供内置的bar item 实现，也可以自定View
 public class CCNavBar: AMToolBar {
     public override class var position: Position{.top}
-    public override init(style: Style = .normal) {
-        super.init(style: style)
+    public init() {
+        super.init(style: .effect)
         self.shadowLine.isHidden = false
     }
     required convenience init?(coder aDecoder: NSCoder) {
@@ -154,7 +154,7 @@ extension UIViewController{
         if let bar = objc_getAssociatedObject(self, key) as? CCNavBar{
             return bar
         }
-        let bar = CCNavBar(style: .normal)
+        let bar = CCNavBar()
         self.view.addSubview(bar)
         objc_setAssociatedObject(self, key, bar, .OBJC_ASSOCIATION_RETAIN)
         return bar
