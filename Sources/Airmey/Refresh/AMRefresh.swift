@@ -11,42 +11,73 @@ import UIKit
 open class AMRefresh:UIControl{
     public let style:Style
     public let height:CGFloat
-    public var isRefreshing:Bool {
-        status == .willRefresh || status == .refreshing
-    }
+    private var texts:[Status:String] = [:]
+    private var fonts:[Status:UIFont] = [:]
+    private var colors:[Status:UIColor] = [:]
     weak var scorllView:UIScrollView?
-    let textLabel = UILabel()
-    var texts:[Status:String] = [:]
-    var fonts:[Status:UIFont] = [:]
-    var colors:[Status:UIColor] = [:]
-    var dragingPercent:CGFloat = 0
     var originalInset:UIEdgeInsets = .zero
-    public init(_ style:Style,height:CGFloat = 49) {
+    var dragingPercent:CGFloat = 0
+    public init(_ style:Style,height:CGFloat? = nil) {
         self.style = style
-        self.height = height
+        self.height = height ?? style.defaultHeight
         super.init(frame: .zero)
         self.backgroundColor = .clear
-        self.textLabel.textAlignment = .center
-        self.textLabel.backgroundColor = .clear
-        self.addSubview(self.textLabel)
-        self.textLabel.am.center.equal(to: self.am.center)
     }
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    public var isRefreshing:Bool {
+        status == .willRefresh || status == .refreshing
+    }
+    /// current status
     public internal(set) var status:Status = .idle{
         didSet{
             if status != oldValue {
-                self.statusChanged(status,old: oldValue)
+                DispatchQueue.main.async {
+                    let status = self.status
+                    self.textLabel.text = self.texts[status] ?? self.text
+                    self.textLabel.font = self.fonts[status] ?? self.font
+                    self.textLabel.textColor = self.colors[status] ?? self.textColor
+                    self.statusChanged(status,old: oldValue)
+                    if case .refreshing = status{
+                        self.notifyDelegate()
+                    }
+                    self.setNeedsDisplay()
+                }
             }
         }
     }
-
+    public lazy var textLabel:UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.backgroundColor = .clear
+        self.addSubview(label)
+        return label
+    }()
+    /// default text font for any status
+    public var font:UIFont?{
+        didSet{
+            self.textLabel.font = font
+        }
+    }
+    /// default text  for any status
+    public var text:String?{
+        didSet{
+            self.textLabel.text = text
+        }
+    }
+    /// default text color for any status
+    public var textColor:UIColor?{
+        didSet{
+            self.textLabel.textColor = textColor
+        }
+    }
     public override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
-        if newSuperview == nil{
-            self.scorllView?.removeObserver(self, forKeyPath: "contentOffset")
-            self.scorllView?.removeObserver(self, forKeyPath: "contentSize")
+        if newSuperview == nil,let scview = self.scorllView{
+            scview.removeObserver(self, forKeyPath: "contentOffset")
+            scview.removeObserver(self, forKeyPath: "contentSize")
+            scview.remove(refresh: style)
             self.scorllView = nil
         }
     }
@@ -72,9 +103,6 @@ open class AMRefresh:UIControl{
         }
         guard isEnabled else { return }
         guard isUserInteractionEnabled else { return }
-        if self.isHidden || self.alpha <= 0.01{
-            return
-        }
         switch keyPath {
         case "contentOffset":
             self.contentOffsetChanged()
@@ -84,28 +112,24 @@ open class AMRefresh:UIControl{
             break
         }
     }
+    ///override point for subclass
     open func statusChanged(_ status:Status,old:Status){
-        self.textLabel.text = self.texts[status]
-        self.textLabel.font = self.fonts[status]
-        self.textLabel.textColor = self.colors[status]
-        DispatchQueue.main.async {
-            self.setNeedsDisplay()
-        }
+        
     }
+    ///override point for subclass
     open func contentOffsetChanged(){
         
     }
+    ///override point for subclass
     open func contentSizeChanged(){
         
     }
+    ///override point for subclass
     open func gestureStateChanged(){
         
     }
     
     public func beginRefreshing(){
-        UIView.animate(withDuration: 0.1) {
-            self.alpha = 1
-        }
         self.dragingPercent = 1
         if self.window != nil {
             self.status = .refreshing
@@ -124,6 +148,28 @@ open class AMRefresh:UIControl{
     }
     public func endRefreshing(){
         self.status = .idle
+    }
+    private func notifyDelegate() {
+        guard let scview = self.scorllView else {
+            return
+        }
+        guard let delegate  = scview.delegate else {
+            return
+        }
+        switch delegate {
+        case let d as AMScrollViewDelegate:
+            d.scrollView(scview, willBegin: self)
+        case let d as AMTableViewDelegate:
+            if let tableView = self.scorllView as? UITableView {
+                d.tableView(tableView, willBegin: self)
+            }
+        case let d as AMCollectionViewDelegate:
+            if let collectionView = self.scorllView as? UICollectionView {
+                d.collectionView(collectionView, willBegin: self)
+            }
+        default:
+            break
+        }
     }
 }
 extension AMRefresh{
@@ -172,15 +218,30 @@ extension AMRefresh{
     }
 }
 extension AMRefresh{
-    public enum Style:String{
+    public enum Style:String,CaseIterable{
         case header
         case footer
+        /// default refresher height
+        var defaultHeight:CGFloat{
+            switch self {
+            case .header:
+                return 60
+            case .footer:
+                return 50
+            }
+        }
+        
     }
     public enum Status{
+        /// normal status
         case idle
+        /// ready to refresh
         case draging
+        /// refresh will be happend immediately
         case willRefresh
+        /// in refreshing
         case refreshing
+        /// reach the end of data. just happen when footer refresh.
         case noMoreData
     }
 }

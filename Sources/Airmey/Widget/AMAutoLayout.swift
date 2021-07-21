@@ -201,7 +201,7 @@ public struct AMXAxisAnchor {
                 return left.less(than: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leadingAnchor
+            let right = self.view.trailingAnchor
             switch other.kind {
             case .left:
                 return right.less(than: other.view.leadingAnchor, offset: offset)
@@ -250,7 +250,7 @@ public struct AMXAxisAnchor {
                 return left.equal(to: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leadingAnchor
+            let right = self.view.trailingAnchor
             switch other.kind {
             case .left:
                 return right.equal(to: other.view.leadingAnchor, offset: offset)
@@ -299,7 +299,7 @@ public struct AMXAxisAnchor {
                 return left.greater(than: other.view.centerXAnchor, offset: offset)
             }
         case .right:
-            let right = self.view.leadingAnchor
+            let right = self.view.trailingAnchor
             switch other.kind {
             case .left:
                 return right.greater(than: other.view.leadingAnchor, offset: offset)

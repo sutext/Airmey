@@ -145,7 +145,7 @@ public struct URLEncoder:HTTPEncoder {
     ///   - boolEncoder:  `BoolEncoder` to use. `.numeric` by default.
     public init(
         destination: Destination = .methodDependent,
-        arrayEncoder: ArrayEncoder = .brackets,
+        arrayEncoder: ArrayEncoder = .noBrackets,
         boolEncoder: BoolEncoder = .numeric) {
         self.destination = destination
         self.arrayEncoder = arrayEncoder

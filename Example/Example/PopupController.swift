@@ -27,12 +27,16 @@ class PopupController: UIViewController {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         self.view.addSubview(self.scrollView)
-        self.scrollView.backgroundColor = .black
+        self.scrollView.backgroundColor = .white
         self.scrollView.contentInsetAdjustmentBehavior = .never
         navbar.title = "Popup Tester"
         self.scrollView.contentInset = UIEdgeInsets(top: .navbarHeight, left: 0, bottom: .tabbarHeight, right: 0)
         self.scrollView.am.edge.equal(to: 0)
-        self.scrollView.usingRefresh([.header])
+        let images = (1...45).compactMap {
+            UIImage(named: String(format: "loading%02i", $0), in: .main, compatibleWith: nil)
+        }
+        let indicator = AMGifIndicator(images)
+        self.scrollView.using(refresh: AMRefreshHeader(indicator))
         self.scrollView.addSubview(self.stackView)
         self.scrollView.delegate = self
         self.stackView.backgroundColor = .white

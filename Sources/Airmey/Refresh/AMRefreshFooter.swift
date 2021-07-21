@@ -16,7 +16,7 @@ public class AMRefreshFooter: AMRefresh {
     private let activityIndicator = UIActivityIndicatorView(style: .gray)
     private var topConstt:NSLayoutConstraint?
     public init() {
-        super.init(.footer)
+        super.init(.footer,height: 49)
         self.addSubview(self.activityIndicator)
         self.activityIndicator.am.center.equal(to: self.am.center)
     }

@@ -14,9 +14,9 @@ import UIKit
 public class AMRefreshHeader: AMRefresh {
     private let indicator:AMRefreshIndicator
     private var topLayout:NSLayoutConstraint?
-    public init(_ indicator:AMRefreshIndicator = LoadingIndicator()) {
+    public init(_ indicator:AMRefreshIndicator = LoadingIndicator(),height:CGFloat?=nil) {
         self.indicator = indicator
-        super.init(.header)
+        super.init(.header,height: height)
         self.addSubview(indicator)
         indicator.am.center.equal(to: 0)
     }
@@ -28,12 +28,9 @@ public class AMRefreshHeader: AMRefresh {
         self.topLayout = self.am.top.equal(to: 0)
         self.am.left.equal(to: 0)
     }
-    public override func statusChanged(_ status: AMRefresh.Status,old:Status) {
-        if status == .refreshing {
-            indicator.startAnimating()
-        }else{
-            indicator.stopAnimating()
-        }
+    public override func statusChanged(_ status: AMRefresh.Status,old:Status){
+        print("statusChanged:",status,"old:",old)
+        indicator.update(status: status)
     }
     public override func contentOffsetChanged() {
         guard let scview = self.scorllView else {
@@ -46,13 +43,14 @@ public class AMRefreshHeader: AMRefresh {
         if offset > happenOffset {
             return
         }
-        let criticalOffset = happenOffset - self.height
-        let percent = (happenOffset - offset)/self.height
+        var percent = (happenOffset - offset)/self.height
+        percent = (percent <> CGFloat(0)...CGFloat(1))
         if scview.isDragging {
             self.dragingPercent = percent
-            if self.status == .idle , offset < criticalOffset {
+            indicator.update(percent: percent)
+            if self.status == .idle , percent > 0.3 {
                 self.status = .draging
-            }else if self.status == .draging && offset >= criticalOffset{
+            }else if self.status == .draging && percent == 1{
                 self.status = .idle
             }
         }else if self.status == .draging{

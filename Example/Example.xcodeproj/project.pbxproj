@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		335FC0A7269EE66100137ECE /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335FC0A6269EE66100137ECE /* TableViewController.swift */; };
 		3372C6D32664A785007351D0 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6D22664A785007351D0 /* UpdateController.swift */; };
 		3372C6DB266502C4007351D0 /* CCNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6DA266502C4007351D0 /* CCNetwork.swift */; };
 		338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D4265FD69500987BA7 /* AppDelegate.swift */; };
@@ -39,6 +40,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		335FC0A6269EE66100137ECE /* TableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewController.swift; sourceTree = "<group>"; };
 		3372C6D22664A785007351D0 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		3372C6DA266502C4007351D0 /* CCNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCNetwork.swift; sourceTree = "<group>"; };
 		338E70D1265FD69500987BA7 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				338E70D4265FD69500987BA7 /* AppDelegate.swift */,
+				335FC0A6269EE66100137ECE /* TableViewController.swift */,
 				33E37D922662B11B00D953D0 /* RootViewController.swift */,
 				33E37D982662B14000D953D0 /* PopupController.swift */,
 				3372C6D22664A785007351D0 /* UpdateController.swift */,
@@ -193,6 +196,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33E37D992662B14000D953D0 /* PopupController.swift in Sources */,
+				335FC0A7269EE66100137ECE /* TableViewController.swift in Sources */,
 				33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */,
 				3372C6D32664A785007351D0 /* UpdateController.swift in Sources */,
 				3372C6DB266502C4007351D0 /* CCNetwork.swift in Sources */,

@@ -27,30 +27,19 @@ extension UIScrollView {
         objc_setAssociatedObject(self, key, dic, .OBJC_ASSOCIATION_RETAIN)
         return dic
     }
-    open override func willMove(toSuperview newSuperview: UIView?) {
-        super.willMove(toSuperview: newSuperview)
-        if newSuperview == nil {
-            self.removeRefresh([.header,.footer])
-        }
-    }
-    ///using default refresh control.
-    public func usingRefresh(_ styles:Set<AMRefresh.Style>){
-        if styles.contains(.header) {
-            self.usingRefresh(AMRefreshHeader())
-        }
-        if styles.contains(.footer) {
-            self.usingRefresh(AMRefreshFooter())
-        }
-    }
-    public func usingRefresh(_ refresh:AMRefresh){
+    public func using(refresh:AMRefresh){
         guard self.controls.object(forKey: refresh.style.rawValue as NSString) == nil else {
             return
         }
-        refresh.addTarget(self, action: #selector(beginRefresh(sender:)), for: .valueChanged)
         self.controls.setObject(refresh, forKey: refresh.style.rawValue as NSString)
-        self.addSubview(refresh)
+        self.insertSubview(refresh, at: 0)
     }
-    public func removeRefresh(_ styles:Set<AMRefresh.Style>){
+    /// remove some refresh
+    public func remove(refresh styles:AMRefresh.Style...){
+        self.remove(refresh: Set(styles))
+    }
+    /// remove some refresh
+    public func remove(refresh styles:Set<AMRefresh.Style>){
         for style in styles {
             if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
                 refresh.removeFromSuperview()
@@ -58,47 +47,14 @@ extension UIScrollView {
             }
         }
     }
-    public func enableRefresh(_ styles :Set<AMRefresh.Style>){
-        for style in styles {
-            if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
-                refresh.isEnabled = true
-            }
-        }
-    }
-    public func disableRefresh(_ styles:Set<AMRefresh.Style>){
-        for style in styles {
-            if let refresh = self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh {
-                refresh.isEnabled = false
-            }
-        }
-    }
+    /// get refresh instance of style
     public func refresh(of style:AMRefresh.Style)->AMRefresh?{
         return self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh
     }
-    @objc func beginRefresh(sender:AnyObject) {
-        guard let refresh = sender as? AMRefresh else {
-            return
-        }
-        guard refresh.isEnabled else {
-            refresh.endRefreshing()
-            return
-        }
-        guard let delegate  = self.delegate else {
-            return
-        }
-        switch delegate {
-        case let d as AMScrollViewDelegate:
-            d.scrollView(self, willBegin: refresh)
-        case let d as AMTableViewDelegate:
-            if let tableView = self as? UITableView {
-                d.tableView(tableView, willBegin: refresh)
-            }
-        case let d as AMCollectionViewDelegate:
-            if let collectionView = self as? UICollectionView {
-                d.collectionView(collectionView, willBegin: refresh)
-            }
-        default:
-            break
+    /// enable or disable refresh
+    public func setEnable(_ enable:Bool, of style:AMRefresh.Style){
+        if let refresh = self.refresh(of: style) {
+            refresh.isEnabled = enable
         }
     }
 }
