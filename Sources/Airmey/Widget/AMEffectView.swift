@@ -17,7 +17,6 @@ open class AMEffectView: AMView {
         self.innerView = visualView.contentView
         self.visualEffect = visualView
         super.init(frame: .zero)
-        self.backgroundColor = .hex(0xffffff,alpha:0.7)
         self.addSubview(self.visualEffect)
         self.visualEffect.am.edge.equal(to: 0)
     }

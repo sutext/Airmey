@@ -13,13 +13,12 @@ import Airmey
 ///通过UIViewController 扩展的navbar 属性来启用。
 ///提供内置的bar item 实现，也可以自定View
 public class CCNavBar: AMToolBar {
-    public override class var position: Position{.top}
-    public init() {
-        super.init(style: .effect)
-        self.shadowLine.isHidden = false
-    }
-    required convenience init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    public override class var style: Style{.header}
+    public override init() {
+        super.init()
+        self.usingEffect()
+        self.usingShadow()
+        self.backgroundColor = .hex(0xeeeeee, alpha: 0.4)
     }
     /// navgation title
     public var title:String?{

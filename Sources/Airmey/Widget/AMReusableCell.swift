@@ -21,6 +21,7 @@ public protocol AMReusableCell:UITableViewCell{
     static var reuseids:[ReuseId]{get}
     var reuseid:ReuseId?{get}
 }
+/// add common default implemention. One cell one reuseid
 public extension AMReusableCell{
     static var reuseids:[AMCommonReuseId]{
         return [AMCommonReuseId(rawValue: NSStringFromClass(Self.self))]
@@ -45,6 +46,7 @@ public extension AMReusableCell where Self.ReuseId:CaseIterable,Self.ReuseId.All
     }
 }
 public extension UITableView{
+    /// Register all reuseid of Cell
     func register<Cell>(_ type:Cell.Type) where Cell:AMReusableCell{
         for id  in type.reuseids {
             self.register(type, forCellReuseIdentifier: id.rawValue)

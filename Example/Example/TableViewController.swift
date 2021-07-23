@@ -30,8 +30,7 @@ class TableViewController: UIViewController {
         }
         let indicator = AMGifIndicator(images)
         self.tableView.am.edge.equal(top: navbar.height, left: 0, bottom: 0, right: 0)
-//        self.tableView.using(refresh: AMRefreshHeader(indicator))
-        self.tableView.addSubview(UIRefreshControl())
+        self.tableView.using(refresh: AMRefreshHeader(indicator))
         self.tableView.register(Cell.self)
         self.tableView.delegate = self
         self.tableView.dataSource = self
@@ -69,6 +68,7 @@ class Cell: UITableViewCell,AMReusableCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.backgroundColor = .white
+        self.textLabel?.textColor = .red
     }
     var index:Int = 0 {
         didSet{

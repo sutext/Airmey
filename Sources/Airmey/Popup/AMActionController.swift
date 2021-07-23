@@ -93,9 +93,11 @@ extension AMActionController{
     class CancelBar:AMToolBar{
         let label = UILabel()
         let control = UIControl()
-        init(){
-            super.init(style:.normal)
-            self.shadowLine.isHidden = true
+        override init(){
+            super.init()
+            self.usingShadow()
+            self.usingEffect()
+            self.backgroundColor = .hex(0xffffff,alpha:0.7)
             self.contentView.addSubview(self.label)
             self.addSubview(self.control)
             self.label.font = .systemFont(ofSize: 18)
@@ -107,12 +109,8 @@ extension AMActionController{
             self.control.addTarget(self, action: #selector(CancelBar.touchUp), for: .touchUpOutside)
         }
         var text:String?{
-            get{
-                return self.label.text
-            }
-            set{
-                self.label.text = newValue
-            }
+            get{ return self.label.text }
+            set{ self.label.text = newValue }
         }
         @objc func touchDown(){
             self.backgroundColor = .lightGray
