@@ -33,17 +33,15 @@ open class AMRefresh:UIControl{
     public internal(set) var status:Status = .idle{
         didSet{
             if status != oldValue {
-                DispatchQueue.main.async {
-                    let status = self.status
-                    self.textLabel.text = self.texts[status] ?? self.text
-                    self.textLabel.font = self.fonts[status] ?? self.font
-                    self.textLabel.textColor = self.colors[status] ?? self.textColor
-                    self.statusChanged(status,old: oldValue)
-                    if case .refreshing = status{
-                        self.notifyDelegate()
-                    }
-                    self.setNeedsDisplay()
+                let status = self.status
+                self.textLabel.text = self.texts[status] ?? self.text
+                self.textLabel.font = self.fonts[status] ?? self.font
+                self.textLabel.textColor = self.colors[status] ?? self.textColor
+                self.statusChanged(status,old: oldValue)
+                if case .refreshing = status{
+                    self.notifyDelegate()
                 }
+                self.setNeedsDisplay()
             }
         }
     }
@@ -77,6 +75,7 @@ open class AMRefresh:UIControl{
         if newSuperview == nil,let scview = self.scorllView{
             scview.removeObserver(self, forKeyPath: "contentOffset")
             scview.removeObserver(self, forKeyPath: "contentSize")
+            scview.panGestureRecognizer.removeObserver(self, forKeyPath: "state")
             scview.remove(refresh: style)
             self.scorllView = nil
         }
@@ -99,15 +98,15 @@ open class AMRefresh:UIControl{
     }
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "contentSize" {
-            self.contentSizeChanged()
+            DispatchQueue.main.async { self.contentSizeChanged() }
         }
         guard isEnabled else { return }
         guard isUserInteractionEnabled else { return }
         switch keyPath {
         case "contentOffset":
-            self.contentOffsetChanged()
+            DispatchQueue.main.async { self.contentOffsetChanged() }
         case "state":
-            self.gestureStateChanged()
+            DispatchQueue.main.async { self.gestureStateChanged() }
         default:
             break
         }

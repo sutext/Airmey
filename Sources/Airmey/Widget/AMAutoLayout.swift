@@ -635,7 +635,8 @@ public struct AMEdgeAnchor {
     ///     self.am.edge.equal(to:other.am.edege,10)
     ///
     ///
-    @discardableResult public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
+    @discardableResult
+    public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
         let left = maker.left.equal(to: to.maker.left,offset: offset)
         let right = maker.right.equal(to: to.maker.right,offset: offset)
         let top = maker.top.equal(to: to.maker.top,offset: offset)
@@ -647,7 +648,8 @@ public struct AMEdgeAnchor {
     ///
     ///     self.am.edge.equal(to:other.am.edege,(10,10,nil,10))
     ///
-    @discardableResult public func equal(
+    @discardableResult
+    public func equal(
         to:AMEdgeAnchor,
         top:CGFloat?=nil,
         left:CGFloat?=nil,

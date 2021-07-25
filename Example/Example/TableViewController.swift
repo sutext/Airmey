@@ -26,7 +26,7 @@ class TableViewController: UIViewController {
         self.title = "TableView"
         self.navbar.title = "TableView"
         let images = (1...45).compactMap {
-            UIImage(named: String(format: "loading%02i", $0), in: .main, compatibleWith: nil)
+            UIImage(named: String(format: "loading%02i", $0))
         }
         let indicator = AMGifIndicator(images)
         self.tableView.am.edge.equal(top: navbar.height, left: 0, bottom: 0, right: 0)
