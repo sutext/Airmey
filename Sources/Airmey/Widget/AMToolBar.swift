@@ -57,9 +57,9 @@ open class AMToolBar: UIView {
     public lazy var height:CGFloat = {
         switch style {
         case .header:
-            return contentHeight - .headerHeight
+            return contentHeight + .headerHeight
         case .footer:
-            return contentHeight - .footerHeight
+            return contentHeight + .footerHeight
         }
     }()
     /// add shadow line

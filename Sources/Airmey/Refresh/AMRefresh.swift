@@ -16,7 +16,6 @@ open class AMRefresh:UIControl{
     private var colors:[Status:UIColor] = [:]
     weak var scorllView:UIScrollView?
     var originalInset:UIEdgeInsets = .zero
-    var dragingPercent:CGFloat = 0
     public init(_ style:Style,height:CGFloat? = nil) {
         self.style = style
         self.height = height ?? style.defaultHeight
@@ -37,6 +36,7 @@ open class AMRefresh:UIControl{
                 self.textLabel.text = self.texts[status] ?? self.text
                 self.textLabel.font = self.fonts[status] ?? self.font
                 self.textLabel.textColor = self.colors[status] ?? self.textColor
+                scorllView?.isUserInteractionEnabled = (status != .refreshing)
                 self.statusChanged(status,old: oldValue)
                 if case .refreshing = status{
                     self.notifyDelegate()
@@ -46,7 +46,7 @@ open class AMRefresh:UIControl{
         }
     }
     public lazy var textLabel:UILabel = {
-        let label = UILabel()
+        let label = AMLabel()
         label.textAlignment = .center
         label.backgroundColor = .clear
         self.addSubview(label)
@@ -128,8 +128,7 @@ open class AMRefresh:UIControl{
         
     }
     
-    public func beginRefreshing(){
-        self.dragingPercent = 1
+    open func beginRefreshing(){
         if self.window != nil {
             self.status = .refreshing
         }else{

@@ -58,7 +58,7 @@ open class AMActionController:AMPopupController,AMActionable{
             am.edge.equal(top: 0, left: 0, right: 0)
             am.height.equal(to: CGFloat((self.items.count <> 1...5)*50))
         }
-        self.cancelBar.control.addTarget(self, action: #selector(AMActionController.cancelAction(sender:)), for: .touchUpInside)
+        self.cancelBar.control.addTarget(self, action: #selector(cancelAction(sender:)), for: .touchUpInside)
     }
     @objc dynamic func cancelAction(sender:UIControl){
         self.dismiss(animated: true)

@@ -47,14 +47,12 @@ extension UIScrollView {
             }
         }
     }
-    /// get refresh instance of style
-    public func refresh(of style:AMRefresh.Style)->AMRefresh?{
-        return self.controls.object(forKey: style.rawValue as NSString) as? AMRefresh
+    /// refresh header if exsit
+    public var header:AMRefreshHeader?{
+        return self.controls.object(forKey: AMRefresh.Style.header.rawValue as NSString) as? AMRefreshHeader
     }
-    /// enable or disable refresh
-    public func setEnable(_ enable:Bool, of style:AMRefresh.Style){
-        if let refresh = self.refresh(of: style) {
-            refresh.isEnabled = enable
-        }
+    /// refresh footer if exsit
+    public var footer:AMRefreshFooter?{
+        return self.controls.object(forKey: AMRefresh.Style.footer.rawValue as NSString) as? AMRefreshFooter
     }
 }

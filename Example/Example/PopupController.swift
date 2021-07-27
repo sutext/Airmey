@@ -93,7 +93,6 @@ extension PopupController:AMScrollViewDelegate{
     func scrollView(_ scrollView: UIScrollView, willBegin refresh: AMRefresh) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5){
             refresh.endRefreshing()
-            refresh.isEnabled = false
         }
     }
 }

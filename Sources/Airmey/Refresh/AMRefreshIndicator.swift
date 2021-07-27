@@ -16,9 +16,18 @@ public class LoadingIndicator:UIView,AMRefreshIndicator{
     public convenience init() {
         self.init(frame:.zero)
         self.addSubview(inner)
+        inner.hidesWhenStopped = false
         inner.am.edge.equal(to: 0)
     }
     public func update(status: AMRefresh.Status) {
+        switch status {
+        case .idle:
+            inner.stopAnimating()
+        case .refreshing:
+            inner.startAnimating()
+        default:
+            break
+        }
     }
     public func update(percent: CGFloat) {
         inner.transform = CGAffineTransform(rotationAngle: -percent * .pi)
