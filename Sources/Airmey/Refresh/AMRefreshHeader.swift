@@ -11,16 +11,21 @@ import UIKit
 /// contentInset control the scorllView contentView.frame
 /// contentSize and contentOffset never been change by contentInset
 ///
-public class AMRefreshHeader: AMRefresh {
-    private let indicator:AMRefreshIndicator
-    public init(_ indicator:AMRefreshIndicator = LoadingIndicator(),height:CGFloat?=nil) {
-        self.indicator = indicator
+open class AMRefreshHeader: AMRefresh {
+    public let loading:Loading
+    public init(_ indicator:Loading = Loading(),height:CGFloat?=nil) {
+        self.loading = indicator
         super.init(.header,height: height)
         self.addSubview(indicator)
         indicator.am.center.equal(to: 0)
     }
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    public override var isEnabled: Bool{
+        didSet{
+            self.loading.isHidden = !isEnabled
+        }
     }
     public override func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -30,7 +35,7 @@ public class AMRefreshHeader: AMRefresh {
         }
     }
     public override func statusChanged(_ status: AMRefresh.Status,old:Status){
-        indicator.update(status: status)
+        loading.update(status: status)
         if case .refreshing = status {
             var insets = self.originalInset
             insets.top = self.height+insets.top
@@ -56,7 +61,7 @@ public class AMRefreshHeader: AMRefresh {
         var percent = (happenOffset - offset)/self.height
         percent = (percent <> CGFloat(0)...CGFloat(1))
         if scview.isDragging {
-            indicator.update(percent: percent)
+            loading.update(percent: percent)
             if self.status == .idle , percent >= 1 {
                 self.status = .draging
             }else if self.status == .draging && percent < 1{
@@ -71,6 +76,75 @@ public class AMRefreshHeader: AMRefresh {
     }
     public override func gestureStateChanged() {
         
+    }
+}
+
+extension AMRefresh{
+    open class Loading:UIView{
+        private lazy var activity:UIActivityIndicatorView = {
+            let view = UIActivityIndicatorView(style: .gray)
+            view.hidesWhenStopped = false
+            self.addSubview(view)
+            view.am.edge.equal(to: 0)
+            return view
+        }()
+        open func update(status: AMRefresh.Status) {
+            switch status {
+            case .idle:
+                activity.stopAnimating()
+            case .refreshing:
+                activity.startAnimating()
+            default:
+                break
+            }
+        }
+        open func update(percent: CGFloat) {
+            activity.transform = CGAffineTransform(rotationAngle: -percent * .pi)
+        }
+        public static func gif(_ images:[UIImage],duration:TimeInterval? = nil)->Loading{
+            GifLoading(images,duration: duration)
+        }
+    }
+}
+extension AMRefresh{
+    public class GifLoading:Loading{
+        private let inner = UIImageView()
+        private let images:[UIImage]
+        private let duration:TimeInterval
+        public init(_ images:[UIImage] ,duration:TimeInterval? = nil) {
+            guard images.count>1 else {
+                fatalError("image count must gather than 1")
+            }
+            self.images = images
+            if let dur = duration {
+                self.duration = dur
+            }else{
+                self.duration = Double(images.count) * 0.1
+            }
+            super.init(frame:.zero)
+            self.addSubview(inner)
+            inner.image = images.last
+            inner.am.edge.equal(to: 0)
+        }
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        public override func update(status: AMRefresh.Status) {
+            switch status {
+            case .idle:
+                inner.stopAnimating()
+            case .refreshing:
+                inner.animationImages = images
+                inner.animationDuration = duration
+                inner.startAnimating()
+            default:
+                break
+            }
+        }
+        public override func update(percent: CGFloat) {
+            let index = Int(CGFloat(images.count - 1)*percent)
+            inner.image = images[index]
+        }
     }
 }
 

@@ -12,10 +12,19 @@ import UIKit
 /// contentInset control the scorllView contentView.frame
 /// contentSize and contentOffset never been change by contentInset
 ///
-public class AMRefreshFooter: AMRefresh {
-    private let indicator = UIActivityIndicatorView(style: .gray)
+open class AMRefreshFooter: AMRefresh {
     private var topConstt:NSLayoutConstraint?
     private let stackView = UIStackView()
+    /// text when disabled
+    public var disabledText:String?
+    /// trigger refresh wihtout feeling
+    /// recommend value [-1,1]. default value `0`
+    public var threshold:CGFloat = 1{
+        didSet{
+            self.feedback = threshold >= 1
+        }
+    }
+    public let indicator = UIActivityIndicatorView(style: .gray)
     public init(height:CGFloat? = nil) {
         super.init(.footer,height: height)
         self.stackView.spacing = 5
@@ -29,7 +38,7 @@ public class AMRefreshFooter: AMRefresh {
         self.text = "drag to refresh"
         self.setText("relax to refreshing", for: .draging)
         self.setText("refreshing", for: .refreshing)
-        self.setText("No more content", for: .noMoreData)
+        self.disabledText = "No more content"
     }
     public override func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -41,9 +50,17 @@ public class AMRefreshFooter: AMRefresh {
             am.centerX.equal(to: 0)
         }
     }
+    public override var isEnabled: Bool{
+        didSet{
+            if !isEnabled {
+                self.textLabel.text = self.disabledText ?? self.text
+                self.indicator.stopAnimating()
+            }
+        }
+    }
     public override func statusChanged(_ status: AMRefresh.Status, old: AMRefresh.Status) {
         switch status {
-        case .noMoreData,.idle:
+        case .idle:
             self.indicator.stopAnimating()
         case .refreshing:
             self.indicator.startAnimating()
@@ -66,21 +83,17 @@ public class AMRefreshFooter: AMRefresh {
         guard let scview = self.scorllView else {
             return
         }
-        guard self.status != .noMoreData else {
-            return
-        }
         let offset = scview.contentOffset.y
         let happenOffset = -self.originalInset.top
         let elasticHeight = scview.contentSize.height - (scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
         guard elasticHeight > 0 ,offset > happenOffset else {
             return
         }
-        var percent = (offset-happenOffset-elasticHeight)/self.height
-        percent = (percent <> CGFloat(0)...CGFloat(1))
+        let percent = (offset-happenOffset-elasticHeight)/self.height
         if scview.isDragging {
-            if self.status == .idle , percent >= 1 {
+            if self.status == .idle , percent >= threshold {
                 self.status = .draging
-            }else if self.status == .draging && percent < 1{
+            }else if self.status == .draging && percent < threshold{
                 self.status = .idle
             }
         }else if self.status == .draging{
@@ -92,9 +105,6 @@ public class AMRefreshFooter: AMRefresh {
             return
         }
         self.topConstt?.constant = max(scview.contentSize.height, scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
-    }
-    public func setNoMoreData(){
-        self.status = .noMoreData
     }
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

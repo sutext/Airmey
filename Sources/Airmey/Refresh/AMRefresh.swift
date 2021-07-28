@@ -16,6 +16,7 @@ open class AMRefresh:UIControl{
     private var colors:[Status:UIColor] = [:]
     weak var scorllView:UIScrollView?
     var originalInset:UIEdgeInsets = .zero
+    public var feedback:Bool = true
     public init(_ style:Style,height:CGFloat? = nil) {
         self.style = style
         self.height = height ?? style.defaultHeight
@@ -31,6 +32,9 @@ open class AMRefresh:UIControl{
     /// current status
     public internal(set) var status:Status = .idle{
         didSet{
+            guard self.isEnabled else {
+                return
+            }
             if status != oldValue {
                 let status = self.status
                 self.textLabel.text = self.texts[status] ?? self.text
@@ -129,13 +133,15 @@ open class AMRefresh:UIControl{
     }
     
     open func beginRefreshing(){
+        guard self.isEnabled else {
+            return
+        }
         if self.window != nil {
             self.status = .refreshing
-        }else{
-            if self.status != .refreshing {
-                self.status = .willRefresh
-                self.setNeedsDisplay()
-            }
+            return
+        }
+        if self.status != .refreshing {
+            self.status = .willRefresh
         }
     }
     open override func draw(_ rect: CGRect) {
@@ -153,6 +159,9 @@ open class AMRefresh:UIControl{
         }
         guard let delegate  = scview.delegate else {
             return
+        }
+        if self.feedback {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
         switch delegate {
         case let d as AMScrollViewDelegate:
@@ -239,7 +248,5 @@ extension AMRefresh{
         case willRefresh
         /// in refreshing
         case refreshing
-        /// reach the end of data. just happen when footer refresh.
-        case noMoreData
     }
 }

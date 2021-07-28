@@ -35,8 +35,7 @@ class PopupController: UIViewController {
         let images = (1...45).compactMap {
             UIImage(named: String(format: "loading%02i", $0), in: .main, compatibleWith: nil)
         }
-        let indicator = AMGifIndicator(images)
-        self.scrollView.using(refresh: AMRefreshHeader(indicator))
+        self.scrollView.using(refresh: AMRefreshHeader(.gif(images)))
         self.scrollView.addSubview(self.stackView)
         self.scrollView.delegate = self
         self.stackView.backgroundColor = .white

@@ -28,17 +28,17 @@ class TableViewController: UIViewController {
         let images = (1...45).compactMap {
             UIImage(named: String(format: "loading%02i", $0))
         }
-        let indicator = AMGifIndicator(images)
         self.tableView.separatorStyle = .none
         self.tableView.separatorInset = .zero
         self.tableView.am.edge.equal(to: 0)
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.tableView.contentInset = UIEdgeInsets(top: navbar.height, left: 0, bottom: .tabbarHeight, right: 0)
-        self.tableView.using(refresh: AMRefreshHeader(indicator))
+        self.tableView.using(refresh: AMRefreshHeader(.gif(images)))
         self.tableView.using(refresh: AMRefreshFooter())
         self.tableView.register(Cell.self)
         self.tableView.delegate = self
         self.tableView.dataSource = self
+        self.tableView.footer?.threshold = -2
         self.tableView.header?.beginRefreshing()
     }
     
@@ -53,7 +53,7 @@ extension TableViewController:AMTableViewDelegate{
                 self.tableView.reloadData()
             }
         case .footer:
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1){
                 refresh.endRefreshing()
                 self.count += 10
                 self.tableView.reloadData()
@@ -69,7 +69,7 @@ extension TableViewController:UITableViewDataSource{
         count
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        50
+        200
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(Cell.self, for: indexPath)
