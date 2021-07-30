@@ -9,14 +9,18 @@
 import UIKit
 
 open class AMRefresh:UIControl{
+    /// refreshing style
     public let style:Style
+    /// refresh control height
     public let height:CGFloat
+    /// enable UIImpactFeedback or not. By default `true`
+    public var feedback:Bool = true
+    
     private var texts:[Status:String] = [:]
     private var fonts:[Status:UIFont] = [:]
     private var colors:[Status:UIColor] = [:]
     weak var scorllView:UIScrollView?
     var originalInset:UIEdgeInsets = .zero
-    public var feedback:Bool = true
     public init(_ style:Style,height:CGFloat? = nil) {
         self.style = style
         self.height = height ?? style.defaultHeight
@@ -26,6 +30,7 @@ open class AMRefresh:UIControl{
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    /// Is refreshing or not at current time
     public var isRefreshing:Bool {
         status == .willRefresh || status == .refreshing
     }
@@ -49,7 +54,8 @@ open class AMRefresh:UIControl{
             }
         }
     }
-    public lazy var textLabel:UILabel = {
+    /// default text label
+    public lazy var textLabel:AMLabel = {
         let label = AMLabel()
         label.textAlignment = .center
         label.backgroundColor = .clear
@@ -131,7 +137,9 @@ open class AMRefresh:UIControl{
     open func gestureStateChanged(){
         
     }
-    
+    public func endRefreshing(){
+        self.status = .idle
+    }
     open func beginRefreshing(){
         guard self.isEnabled else {
             return
@@ -149,9 +157,6 @@ open class AMRefresh:UIControl{
         if self.status == .willRefresh {
             self.status = .refreshing
         }
-    }
-    public func endRefreshing(){
-        self.status = .idle
     }
     private func notifyDelegate() {
         guard let scview = self.scorllView else {

@@ -9,8 +9,6 @@
 import UIKit
 
 /// Builtin Refresh Footer
-/// contentInset control the scorllView contentView.frame
-/// contentSize and contentOffset never been change by contentInset
 ///
 open class AMRefreshFooter: AMRefresh {
     private var topConstt:NSLayoutConstraint?
@@ -87,8 +85,10 @@ open class AMRefreshFooter: AMRefresh {
         let happenOffset = -self.originalInset.top
         let elasticHeight = scview.contentSize.height - (scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
         guard elasticHeight > 0 ,offset > happenOffset else {
+            self.isHidden = true
             return
         }
+        self.isHidden  = false
         let percent = (offset-happenOffset-elasticHeight)/self.height
         if scview.isDragging {
             if self.status == .idle , percent >= threshold {

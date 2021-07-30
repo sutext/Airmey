@@ -27,6 +27,9 @@ extension UIScrollView {
         objc_setAssociatedObject(self, key, dic, .OBJC_ASSOCIATION_RETAIN)
         return dic
     }
+    /// add refresh control to the scrollview
+    ///- Note: only first one of each style effect !
+    ///- Note: duplicate add refresh contorl of same style is noneffective !
     public func using(refresh:AMRefresh){
         guard self.controls.object(forKey: refresh.style.rawValue as NSString) == nil else {
             return

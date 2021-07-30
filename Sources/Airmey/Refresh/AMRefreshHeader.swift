@@ -8,8 +8,6 @@
 import UIKit
 ///
 /// Builtin Refresh Header
-/// contentInset control the scorllView contentView.frame
-/// contentSize and contentOffset never been change by contentInset
 ///
 open class AMRefreshHeader: AMRefresh {
     public let loading:Loading
@@ -29,9 +27,11 @@ open class AMRefreshHeader: AMRefresh {
     }
     public override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        self.amake { am in
-            am.top.equal(to: -self.height)
-            am.centerX.equal(to: 0)
+        if superview != nil {
+            self.amake { am in
+                am.top.equal(to: -self.height)
+                am.centerX.equal(to: 0)
+            }
         }
     }
     public override func statusChanged(_ status: AMRefresh.Status,old:Status){

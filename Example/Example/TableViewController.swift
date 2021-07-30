@@ -25,23 +25,16 @@ class TableViewController: UIViewController {
         self.view.addSubview(self.tableView)
         self.title = "TableView"
         self.navbar.title = "TableView"
-        let images = (1...45).compactMap {
-            UIImage(named: String(format: "loading%02i", $0))
-        }
-        self.tableView.separatorStyle = .none
-        self.tableView.separatorInset = .zero
+        let images = (1...45).compactMap { UIImage(named: String(format: "loading%02i", $0)) }
         self.tableView.am.edge.equal(to: 0)
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.tableView.contentInset = UIEdgeInsets(top: navbar.height, left: 0, bottom: .tabbarHeight, right: 0)
-        self.tableView.using(refresh: AMRefreshHeader(.gif(images)))
-        self.tableView.using(refresh: AMRefreshFooter())
         self.tableView.register(Cell.self)
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        self.tableView.footer?.threshold = -2
+        self.tableView.using(refresh: AMRefreshHeader(.gif(images)),AMRefreshFooter())
         self.tableView.header?.beginRefreshing()
     }
-    
 }
 extension TableViewController:AMTableViewDelegate{
     func tableView(_ tableView: UITableView, willBegin refresh: AMRefresh) {
@@ -49,11 +42,12 @@ extension TableViewController:AMTableViewDelegate{
         case .header:
             DispatchQueue.main.asyncAfter(deadline: .now() + 2){
                 refresh.endRefreshing()
-                self.count = 16
+                self.count = (10...20).randomElement()!
+                tableView.footer?.isEnabled = self.count>13
                 self.tableView.reloadData()
             }
         case .footer:
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1){
                 refresh.endRefreshing()
                 self.count += 10
                 self.tableView.reloadData()
@@ -69,7 +63,7 @@ extension TableViewController:UITableViewDataSource{
         count
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        200
+        50
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(Cell.self, for: indexPath)
