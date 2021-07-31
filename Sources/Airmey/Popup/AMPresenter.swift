@@ -12,9 +12,13 @@ import UIKit
 /// This is an abstract class
 /// You must override the hock method to provide your implmention
 open class AMPresenter: NSObject {
+    /// config presented block
     public var onshow:AMBlock?
+    /// config dismiss call back
     public var onhide:AMBlock?
+    /// config mask click action
     public var onMaskClick:AMBlock?
+    /// config transition duration
     public var transitionDuration:TimeInterval = 0.3
     ///override method
     ///empty implemention by default
@@ -59,20 +63,19 @@ extension AMPresenter:UIViewControllerTransitioningDelegate{
         return present
     }
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return self
+        self
     }
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return self
+        self
     }
     
 }
 extension AMPresenter:UIViewControllerAnimatedTransitioning{
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-        return self.transitionDuration
+        self.transitionDuration
     }
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         UIView.animate(withDuration: self.transitionDuration, animations: {
-            
         }) { (finished) in
             transitionContext.completeTransition(finished)
         }
@@ -87,8 +90,8 @@ public class AMFramePresenter: AMPresenter {
     private let dimmingFrame:CGRect
     private lazy var dimmingView:AMView = {
         let view = AMView()
-        view.onclick = {_ in
-            self.onMaskClick?()
+        view.onclick = {[weak self] _ in
+            self?.onMaskClick?()
         }
         view.backgroundColor = UIColor(white: 0, alpha: 0.4)
         view.alpha = 0
@@ -162,8 +165,8 @@ public class AMFramePresenter: AMPresenter {
 public class AMDimmingPresenter: AMPresenter {
     private lazy var dimmingView:AMView = {
         let view = AMView()
-        view.onclick = {_ in
-            self.onMaskClick?()
+        view.onclick = {[weak self] _ in
+            self?.onMaskClick?()
         }
         view.backgroundColor = UIColor(white: 0, alpha: 0.4)
         view.alpha = 0

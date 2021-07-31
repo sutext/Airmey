@@ -6,23 +6,10 @@
 //
 
 import Foundation
-
 public enum AMError:Error{
-    case sqlite(_ :Sqlite)
-    case image(_ :Image)
-}
-
-extension AMError{
-    public enum Sqlite{
-        case momdNotFound
-        case idIsNil(info:String)
-        case system(info:String)
-    }
-}
-extension AMError{
-    public enum Image{
-        case invalidURL
-        case invalidData
-        case system(info:[AnyHashable:Any]?)
-    }
+    case invalidURL(url:String?)
+    case invalidData(data:Data?)
+    case imageAsset(info:[AnyHashable:Any]?)
+    case invalidId
+    case momdNotFound
 }

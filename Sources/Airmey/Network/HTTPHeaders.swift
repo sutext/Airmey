@@ -14,9 +14,9 @@ public struct HTTPHeaders {
         case acceptCharset      = "Accept-Charset"
         case acceptLanguage     = "Accept-Language"
         case acceptEncoding     = "Accept-Encoding"
+        case authorization      = "Authorization"
         case contentType        = "Content-Type"
         case contentDisposition = "Content-Disposition"
-        case authorization      = "Authorization"
         case userAgent          = "User-Agent"
     }
     public private(set) var values: [String:String] = [:]

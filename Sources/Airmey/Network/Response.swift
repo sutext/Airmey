@@ -8,8 +8,8 @@
 
 import Foundation
 public struct Response<M>{
-    public let data:Data?
     public private(set) var result:Result<M,Error>
+    public let data:Data?
     public let request: URLRequest?
     public let response: HTTPURLResponse?
     public let metrics: URLSessionTaskMetrics?

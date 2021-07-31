@@ -17,6 +17,7 @@ public class AMImageCache {
     private let diskCache = URLCache(memoryCapacity: 50*1024*1024, diskCapacity: 500*1024*1024, diskPath: "com.airmey.image.downloader")
     private let queue = DispatchQueue.main
     private lazy var downloader:URLSession = {
+        
         let config = URLSessionConfiguration.default
         config.urlCache = self.diskCache
         config.httpShouldSetCookies = true
@@ -45,14 +46,14 @@ extension AMImageCache{
     public func clearDisk(){
         self.diskCache.removeAllCachedResponses()
     }
-    public func image(with url:String,scale:CGFloat = 3,finish: ResultBlock<UIImage>?) {
+    public func image(with url:String,scale:CGFloat = 3,finish: ONResult<UIImage>?) {
         let key = url as NSString
         if let image = self.imageCache.object(forKey: key) {
             self.queue.async { finish?(.success(image)) }
             return
         }
         guard let url = URL(string: url) else {
-            self.queue.async { finish?(.failure(AMError.image(.invalidURL))) }
+            self.queue.async { finish?(.failure(AMError.invalidURL(url: url))) }
             return
         }
         var request = URLRequest(url: url)
@@ -60,12 +61,12 @@ extension AMImageCache{
         request.addValue("image/*", forHTTPHeaderField: "Accept")
         self.downloader.dataTask(with: request) { data, resp, error in
             guard let data = data else{
-                let error = error ?? AMError.image(.invalidData)
+                let error = error ?? AMError.invalidData(data: data)
                 self.queue.async { finish?(.failure(error)) }
                 return
             }
             guard let image:UIImage = .data(data, scale: scale) else{
-                let error = AMError.image(.invalidData)
+                let error = AMError.invalidData(data: data)
                 self.queue.async { finish?(.failure(error)) }
                 return
             }
@@ -85,7 +86,7 @@ extension AMImageCache{
             userInfo = info
         }
         guard let img = image else {
-            return .failure(AMError.image(.system(info: userInfo)))
+            return .failure(AMError.imageAsset(info: userInfo))
         }
         return .success(img);
     }
@@ -96,7 +97,7 @@ extension AMImageCache{
     public func thumb(with asset:PHAsset,size:CGSize) -> Result<UIImage,AMError>{
         return self.image(with: asset, size: size)
     }
-    private func data(with asset:PHAsset,finish:ResultBlock<Data>?){
+    private func data(with asset:PHAsset,finish:ONResult<Data>?){
         rootQueue.async {
             let options = PHImageRequestOptions()
             options.isSynchronous = true;
@@ -108,14 +109,14 @@ extension AMImageCache{
             })
             self.queue.async {
                 guard let data = imageData else{
-                    finish?(.failure(AMError.image(.system(info: userInfo))))
+                    finish?(.failure(AMError.imageAsset(info: userInfo)))
                     return
                 }
                 finish?(.success(data))
             }
         }
     }
-    public func image(with asset:PHAsset,finish: ResultBlock<UIImage>?){
+    public func image(with asset:PHAsset,finish: ONResult<UIImage>?){
         rootQueue.async {
             let key = asset.localIdentifier as NSString
             if let image = self.imageCache.object(forKey: key) {
@@ -133,7 +134,7 @@ extension AMImageCache{
         }
     }
     
-    public func thumb(with asset:PHAsset,size:CGSize,finish: ResultBlock<UIImage>?){
+    public func thumb(with asset:PHAsset,size:CGSize,finish: ONResult<UIImage>?){
         rootQueue.async {
             let key = (asset.localIdentifier+"_mini") as NSString
             if let image = self.thumbCache.object(forKey: key) {
@@ -154,7 +155,7 @@ extension AMImageCache{
 }
 extension UIImageView{
     public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil)  {
-        if let placeholder = placeholder {
+        if let placeholder = placeholder,self.image == nil {
             self.image = placeholder;
         }
         AMImageCache.shared.image(with: url,scale:scale) { result in
@@ -172,7 +173,7 @@ extension UIImageView{
         }
     }
     public func setImage(with asset:PHAsset,placeholder:UIImage? = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
-        if let placeholder = placeholder {
+        if let placeholder = placeholder ,self.image == nil{
             self.image = placeholder;
         }
         AMImageCache.shared.image(with: asset) { result in
@@ -190,7 +191,7 @@ extension UIImageView{
         }
     }
     public func setThumb(with asset:PHAsset,size:CGSize,placeholder:UIImage?  = nil,finish:((UIImageView,Result<UIImage,Error>)->Void)? = nil){
-        if let placeholder = placeholder {
+        if let placeholder = placeholder ,self.image == nil{
             self.image = placeholder;
         }
         AMImageCache.shared.thumb(with: asset,size:size) { result in
@@ -210,7 +211,7 @@ extension UIImageView{
 }
 extension UIButton{
     public func setImage(with url:String,scale:CGFloat = 3,placeholder:UIImage? = nil,for state:UIControl.State = .normal,finish:((UIButton,Result<UIImage,Error>)->Void)? = nil)  {
-        if let placeholder = placeholder {
+        if let placeholder = placeholder,self.image(for: state) == nil {
             self.setImage(placeholder, for: state)
         }
         AMImageCache.shared.image(with: url,scale:scale) { result in

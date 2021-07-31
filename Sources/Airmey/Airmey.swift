@@ -146,7 +146,7 @@ public typealias AMBlock = ()->Void
 /// Common click closure
 public typealias ONClick = (UIView)->Void
 /// Common Result closure
-public typealias ResultBlock<D> = (Result<D,Error>)->Void
+public typealias ONResult<D> = (Result<D,Error>)->Void
 
 extension Result{
     ///

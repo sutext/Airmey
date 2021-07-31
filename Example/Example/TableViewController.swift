@@ -32,7 +32,7 @@ class TableViewController: UIViewController {
         self.tableView.register(Cell.self)
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        self.tableView.using(refresh: AMRefreshHeader(.gif(images)),AMRefreshFooter())
+        self.tableView.using(refresh: AMRefreshHeader(.gif(images)))
         self.tableView.header?.beginRefreshing()
     }
 }

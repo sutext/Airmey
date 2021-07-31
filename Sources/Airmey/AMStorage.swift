@@ -40,7 +40,7 @@ open class AMStorage{
     }()
     public init(momd url:URL) throws{
         guard let mom = NSManagedObjectModel(contentsOf: url) else {
-            throw AMError.sqlite(.momdNotFound)
+            throw AMError.momdNotFound
         }
         self.mom = mom
         self.moc = NSManagedObjectContext(concurrencyType:.privateQueueConcurrencyType);
@@ -175,10 +175,7 @@ extension AMStorage{
         if let err = err {
             throw err
         }
-        guard let obj = obj else {
-            throw AMError.sqlite(.system(info: "unkown"))
-        }
-        return obj
+        return obj!//never nil
     }
     ///
     ///  Insert or update a group of managed object from models
@@ -266,13 +263,13 @@ extension AMStorage{
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
         guard let oid = try? type.id(for: model) else {
-            throw AMError.sqlite(.idIsNil(info: "model:\(model)"))
+            throw AMError.invalidId
         }
         var id:Any = oid
         let m = Mirror(reflecting: id)
         if case .optional = m.displayStyle {
             guard let nid = m.children.first?.value else{
-                throw AMError.sqlite(.idIsNil(info: "model:\(model)"))
+                throw AMError.invalidId
             }
             id = nid
         }
@@ -286,7 +283,7 @@ extension AMStorage{
 }
 //MARK: async methods
 extension AMStorage{
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model,block:ResultBlock<Object>?){
+    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model,block:ONResult<Object>?){
         self.queue.async {
             var result:Result<Object,Error>
             do {
@@ -300,7 +297,7 @@ extension AMStorage{
             }
         }
     }
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],block:ResultBlock<[Object]>?){
+    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],block:ONResult<[Object]>?){
         self.queue.async {
             var result:Result<[Object],Error>
             do {
