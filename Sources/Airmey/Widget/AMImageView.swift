@@ -25,6 +25,7 @@ open class AMImageView: UIImageView {
     public var onclick:ONClick?{
         didSet{
             if let _ = self.onclick {
+                self.isUserInteractionEnabled = true
                 self.addGestureRecognizer(self.sigleTapGesture)
             }
             else{
@@ -35,6 +36,7 @@ open class AMImageView: UIImageView {
     public var doubleClick:((_ sender:AMImageView)->Void)?{
         didSet{
             if let _ = self.doubleClick {
+                self.isUserInteractionEnabled = true
                 self.addGestureRecognizer(self.doubleTapGesture)
             }
             else{

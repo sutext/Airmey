@@ -188,6 +188,17 @@ public struct AMXAxisAnchor {
         }
     }
     @discardableResult
+    public func less(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .left:
+            return self.view.leadingAnchor.less(than: other.leadingAnchor, offset: offset)
+        case .right:
+            return self.view.trailingAnchor.less(than: other.trailingAnchor,offset: offset)
+        case .center:
+            return self.view.centerXAnchor.less(than: other.centerXAnchor, offset: offset)
+        }
+    }
+    @discardableResult
     public func less(than other:Self, offset:CGFloat? = nil) -> NSLayoutConstraint{
         switch self.kind {
         case .left:
@@ -237,6 +248,17 @@ public struct AMXAxisAnchor {
         }
     }
     @discardableResult
+    public func equal(to other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .left:
+            return self.view.leadingAnchor.equal(to: other.leadingAnchor, offset: offset)
+        case .right:
+            return self.view.trailingAnchor.equal(to: other.trailingAnchor,offset: offset)
+        case .center:
+            return self.view.centerXAnchor.equal(to: other.centerXAnchor, offset: offset)
+        }
+    }
+    @discardableResult
     public func equal(to other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch self.kind {
         case .left:
@@ -283,6 +305,17 @@ public struct AMXAxisAnchor {
             return view.trailingAnchor.greater(than: su.trailingAnchor, offset: offset)
         case .center:
             return view.centerXAnchor.greater(than: su.centerXAnchor, offset: offset)
+        }
+    }
+    @discardableResult
+    public func greater(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .left:
+            return self.view.leadingAnchor.greater(than: other.leadingAnchor, offset: offset)
+        case .right:
+            return self.view.trailingAnchor.greater(than: other.trailingAnchor,offset: offset)
+        case .center:
+            return self.view.centerXAnchor.greater(than: other.centerXAnchor, offset: offset)
         }
     }
     @discardableResult
@@ -345,7 +378,17 @@ public struct AMYAxisAnchor {
             return view.centerYAnchor.less(than: su.centerYAnchor, offset: offset)
         }
     }
-    
+    @discardableResult
+    public func less(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .top:
+            return self.view.topAnchor.less(than: other.topAnchor, offset: offset)
+        case .bottom:
+            return self.view.bottomAnchor.less(than: other.bottomAnchor,offset: offset)
+        case .center:
+            return self.view.centerYAnchor.less(than: other.centerYAnchor, offset: offset)
+        }
+    }
     @discardableResult
     public func less(than other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch self.kind {
@@ -396,7 +439,17 @@ public struct AMYAxisAnchor {
             return view.centerYAnchor.equal(to: su.centerYAnchor, offset: offset)
         }
     }
-    
+    @discardableResult
+    public func equal(to other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .top:
+            return self.view.topAnchor.equal(to: other.topAnchor, offset: offset)
+        case .bottom:
+            return  self.view.bottomAnchor.equal(to: other.bottomAnchor,offset: offset)
+        case .center:
+            return self.view.centerYAnchor.equal(to: other.centerYAnchor, offset: offset)
+        }
+    }
     @discardableResult
     public func equal(to other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch self.kind {
@@ -445,6 +498,17 @@ public struct AMYAxisAnchor {
             return view.bottomAnchor.greater(than: su.bottomAnchor,offset: offset)
         case .center:
             return view.centerYAnchor.greater(than: su.centerYAnchor, offset: offset)
+        }
+    }
+    @discardableResult
+    public func greater(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .top:
+            return self.view.topAnchor.greater(than: other.topAnchor, offset: offset)
+        case .bottom:
+            return self.view.bottomAnchor.greater(than: other.bottomAnchor,offset: offset)
+        case .center:
+            return self.view.centerYAnchor.greater(than: other.centerYAnchor, offset: offset)
         }
     }
     public func greater(than other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
@@ -513,7 +577,6 @@ public struct AMDimensionAnchor {
             return view.heightAnchor.less(than: other.view.heightAnchor,offset: offset)
         }
     }
-    
     @discardableResult
     public func equal(to offset:CGFloat)->NSLayoutConstraint{
         switch self.kind {
@@ -523,7 +586,15 @@ public struct AMDimensionAnchor {
             return view.heightAnchor.equal(to: offset)
         }
     }
-    
+    @discardableResult
+    public func equal(to other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .width:
+            return view.widthAnchor.equal(to: other.widthAnchor,offset: offset)
+        case .height:
+            return view.heightAnchor.equal(to: other.heightAnchor,offset: offset)
+        }
+    }
     @discardableResult
     public func equal(to other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch (self.kind,other.kind) {
@@ -577,8 +648,24 @@ public struct AMCenterAnchor {
         return (maker.centerX.equal(to: to.x),maker.centerY.equal(to: to.y))
     }
     @discardableResult
-    public func equal(to:AMCenterAnchor)->Constraint {
-        return (maker.centerX.equal(to: to.maker.centerX),maker.centerY.equal(to: to.maker.centerY))
+    public func equal(to:UIView,offset:CGFloat?=nil)->Constraint {
+        return self.equal(to: to.am.center, offset: offset)
+    }
+    @discardableResult
+    public func equal(to:UIView,offset:(x:CGFloat,y:CGFloat))->Constraint {
+        return self.equal(to: to.am.center, offset: offset)
+    }
+    @discardableResult
+    public func equal(to:AMCenterAnchor,offset:CGFloat?=nil)->Constraint {
+        return (
+            maker.centerX.equal(to: to.maker.centerX,offset: offset),
+            maker.centerY.equal(to: to.maker.centerY,offset: offset))
+    }
+    @discardableResult
+    public func equal(to:AMCenterAnchor,offset:(x:CGFloat,y:CGFloat))->Constraint {
+        return (
+            maker.centerX.equal(to: to.maker.centerX,offset: offset.x),
+            maker.centerY.equal(to: to.maker.centerY,offset: offset.y))
     }
 }
 public struct AMEdgeAnchor {
@@ -627,6 +714,20 @@ public struct AMEdgeAnchor {
             bottomC = maker.bottom.equal(to: v)
         }
         return (topC,leftC,bottomC,rightC)
+    }
+    
+    @discardableResult
+    public func equal(to:UIView,offset:CGFloat?=nil)->ConstConstraint {
+        return self.equal(to: to.am.edge, offset: offset)
+    }
+    @discardableResult
+    public func equal(
+        to:UIView,
+        top:CGFloat?=nil,
+        left:CGFloat?=nil,
+        bottom:CGFloat?=nil,
+        right:CGFloat?=nil)->Constraint {
+        return self.equal(to: to.am.edge,top: top,left: left,bottom: bottom,right: right)
     }
     ///
     /// Make edge inset constraint
@@ -687,6 +788,16 @@ public struct AMSizeAnchor {
     @discardableResult
     public func equal(to:(width:CGFloat,height:CGFloat))->Constraint {
         return (maker.width.equal(to: to.width),maker.height.equal(to: to.height))
+    }
+    @discardableResult
+    public func equal(to:UIView,offset:CGFloat?=nil)->Constraint {
+        return self.equal(to: to.am.size, offset: offset)
+    }
+    @discardableResult
+    public func equal(
+        to:UIView,
+        offset:(width:CGFloat,height:CGFloat))->Constraint {
+        return self.equal(to: to.am.size, offset: offset)
     }
     @discardableResult
     public func equal(to:AMSizeAnchor,offset:CGFloat?=nil)->Constraint {
