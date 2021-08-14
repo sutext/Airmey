@@ -58,7 +58,7 @@ extension AMPopupCenter{
         self.add(.alert(vc))
     }
     /// present a waitable controller
-    public func wait(_ msg:String?,meta:AMWaitable.Type?=nil)  {
+    public func wait(_ msg:String? = nil,meta:AMWaitable.Type?=nil)  {
         let vc = (meta ?? Self.Wait).init(msg)
         vc.pop = self
         self.add(.wait(vc))
