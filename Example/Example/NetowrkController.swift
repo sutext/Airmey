@@ -11,14 +11,13 @@ import  Airmey
 
 class NetowrkController: UIViewController {
     let stackView = UIStackView()
+    var oberver:NSKeyValueObservation?
     var progress:Progress? = nil{
         didSet{
-            
-            if let newval = progress{
-                newval.addObserver(self, forKeyPath: "fractionCompleted", options: [.new], context: nil)
-            }else{
-                oldValue?.removeObserver(self, forKeyPath: "fractionCompleted")
-            }
+            oberver?.invalidate()
+            oberver = progress?.observe(\.fractionCompleted, options: .new, changeHandler: { p, c in
+                print(p.fractionCompleted)
+            })
         }
     }
     init() {
@@ -113,9 +112,6 @@ class NetowrkController: UIViewController {
         imageLabel.onclick = {_ in
             action?()
         }
-    }
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        print(self.progress?.fractionCompleted ?? 0)
     }
 }
 

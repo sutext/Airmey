@@ -2,13 +2,17 @@
 //  CKImageLabel.swift
 //  CoreKnight
 //
-//  Created by supertext on 2018/7/6.
-//  Copyright © 2018年 lerjin. All rights reserved.
+//  Created by supertext on 2020/7/6.
+//  Copyright © 2020年 airmey. All rights reserved.
 //
 import UIKit
 
+///
+/// A UIImageView and UILabel structure
+/// Use for simplyfy layout code
+///
 public final class AMImageLabel: AMView {
-    /// desc the image posiation
+    /// describe the image posiation
     public enum Layout{
         case left
         case right
@@ -22,13 +26,23 @@ public final class AMImageLabel: AMView {
     public private(set) var layout:Layout
     public private(set) var ratio:CGFloat?
     public private(set) var insets:AMEdgeAnchor.Constraint!
-    public init(_ layout:Layout = .left,image:UIImage? = nil , text:String? = nil ,ratio:CGFloat? = nil) {
+    ///
+    /// Greate an imageLabel instance
+    /// - Parameters:
+    ///     - layout: describe the layout of image lable.
+    ///     - image: UIImage instance
+    ///     - text: text
+    ///     - ratio: image scale ratio. if will work when set image for atuo scale
+    ///
+    public init(
+        _ layout:Layout = .left,
+        image:UIImage? = nil ,
+        text:String? = nil ,
+        ratio:CGFloat? = nil) {
         self.layout = layout
         self.ratio = ratio
         super.init(frame: .zero)
-        self.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(self.stackView)
-        
         self.imageView.contentMode = .scaleToFill
         self.image = image
         self.textLabel.text = text
@@ -61,25 +75,15 @@ public final class AMImageLabel: AMView {
     public required init?(coder aDecoder: NSCoder) {
         return nil
     }
-    private func setImage(width:CGFloat,height:CGFloat ){
-        if let const = self.imageConstt {
-            const.height.constant = width
-            const.width.constant = height
-            return
-        }
-        self.imageConstt = self.imageView.am.size.equal(to: (width,height))
-    }
 }
-///MARK: property accessable
+///MARK:  property accessable
 public extension AMImageLabel{
-    var text:String?{
-        get{
-            return self.textLabel.text
-        }
-        set {
-            self.textLabel.text = newValue
-        }
+    /// imageView contentMode
+    var imageMode:UIView.ContentMode{
+        get {imageView.contentMode}
+        set {imageView.contentMode = newValue}
     }
+    /// imageView image
     var image:UIImage?{
         get{
             return self.imageView.image
@@ -90,13 +94,44 @@ public extension AMImageLabel{
                 return
             }
             self.imageView.image = newone
-            guard let scale = self.ratio else {
-                return
+            if let scale = self.ratio {
+                self.imageSize = newone.size * scale
             }
-            let size = newone.size
-            self.setImage(width: size.width*scale, height: size.height*scale)
         }
     }
+    /// imageView size LayoutConstraint
+    var imageSize:CGSize?{
+        get{
+            guard let const = self.imageConstt else {
+                return nil
+            }
+            return CGSize(width: const.width.constant, height: const.height.constant)
+        }
+        set{
+            guard let size = newValue else {
+                self.imageConstt?.width.isActive = false
+                self.imageConstt?.height.isActive = false
+                self.imageConstt = nil
+                return
+            }
+            if let const = self.imageConstt {
+                const.height.constant = size.width
+                const.width.constant = size.height
+                return
+            }
+            self.imageConstt = self.imageView.am.size.equal(to: (size.width,size.height))
+        }
+    }
+    /// lable text
+    var text:String?{
+        get{
+            return self.textLabel.text
+        }
+        set {
+            self.textLabel.text = newValue
+        }
+    }
+    /// label font
     var font:UIFont?{
         get{
             return self.textLabel.font
@@ -105,6 +140,7 @@ public extension AMImageLabel{
             self.textLabel.font = newValue
         }
     }
+    /// label text color
     var textColor:UIColor?{
         get{
             return self.textLabel.textColor
@@ -113,6 +149,7 @@ public extension AMImageLabel{
             self.textLabel.textColor = newValue
         }
     }
+    /// number of lable lines
     var numberOfLines:Int{
         get{
             return self.textLabel.numberOfLines
@@ -121,6 +158,7 @@ public extension AMImageLabel{
             self.textLabel.numberOfLines = newValue
         }
     }
+    /// label textAlignment
     var textAlignment:NSTextAlignment{
         get{
             return self.textLabel.textAlignment
@@ -129,7 +167,8 @@ public extension AMImageLabel{
             self.textLabel.textAlignment = newValue
         }
     }
-    var spaceing:CGFloat{
+    /// stack spacing
+    var spacing:CGFloat{
         get{
             return self.stackView.spacing
         }
@@ -137,12 +176,22 @@ public extension AMImageLabel{
             self.stackView.spacing = newValue
         }
     }
+    /// stack aligment
     var alignment:UIStackView.Alignment{
         get{
             return self.stackView.alignment
         }
         set{
             self.stackView.alignment = newValue
+        }
+    }
+    /// stack distribution
+    var distribution:UIStackView.Distribution{
+        get{
+            return self.stackView.distribution
+        }
+        set{
+            self.stackView.distribution = newValue
         }
     }
 }

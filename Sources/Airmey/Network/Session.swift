@@ -99,7 +99,7 @@ class Session:NSObject{
     func download(
         resume data: Data,
         fileManager:FileManager = .default,
-        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        transfer:DownloadTask.URLTransfer? = nil,
         completion:((Response<JSON>)->Void)?)->DownloadTask?{
         let task = self.session.downloadTask(withResumeData: data)
         let req = DownloadTask(task, transfer: transfer, fileManager: fileManager,completion: completion)
@@ -111,7 +111,7 @@ class Session:NSObject{
         params:HTTPParams?,
         headers:HTTPHeaders?,
         fileManager:FileManager = .default,
-        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        transfer:DownloadTask.URLTransfer? = nil,
         completion:((Response<JSON>)->Void)?)->DownloadTask?{
         let result = URLEncoder.query.encode(url, method: .get, params: params, headers: headers, timeout: 0)
         guard let urlreq = result.value else{

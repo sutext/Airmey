@@ -150,15 +150,10 @@ extension URLRequest{
 public class DownloadTask:HTTPTask{
     /// temp file url transfer
     public typealias URLTransfer = (_ tempURL:URL,_ response:HTTPURLResponse?) -> URL
-    /// A default transfer managed by airmey in temp dir
-    public static let defaultTransfer:URLTransfer = {url,_ in
-        let filename = "Airmey_\(url.lastPathComponent)"
-        return url.deletingLastPathComponent().appendingPathComponent(filename)
-    }
     private var fileManager:FileManager
-    let transfer:URLTransfer
+    var transfer:URLTransfer?
     var fileURL:URL?
-    init(_ task: URLSessionDownloadTask,transfer: @escaping URLTransfer,fileManager:FileManager,completion:Completion?) {
+    init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:Completion?) {
         self.transfer = transfer
         self.fileManager = fileManager
         super.init(task, retrier: nil,decoder: JSNDecoder(),completion: completion)
@@ -192,6 +187,10 @@ public class DownloadTask:HTTPTask{
         return nil
     }
     func finishDownload(_ location:URL){
+        guard let transfer = transfer else {
+            self.fileURL = location
+            return
+        }
         let destination = transfer(location,response)
         do {
             try? fileManager.removeItem(at: destination)

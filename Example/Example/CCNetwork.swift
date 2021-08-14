@@ -184,15 +184,13 @@ class DownloadImage: AMDownload {
     var queue: DispatchQueue?
     var params: HTTPParams?
     var headers: [String:String]?
+    var transfer: DownloadTask.URLTransfer?
     init(_ url:String) {
         self.url = url
+//        self.transfer = { tempFile,response in
+//            URL(fileURLWithPath: "\(AMPhone.cacheDir)/testfile1/\(tempFile.lastPathComponent)")
+//        }
     }
-    func location(for tempFile: URL, and response: HTTPURLResponse?) -> URL {
-        return URL(fileURLWithPath: "\(AMPhone.cacheDir)/testfile1/\(tempFile.lastPathComponent)")
-    }
-    
-    
-    
 }
 extension CCRequest{
     static func login(_ token:String,type:String)->Self{

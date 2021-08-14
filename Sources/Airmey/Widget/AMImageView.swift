@@ -9,6 +9,7 @@
 import UIKit
 import Photos
 
+/// Add click logic
 open class AMImageView: UIImageView {
     private lazy var sigleTapGesture:UITapGestureRecognizer={
         let tap = UITapGestureRecognizer(target: self, action: #selector(AMImageView.sigleTapAction))

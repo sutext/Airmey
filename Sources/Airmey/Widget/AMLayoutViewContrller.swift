@@ -8,6 +8,8 @@
 
 import UIKit
 
+/// Side layout view controller container
+
 @available(iOS 10.0, *)
 open class AMLayoutViewContrller: UIViewController {
     private weak var rootView:UIView!

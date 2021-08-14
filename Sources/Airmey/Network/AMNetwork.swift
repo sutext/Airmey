@@ -286,7 +286,7 @@ open class AMNetwork {
             params: req.params,
             headers: HTTPHeaders(req.headers),
             fileManager: fileManager,
-            transfer:{ req.location(for: $0, and: $1) }) { resp in
+            transfer:req.transfer) { resp in
             var resp = resp
             if let err = resp.error{
                 do {
@@ -318,7 +318,7 @@ open class AMNetwork {
         queue:DispatchQueue?=nil,
         params:HTTPParams?=nil,
         headers:[String:String]?=nil,
-        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        transfer:DownloadTask.URLTransfer?=nil,
         completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         var aheaders = HTTPHeaders(self.headers)
@@ -362,7 +362,7 @@ open class AMNetwork {
     public func download(
         resume data:Data,
         queue:DispatchQueue?=nil,
-        transfer:@escaping DownloadTask.URLTransfer = DownloadTask.defaultTransfer,
+        transfer: DownloadTask.URLTransfer? = nil,
         completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         return self.session.download(

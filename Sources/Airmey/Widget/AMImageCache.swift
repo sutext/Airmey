@@ -9,6 +9,7 @@
 import UIKit
 import Photos
 
+/// image cache controller
 public class AMImageCache {
     public static let shared = AMImageCache()
     private let rootQueue = DispatchQueue(label: "com.airmey.imageQueue")

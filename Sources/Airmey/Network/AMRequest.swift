@@ -38,5 +38,5 @@ public protocol AMDownload{
     /// http headers
     var headers: [String:String]?{get}
     /// resolve download file location
-    func location(for tempFile:URL,and response:HTTPURLResponse?)->URL
+    var transfer:DownloadTask.URLTransfer?{get}
 }

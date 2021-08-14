@@ -16,6 +16,7 @@ public struct AMCommonReuseId:AMCellReuseId {
         self.rawValue  = rawValue
     }
 }
+///
 public protocol AMReusableCell:UITableViewCell{
     associatedtype ReuseId:AMCellReuseId
     static var reuseids:[ReuseId]{get}

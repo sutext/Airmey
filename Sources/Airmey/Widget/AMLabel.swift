@@ -8,6 +8,7 @@
 
 import UIKit
 
+/// Add click logic and textInset logic
 open class AMLabel: UILabel {
     private lazy var tapges:UITapGestureRecognizer = {
         let ges = UITapGestureRecognizer(target: self, action: #selector(AMLabel.tapsel))
