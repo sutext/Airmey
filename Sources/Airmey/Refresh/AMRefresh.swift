@@ -15,7 +15,6 @@ open class AMRefresh:UIControl{
     public let height:CGFloat
     /// enable UIImpactFeedback or not. By default `true`
     public var feedback:Bool = true
-    
     private var texts:[Status:String] = [:]
     private var fonts:[Status:UIFont] = [:]
     private var colors:[Status:UIColor] = [:]

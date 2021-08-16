@@ -855,44 +855,15 @@ extension UIView{
         self.translatesAutoresizingMaskIntoConstraints = false
         return AMAnchorMaker(self)
     }
+    /// build constraints fastly
     public func amake(builder:(AMAnchorMaker)->Void) {
         builder(am)
     }
-    public func amake(
-        _ t1:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker)->Void) {
-        builder(am,t1.am)
-    }
-    public func amake(
-        _ t1:UIView,
-        _ t2:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
-        builder(am,t1.am,t2.am)
-    }
-    ///
-    /// rebuild all constraints
-    ///
+    /// rebuild constraints
     public func remake(builder:(AMAnchorMaker)->Void) {
         NSLayoutConstraint.deactivate(self.constraints)
         self.removeConstraints(self.constraints)
         builder(am)
-        self.updateFocusIfNeeded()
-    }
-    public func remake(
-        _ t1:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker)->Void) {
-        NSLayoutConstraint.deactivate(self.constraints)
-        self.removeConstraints(self.constraints)
-        builder(am,t1.am)
-        self.updateFocusIfNeeded()
-    }
-    public func remake(
-        _ t1:UIView,
-        _ t2:UIView,
-        builder:(AMAnchorMaker,AMAnchorMaker,AMAnchorMaker)->Void) {
-        NSLayoutConstraint.deactivate(self.constraints)
-        self.removeConstraints(self.constraints)
-        builder(am,t1.am,t2.am)
         self.updateFocusIfNeeded()
     }
 }

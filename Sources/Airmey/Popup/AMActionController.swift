@@ -9,7 +9,6 @@ import UIKit
 
 ///ActionSheet contorller
 open class AMActionController:AMPopupController,AMActionable{
-    private let effectView = AMEffectView()
     private var items:[AMTextConvertible]
     private let cancelBar = CancelBar()
     private let tableView = UITableView()
@@ -38,10 +37,9 @@ open class AMActionController:AMPopupController,AMActionable{
     }
     open override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.addSubview(self.effectView)
+        self.view.backgroundColor = .white
         self.view.addSubview(self.tableView)
         self.view.addSubview(self.cancelBar)
-        self.effectView.am.edge.equal(to: 0)
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.tableView.delaysContentTouches = false
         self.tableView.separatorStyle = .singleLine

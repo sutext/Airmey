@@ -85,9 +85,10 @@ extension AMPresenter:UIViewControllerAnimatedTransitioning{
 /// Rect animation presenter
 ///
 public class AMFramePresenter: AMPresenter {
+    /// using dimming background or not.  By default use `true`.
+    public var dimming:Bool = true
     private let initialFrame:CGRect
     private let finalFrame:CGRect
-    private let dimmingFrame:CGRect
     private lazy var dimmingView:AMView = {
         let view = AMView()
         view.onclick = {[weak self] _ in
@@ -97,38 +98,33 @@ public class AMFramePresenter: AMPresenter {
         view.alpha = 0
         return view;
     }()
-    public init(initial:CGRect,final:CGRect,dimming:CGRect) {
+    public init(initial:CGRect,final:CGRect) {
         self.initialFrame = initial
         self.finalFrame = final
-        self.dimmingFrame = dimming
     }
     /// present from bottom
     public convenience init(bottom height:CGFloat){
         let initial = CGRect(x: 0, y: .screenHeight, width: .screenWidth, height: height)
         let final = CGRect(x: 0, y: .screenHeight - height, width: .screenWidth, height: height)
-        let dimming = CGRect(x: 0, y:0, width: .screenWidth, height: .screenHeight - height)
-        self.init(initial:initial,final:final,dimming:dimming)
+        self.init(initial:initial,final:final)
     }
     /// present from top
     public convenience init(top height:CGFloat){
         let initial = CGRect(x: 0, y: -height, width: .screenWidth, height: height)
         let final = CGRect(x: 0, y: 0 , width: .screenWidth, height: height)
-        let dimming = CGRect(x: 0, y:height, width: .screenWidth, height: .screenHeight - height)
-        self.init(initial:initial,final:final,dimming:dimming)
+        self.init(initial:initial,final:final)
     }
     /// present from left
     public convenience init(left width:CGFloat){
         let initial = CGRect(x: -width, y: 0, width: width, height: .screenHeight)
         let final = CGRect(x: 0, y: 0 , width: width, height: .screenHeight)
-        let dimming = CGRect(x: width, y:0, width: .screenWidth - width, height: .screenHeight)
-        self.init(initial:initial,final:final,dimming:dimming)
+        self.init(initial:initial,final:final)
     }
     /// present from right
     public convenience init(right width:CGFloat){
         let initial = CGRect(x: .screenWidth, y: 0, width: width, height: .screenHeight)
         let final = CGRect(x: .screenWidth - width, y: 0 , width: width, height: .screenHeight)
-        let dimming = CGRect(x: 0, y:0, width: .screenWidth - width, height: .screenHeight)
-        self.init(initial:initial,final:final,dimming:dimming)
+        self.init(initial:initial,final:final)
     }
     public override func presentWillBegin(in pc:UIPresentationController) {
         guard let container = pc.containerView else {
@@ -137,14 +133,19 @@ public class AMFramePresenter: AMPresenter {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
-        container.addSubview(self.dimmingView)
         container.addSubview(pc.presentedView!)
-        self.dimmingView.frame = .screen
         pc.presentedViewController.view.frame = self.initialFrame
+        guard dimming else {
+            coordinator.animate{_ in
+                pc.presentedViewController.view.frame = self.finalFrame
+            }
+            return
+        }
+        container.insertSubview(self.dimmingView, at: 0)
+        self.dimmingView.frame = .screen
         coordinator.animate{_ in
             self.dimmingView.alpha = 1
             pc.presentedViewController.view.frame = self.finalFrame
-            self.dimmingView.frame = self.dimmingFrame
         }
     }
     public override func dismissWillBegin(in pc: UIPresentationController) {

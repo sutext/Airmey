@@ -60,7 +60,8 @@ class PopupController: UIViewController {
 
         }
         self.addTest("Test Present") {
-            pop.present(UpdateController())
+            pop.action(["test"])
+//            pop.present(UpdateController())
         }
         self.addTest("clear") {
             pop.clear()

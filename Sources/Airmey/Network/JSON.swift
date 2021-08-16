@@ -5,7 +5,7 @@
 //  Created by supertext on 2020/1/15.
 //  Copyright © 2020年 airmey. All rights reserved.
 //
-import Foundation
+import UIKit
 
 ///
 /// Common value type JSON data model stucture
@@ -140,6 +140,7 @@ extension UInt64:JSONValue{}
 extension Bool:JSONValue{}
 extension Float:JSONValue{}
 extension Double:JSONValue{}
+extension CGFloat:JSONValue{}
 extension String:JSONValue{}
 
 extension JSON:JSONValue{}
