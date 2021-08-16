@@ -45,18 +45,16 @@ extension AMImageCache{
             return image
         }
         if let url = URL(string: url),
-           let req = URLRequest(url: url),
-           let data = diskCache.cachedResponse(for: req)?.data {
+           let data = diskCache.cachedResponse(for: URLRequest(url: url))?.data {
             return .data(data)
         }
         return nil
     }
     /// remove image for url
     public func remove(image url:String){
-        if let u = URL(string: url),
-           let req = URLRequest(url: u) {
+        if let u = URL(string: url){
             imageCache.removeObject(forKey: url as NSString)
-            diskCache.removeCachedResponse(for: req)
+            diskCache.removeCachedResponse(for: URLRequest(url: u))
         }
     }
     /// clear all memery and disk cahce
