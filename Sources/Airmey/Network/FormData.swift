@@ -538,7 +538,7 @@ extension FormData{
         case file(URL)
     }
     public func toUpload()throws -> Result {
-        if self.memoryLimit<self.contentLength {
+        if self.contentLength < self.memoryLimit{
             let data = try self.encode()
             return .data(data)
         }

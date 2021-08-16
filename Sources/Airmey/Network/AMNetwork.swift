@@ -266,11 +266,66 @@ open class AMNetwork {
             queue.async { completion?(resp) }
         }
     }
+    /// Upload an local file to server.
+    ///
+    /// - Parameters:
+    ///     - file: The fileURL to be upload
+    ///     - to: The relative upload path
+    ///     - parmas: The upload request params
+    ///     - options: The upload request options
+    ///     - completion: The data request completion call back
+    /// - Returns: Thre request handler for task control and progress control
+    ///
+    @discardableResult
+    public func upload(
+        _ file:URL,
+        to path:String,
+        params:HTTPParams?=nil,
+        options:Options?=nil,
+        completion:((Response<JSON>)->Void)? = nil)->HTTPTask?{
+        guard let baseURL = options?.baseURL ?? self.baseURL ,
+              let url = URL(string:path,relativeTo:baseURL) else {
+            let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:path))
+            completion?(Response(result: result))
+            return nil;
+        }
+        let queue = options?.queue ?? self.queue
+        let decoder = options?.decoder ?? self.decoder
+        var headers = HTTPHeaders(self.headers)
+        if let h = options?.headers {
+            headers.merge(h)
+        }
+        return self.session.upload(
+            url,
+            file: file,
+            params: params,
+            headers: headers,
+            decoder: decoder,
+            fileManager: fileManager) { res in
+            var resp:Response<JSON>
+            if let verify = options?.verifier{
+                resp = verify(res)
+            }else{
+                resp = self.verify(res)
+            }
+            if let err = resp.error{
+                do {
+                    try self.catch(err)
+                } catch {
+                    resp.setError(error)
+                }
+            }
+            if self.debug{
+                debugPrint(resp)
+            }
+            queue.async { completion?(resp) }
+        }
+    }
     /// Send an file download  request
-    /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
+    /// - Note: If `transfer` is not specified, The download file will not be deleted until the system purges the temporary files. And the temporary file will been returned.
     /// - Parameters:
     ///     - req: The `AMDownload` protocol instance
-    ///     - completion: The data request completion call back
+    ///     - completion: Call back the transfered file location.
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -303,13 +358,11 @@ open class AMNetwork {
     }
     /// Send a simple download  request
     ///
-    /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
     /// - Parameters:
     ///     - url: A full resource url
     ///     - params: The download request parameters
     ///     - headers: The download request headers
-    ///     - transfer: A closure used to determine how and where the downloaded file should be moved.
-    ///     - completion: The data request completion call back
+    ///     - completion: Call back the temporary file location. At this time transfer not suport
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -318,7 +371,6 @@ open class AMNetwork {
         queue:DispatchQueue?=nil,
         params:HTTPParams?=nil,
         headers:[String:String]?=nil,
-        transfer:DownloadTask.URLTransfer?=nil,
         completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         var aheaders = HTTPHeaders(self.headers)
@@ -335,7 +387,7 @@ open class AMNetwork {
             params: params,
             headers: aheaders,
             fileManager: fileManager,
-            transfer: transfer) { resp in
+            transfer: nil) { resp in
             var resp = resp
             if let err = resp.error{
                 do {
