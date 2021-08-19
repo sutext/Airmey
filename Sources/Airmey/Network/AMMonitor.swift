@@ -6,8 +6,6 @@
 //  Copyright © 2021年 airmey. All rights reserved.
 //
 
-#if !(os(watchOS) || os(Linux))
-
 import Foundation
 import SystemConfiguration
 
@@ -240,5 +238,3 @@ extension SCNetworkReachabilityFlags {
         return "\(W)\(R) \(c)\(t)\(i)\(C)\(D)\(l)\(d)\(a)"
     }
 }
-#endif
-

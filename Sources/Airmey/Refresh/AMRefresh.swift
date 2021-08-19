@@ -44,7 +44,7 @@ open class AMRefresh:UIControl{
                 self.textLabel.text = self.texts[status] ?? self.text
                 self.textLabel.font = self.fonts[status] ?? self.font
                 self.textLabel.textColor = self.colors[status] ?? self.textColor
-                scorllView?.isUserInteractionEnabled = (status != .refreshing)
+//                scorllView?.isUserInteractionEnabled = (status != .refreshing)
                 self.statusChanged(status,old: oldValue)
                 if case .refreshing = status{
                     self.notifyDelegate()

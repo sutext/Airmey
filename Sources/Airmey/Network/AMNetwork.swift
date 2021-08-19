@@ -240,6 +240,9 @@ open class AMNetwork {
         if let h = req.options?.headers {
             headers.merge(h)
         }
+        if headers[.contentType] == nil{
+            headers[.contentType] = "application/octet-stream"
+        }
         return self.session.upload(
             url,
             file: req.file,
