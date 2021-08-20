@@ -438,6 +438,16 @@ open class AMNetwork {
             queue.async { completion?(resp) }
         }
     }
+    /// Restart failed task
+    public func restart(_ task:HTTPTask){
+        switch task.state {
+        case .canceling,.completed:
+            session.restart(task)
+        default:
+            print("Warning restart running task not allowed")
+            break
+        }
+    }
 }
 
 extension AMNetwork{
