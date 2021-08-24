@@ -14,17 +14,21 @@ import UIKit
 public final class AMImageLabel: AMView {
     /// describe the image posiation
     public enum Layout{
+        /// image at left of text
         case left
+        /// image at right of text
         case right
+        /// image at top of text
         case top
+        /// image at bottom of text
         case bottom
     }
+    /// inner image image
+    public let imageView = UIImageView()
+    /// innter text label
+    public let textLabel = UILabel()
     private let stackView = UIStackView()
-    private let imageView = UIImageView()
-    private let textLabel = UILabel()
-    private var imageConstt : AMSizeAnchor.Constraint?
     public private(set) var layout:Layout
-    public private(set) var ratio:CGFloat?
     public private(set) var insets:AMEdgeAnchor.Constraint!
     ///
     /// Greate an imageLabel instance
@@ -37,10 +41,8 @@ public final class AMImageLabel: AMView {
     public init(
         _ layout:Layout = .left,
         image:UIImage? = nil ,
-        text:String? = nil ,
-        ratio:CGFloat? = nil) {
+        text:String? = nil) {
         self.layout = layout
-        self.ratio = ratio
         super.init(frame: .zero)
         self.addSubview(self.stackView)
         self.imageView.contentMode = .scaleToFill
@@ -89,37 +91,7 @@ public extension AMImageLabel{
             return self.imageView.image
         }
         set {
-            guard let newone = newValue else {
-                self.imageView.image = nil
-                return
-            }
-            self.imageView.image = newone
-            if let scale = self.ratio {
-                self.imageSize = newone.size * scale
-            }
-        }
-    }
-    /// imageView size LayoutConstraint
-    var imageSize:CGSize?{
-        get{
-            guard let const = self.imageConstt else {
-                return nil
-            }
-            return CGSize(width: const.width.constant, height: const.height.constant)
-        }
-        set{
-            guard let size = newValue else {
-                self.imageConstt?.width.isActive = false
-                self.imageConstt?.height.isActive = false
-                self.imageConstt = nil
-                return
-            }
-            if let const = self.imageConstt {
-                const.height.constant = size.width
-                const.width.constant = size.height
-                return
-            }
-            self.imageConstt = self.imageView.am.size.equal(to: (size.width,size.height))
+            self.imageView.image = newValue
         }
     }
     /// lable text
