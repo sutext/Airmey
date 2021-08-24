@@ -9,6 +9,41 @@
 import CoreData
 import Foundation
 
+///AMManagedObject ID protocol
+public protocol AMObjectID:Codable&Hashable{
+    var objectID:String{get}
+}
+extension Int:AMObjectID{
+    public var objectID: String{description}
+}
+extension Int8:AMObjectID{
+    public var objectID: String{description}
+}
+extension Int16:AMObjectID{
+    public var objectID: String{description}
+}
+extension Int32:AMObjectID{
+    public var objectID: String{description}
+}
+extension Int64:AMObjectID{
+    public var objectID: String{description}
+}
+extension UUID:AMObjectID{
+    public var objectID: String{uuidString}
+}
+extension String:AMObjectID{
+    public var objectID: String{self}
+}
+extension Optional where Wrapped:AMObjectID{
+    public var objectID: String{
+        switch self {
+        case .some(let v):
+            return v.objectID
+        case .none:
+            return ""
+        }
+    }
+}
 /// `AMManagedObject` protocol describe a schema of managed object for orm structure
 ///
 /// - Parameters:
@@ -16,11 +51,11 @@ import Foundation
 ///     - Model: The data source data type.
 ///
 public protocol AMManagedObject:NSManagedObject{
-    associatedtype IDValue:Codable&Hashable
+    associatedtype IDValue:AMObjectID
     associatedtype Model
     /// The primary id builder from model
     static func id(for model:Model)throws->IDValue
-    /// The current primary key
+    /// The  primary key of managed object
     var id:IDValue{get}
     /// The model to managed object transfer.  Usualy it's a model initialize method
     func awake(from model:Model)
@@ -210,7 +245,12 @@ extension AMStorage{
     /// - Returns: The managed object  if matching the id
     ///
     public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
-        return self.query(type, where: NSPredicate(format: "id == %@","\(id)")).first
+        let oid = id.objectID
+        guard oid.count>0 else {
+            return nil
+        }
+        let predicate = NSPredicate(format:"id == %@",oid)
+        return self.query(type, where: predicate).first
     }
     ///
     ///  Query all managed objects which match the predicate
@@ -262,19 +302,11 @@ extension AMStorage{
         return try models.map{try self.create(type, model: $0)}
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
-        guard let oid = try? type.id(for: model) else {
+        guard let id = (try? type.id(for: model))?.objectID,id.count>0 else {
             throw AMError.invalidId
         }
-        var id:Any = oid
-        let m = Mirror(reflecting: id)
-        if case .optional = m.displayStyle {
-            guard let nid = m.children.first?.value else{
-                throw AMError.invalidId
-            }
-            id = nid
-        }
         let request = type.fetchRequest()
-        request.predicate = NSPredicate(format:"id == %@","\(id)");
+        request.predicate = NSPredicate(format:"id == %@",id);
         let object = (try? self.moc.fetch(request))?.first as? Object ?? type.init(context: self.moc)
         object.awake(from: model)
         object.setValue(id, forKey: "id")
