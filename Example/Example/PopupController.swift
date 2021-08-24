@@ -68,9 +68,6 @@ class PopupController: UIViewController {
         }
         self.addTest("Test Wait") {
             pop.wait("loading...")
-            DispatchQueue.main.asyncAfter(deadline: .now()+1) {
-                pop.idle()
-            }
         }
         self.addTest("show left") {
             root?.showLeftController(animated: true)

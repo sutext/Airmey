@@ -19,7 +19,10 @@ open class AMPresenter: NSObject {
     /// config mask click action
     public var onMaskClick:AMBlock?
     /// config transition duration
-    public var transitionDuration:TimeInterval = 0.3
+    public var transitionDuration:TimeInterval = 0.25
+    /// The dimming rate of black background view by default `0.4`
+    ///- Note: You must set this value before present. Otherwise it doesn't work
+    public var dimming:CGFloat = 0.4
     ///override method
     ///empty implemention by default
     open func presentWillBegin(in pc:UIPresentationController){
@@ -85,8 +88,6 @@ extension AMPresenter:UIViewControllerAnimatedTransitioning{
 /// Rect animation presenter
 ///
 public class AMFramePresenter: AMPresenter {
-    /// using dimming background or not.  By default use `true`.
-    public var dimming:Bool = true
     private let initialFrame:CGRect
     private let finalFrame:CGRect
     private lazy var dimmingView:AMView = {
@@ -94,7 +95,7 @@ public class AMFramePresenter: AMPresenter {
         view.onclick = {[weak self] _ in
             self?.onMaskClick?()
         }
-        view.backgroundColor = UIColor(white: 0, alpha: 0.4)
+        view.backgroundColor = UIColor(white: 0, alpha: dimming)
         view.alpha = 0
         return view;
     }()
@@ -135,12 +136,6 @@ public class AMFramePresenter: AMPresenter {
         }
         container.addSubview(pc.presentedView!)
         pc.presentedViewController.view.frame = self.initialFrame
-        guard dimming else {
-            coordinator.animate{_ in
-                pc.presentedViewController.view.frame = self.finalFrame
-            }
-            return
-        }
         container.insertSubview(self.dimmingView, at: 0)
         self.dimmingView.frame = .screen
         coordinator.animate{_ in
@@ -169,7 +164,7 @@ public class AMDimmingPresenter: AMPresenter {
         view.onclick = {[weak self] _ in
             self?.onMaskClick?()
         }
-        view.backgroundColor = UIColor(white: 0, alpha: 0.4)
+        view.backgroundColor = UIColor(white: 0, alpha: dimming)
         view.alpha = 0
         return view;
     }()
@@ -198,31 +193,6 @@ public class AMDimmingPresenter: AMPresenter {
         }
         coordinator.animate{ _ in
             self.dimmingView.alpha = 0
-            pc.presentedView?.alpha = 0
-        }
-    }
-}
-
-/// transform the target controller's root view fadin and fadeout dismiss
-public class AMFadeinPresenter: AMPresenter {
-    public override func presentWillBegin(in pc: UIPresentationController) {
-        guard let container = pc.containerView else {
-            return
-        }
-        container.addSubview(pc.presentedView!)
-        guard let coordinator = pc.presentedViewController.transitionCoordinator else {
-            return
-        }
-        pc.presentedView?.alpha = 0
-        coordinator.animate{_ in
-            pc.presentedView?.alpha = 1
-        }
-    }
-    public override func dismissWillBegin(in pc: UIPresentationController) {
-        guard let coordinator = pc.presentedViewController.transitionCoordinator else {
-            return
-        }
-        coordinator.animate{_ in
             pc.presentedView?.alpha = 0
         }
     }

@@ -8,13 +8,14 @@
 import UIKit
 
 open class AMWaitController: AMPopupController,AMWaitable {
-    private lazy var blurView:UIView = {
+    open class var timeout:TimeInterval{ 10 }
+    public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)
         view.layer.cornerRadius = 5
         return view;
     }()
-    private lazy var titleLabel:AMLabel = {
+    public lazy var titleLabel:AMLabel = {
         let label = AMLabel()
         label.textAlignment = .center
         label.backgroundColor = .clear
@@ -22,12 +23,12 @@ open class AMWaitController: AMPopupController,AMWaitable {
         label.font = UIFont.systemFont(ofSize: 15)
         return label
     }()
-    private lazy var indicator:UIActivityIndicatorView = {
+    public lazy var indicator:UIActivityIndicatorView = {
         let view = UIActivityIndicatorView(style: .whiteLarge)
         view.startAnimating()
         return view
     }()
-    private lazy var stackView:UIStackView = {
+    public lazy var stackView:UIStackView = {
         let view = UIStackView()
         view.axis = .vertical
         view.alignment = .center
@@ -35,8 +36,16 @@ open class AMWaitController: AMPopupController,AMWaitable {
         view.spacing = 10
         return view
     }()
-    required public init(_ msg:String?) {
+    required public init(_ msg:String?,timeout:TimeInterval?) {
         super.init(AMDimmingPresenter())
+        self.presenter.dimming = 0
+        self.presenter.onMaskClick = nil
+        let timeout = timeout ?? Self.timeout
+        DispatchQueue.main.asyncAfter(deadline: .now()+timeout) {
+            self.presenter.onMaskClick = {[weak self] in
+                self?.dismiss(animated: true)
+            }
+        }
         self.titleLabel.text = msg
     }
     public required init?(coder aDecoder: NSCoder) {

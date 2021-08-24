@@ -26,9 +26,6 @@ open class AMActionController:AMPopupController,AMActionable{
                 onhide?(nil,nil)
             }
         }
-        self.presenter.onMaskClick={[weak self] in
-            self?.dismiss(animated: true)
-        }
         self.tableView.isScrollEnabled = (items.count > 5)
     }
     ///dos't implement NSCoding protocol

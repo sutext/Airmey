@@ -24,7 +24,9 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         return label
     }()
     public required init(_ msg: String, title: String? = nil) {
-        super.init(AMFadeinPresenter())
+        super.init(AMDimmingPresenter())
+        self.presenter.dimming = 0
+        self.presenter.onMaskClick = nil
         self.messageLabel.text = msg
     }
     
