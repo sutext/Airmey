@@ -17,6 +17,10 @@ public protocol AMTableViewDelegate:UITableViewDelegate{
 public protocol AMCollectionViewDelegate:UICollectionViewDelegate{
     func collectionView(_ collectionView:UICollectionView, willBegin refresh:AMRefresh)
 }
+public protocol AMCollectionViewDelegateFlowLayout:UICollectionViewDelegateFlowLayout{
+    func collectionView(_ collectionView:UICollectionView, willBegin refresh:AMRefresh)
+}
+
 extension UIScrollView {
     private var controls:NSMutableDictionary{
         let key  = UnsafeRawPointer.init(bitPattern: "am_scrollView_controls".hashValue)!
