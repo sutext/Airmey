@@ -246,11 +246,10 @@ extension AMStorage{
     /// - Returns: The managed object  if matching the id
     ///
     public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
-        let oid = id.rawValue
-        guard oid.count>0 else {
+        guard id.rawValue.count > 0 else {
             return nil
         }
-        let predicate = NSPredicate(format:"id == %@",oid)
+        let predicate = NSPredicate(format:"id == %@",id.rawValue)
         return self.query(type, where: predicate).first
     }
     ///
@@ -303,11 +302,12 @@ extension AMStorage{
         return try models.map{try self.create(type, model: $0)}
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
-        guard let id = (try? type.id(for: model))?.rawValue,id.count>0 else {
+        guard let id = try? type.id(for: model),
+              id.rawValue.count>0 else {
             throw AMError.invalidId
         }
         let request = type.fetchRequest()
-        request.predicate = NSPredicate(format:"id == %@",id);
+        request.predicate = NSPredicate(format:"id == %@",id.rawValue);
         let object = (try? self.moc.fetch(request))?.first as? Object ?? type.init(context: self.moc)
         object.awake(from: model)
         object.setValue(id, forKey: "id")
