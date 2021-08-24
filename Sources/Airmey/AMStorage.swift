@@ -10,35 +10,36 @@ import CoreData
 import Foundation
 
 ///AMManagedObject ID protocol
-public protocol AMObjectID:Codable&Hashable{
-    var objectID:String{get}
+public protocol AMObjectID:Codable,Hashable{
+    /// The raw stirng value
+    var rawValue:String{get}
 }
 extension Int:AMObjectID{
-    public var objectID: String{description}
+    public var rawValue: String{description}
 }
 extension Int8:AMObjectID{
-    public var objectID: String{description}
+    public var rawValue: String{description}
 }
 extension Int16:AMObjectID{
-    public var objectID: String{description}
+    public var rawValue: String{description}
 }
 extension Int32:AMObjectID{
-    public var objectID: String{description}
+    public var rawValue: String{description}
 }
 extension Int64:AMObjectID{
-    public var objectID: String{description}
+    public var rawValue: String{description}
 }
 extension UUID:AMObjectID{
-    public var objectID: String{uuidString}
+    public var rawValue: String{uuidString}
 }
 extension String:AMObjectID{
-    public var objectID: String{self}
+    public var rawValue: String{self}
 }
-extension Optional where Wrapped:AMObjectID{
-    public var objectID: String{
+extension Optional:AMObjectID where Wrapped:AMObjectID{
+    public var rawValue: String{
         switch self {
         case .some(let v):
-            return v.objectID
+            return v.rawValue
         case .none:
             return ""
         }
@@ -245,7 +246,7 @@ extension AMStorage{
     /// - Returns: The managed object  if matching the id
     ///
     public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
-        let oid = id.objectID
+        let oid = id.rawValue
         guard oid.count>0 else {
             return nil
         }
@@ -302,7 +303,7 @@ extension AMStorage{
         return try models.map{try self.create(type, model: $0)}
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
-        guard let id = (try? type.id(for: model))?.objectID,id.count>0 else {
+        guard let id = (try? type.id(for: model))?.rawValue,id.count>0 else {
             throw AMError.invalidId
         }
         let request = type.fetchRequest()
