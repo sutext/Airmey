@@ -15,7 +15,9 @@ public class AMButtonItem{
     public var titleColor:UIColor?
     public var imageColor:UIColor?
     public var imageSize:CGSize?
-    public var cornerRadius:CGFloat?;
+    public var cornerRadius:CGFloat?
+    public var backgroundImage: UIImage?
+    public var backgroundColor: UIColor?
     public static let appearance=AMButtonItem(color: UIColor.white, font: .systemFont(ofSize: 14))
     private init(color:UIColor,font:UIFont){
         self.titleFont = font;
@@ -68,6 +70,9 @@ open class AMButton: UIButton {
     public func setImage(with color:UIColor ,for state:UIControl.State){
         self.setImage(.rect(color, size: self.imageSize), for: state);
     }
+    public func setBackgroundImage(with color:UIColor ,for state:UIControl.State){
+        self.setBackgroundImage(.rect(color, size: self.bounds.size), for: state);
+    }
     public func apply(item:AMButtonItem,for state :UIControl.State){
         self.imageSize = item.imageSize ?? item.image?.size ?? CGSize.zero;
         if let image = item.image {
@@ -75,6 +80,11 @@ open class AMButton: UIButton {
         }
         else if let color = item.imageColor{
             self.setImage(with: color, for: state);
+        }
+        if let bgImage = item.backgroundImage {
+            self.setBackgroundImage(bgImage, for: state)
+        }else if let bgColor = item.backgroundColor {
+            self.setBackgroundImage(with: bgColor, for: state)
         }
         self.setTitle(item.title, for: state);
         self.setTitleColor(item.titleColor, for: state);
