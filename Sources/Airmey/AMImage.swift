@@ -55,13 +55,13 @@ extension CALayer{
         }
     }
     /// create gradual color layer
-    public static func gradual(_ size:CGSize,points:GradualPoint...)->CALayer?{
+    public static func gradual(_ size:CGSize,points:GradualPoint...)->CALayer{
         return Self.gradual(size, points: points)
     }
     /// create gradual color layer
-    public static func gradual(_ size:CGSize,points:[GradualPoint])->CALayer?{
+    public static func gradual(_ size:CGSize,points:[GradualPoint])->CALayer{
         guard points.count>=1 else {
-            return nil
+            fatalError("points must grather than 1")
         }
         let layer = CAGradientLayer()
         layer.bounds = CGRect(origin: .zero, size: size)
@@ -212,10 +212,10 @@ public extension UIImage{
     }
     /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:CALayer.GradualPoint...)->UIImage?{
-        return CALayer.gradual(size, points: points)?.capture
+        return CALayer.gradual(size, points: points).capture
     }
     /// create liner gradual cololor image
     static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
-        return CALayer.gradual(size, points: points)?.capture
+        return CALayer.gradual(size, points: points).capture
     }
 }
