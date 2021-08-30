@@ -55,13 +55,41 @@ extension CALayer{
         }
     }
     /// create gradual color layer
+    ///
+    /// create an y directionGradientLayer:
+    ///
+    ///     let layer  : CALayer = .gradual(.init(width:100,height:100),points:.ymin(.black),.min(.gray),.ymax(.clear))
+    ///
+    /// create an x directionGradientLayer:
+    ///
+    ///     let layer : CALayer = .gradual(.init(width:100,height:100),points:.xmin(.black),.min(.gray),.xmax(.clear))
+
+    ///
+    ///- Parameters:
+    /// - size: The layer size
+    /// - points: The layer gradual points
+    ///
     public static func gradual(_ size:CGSize,points:GradualPoint...)->CALayer{
         return Self.gradual(size, points: points)
     }
     /// create gradual color layer
-    public static func gradual(_ size:CGSize,points:[GradualPoint])->CALayer{
-        guard points.count>=1 else {
-            fatalError("points must grather than 1")
+    ///
+    /// create an y directionGradientLayer:
+    ///
+    ///     let layer  : CALayer = .gradual(.init(width:100,height:100),points:.ymin(.black),.min(.gray),.ymax(.clear))
+    ///
+    /// create an x directionGradientLayer:
+    ///
+    ///     let layer : CALayer = .gradual(.init(width:100,height:100),points:.xmin(.black),.min(.gray),.xmax(.clear))
+
+    ///
+    ///- Parameters:
+    /// - size: The layer size
+    /// - points: The layer gradual points
+    
+        public static func gradual(_ size:CGSize,points:[GradualPoint])->CALayer{
+        guard points.count>1 else {
+            fatalError("point count must be greater than 1")
         }
         let layer = CAGradientLayer()
         layer.bounds = CGRect(origin: .zero, size: size)
@@ -88,7 +116,7 @@ public extension UIImage{
             self.init(rawValue: c)
         }
     }
-    /// Add gif data support
+    /// Different from UIImage.init(data:, scale:) method, this method add gif data support
     static func data(_ data:Data,scale:CGFloat=UIScreen.main.scale)->UIImage?{
         let format = Format(data)
         switch format {
@@ -211,11 +239,39 @@ public extension UIImage{
         return UIImage(data: data)
     }
     /// create liner gradual cololor image
+    ///
+    /// create an x direction gradient Image:
+    ///
+    ///     let layer  : UIImage = .gradual(.init(width:100,height:100),points:.ymin(.black),.min(.gray),.ymax(.clear))
+    ///
+    /// create an x direction gradient Image:
+    ///
+    ///     let layer : UIImage = .gradual(.init(width:100,height:100),points:.xmin(.black),.min(.gray),.xmax(.clear))
+
+    ///
+    ///- Parameters:
+    /// - size: The layer size
+    /// - points: The layer gradual points
+    ///
     static func gradual(_ size:CGSize,points:CALayer.GradualPoint...)->UIImage?{
-        return CALayer.gradual(size, points: points).capture
+        CALayer.gradual(size, points: points).capture
     }
     /// create liner gradual cololor image
-    static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
-        return CALayer.gradual(size, points: points).capture
+    ///
+    /// create an x direction gradient Image:
+    ///
+    ///     let image  : UIImage = .gradual(.init(width:100,height:100),points:.ymin(.black),.min(.gray),.ymax(.clear))
+    ///
+    /// create an x direction gradient Image:
+    ///
+    ///     let image : UIImage = .gradual(.init(width:100,height:100),points:.xmin(.black),.min(.gray),.xmax(.clear))
+
+    ///
+    ///- Parameters:
+    /// - size: The layer size
+    /// - points: The layer gradual points
+    ///
+        static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
+        CALayer.gradual(size, points: points).capture
     }
 }

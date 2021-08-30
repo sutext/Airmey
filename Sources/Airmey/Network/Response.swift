@@ -9,7 +9,8 @@
 import Foundation
 public struct Response<M>{
     public private(set) var result:Result<M,Error>
-    public let data:Data?
+    ///The original serialized response data
+    public let data:JSON
     public let request: URLRequest?
     public let response: HTTPURLResponse?
     public let metrics: URLSessionTaskMetrics?
@@ -17,7 +18,7 @@ public struct Response<M>{
     public var error:Error?{ result.error }
     public var statusCode:Int?{ response?.statusCode }
     init(
-        data:Data? = nil,
+        data:JSON = nil,
         result:Result<M,Error>,
         request:URLRequest? = nil,
         metrics:URLSessionTaskMetrics?=nil,
@@ -73,7 +74,8 @@ extension Response:CustomStringConvertible, CustomDebugStringConvertible{
         [Request Data]: \(body)
         [Request Headers]: \(JSON(request?.allHTTPHeaderFields))
         [Request Duration]: \(metrics?.taskInterval.duration ?? 0)s
-        [Response Data]: \(result)
+        [Response Data: \(data)]
+        [Response Result]: \(result)
         [Response Status]: \(response?.statusCode ?? 0)
         [Response Headers]: \(JSON(response?.allHeaderFields))
         -----------DEUBG   END------------

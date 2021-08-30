@@ -6,6 +6,19 @@
 //
 
 import Foundation
+
+/// Definition a date style
+///
+/// User can extension his custom style:
+///
+///     extension AMDateStyle{
+///         static let day:AMDateStyle = "yyyy-MM-dd"
+///     }
+///     func test(){
+///         let str = Date().string(for: .day) // 2021-08-26
+///         let date = "2021-08-26".date(for: .day)
+///     }
+///
 public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equatable{
     public static let  full:AMDateStyle = "yyyy-MM-dd HH:mm:ss"
     public static let  mmss:AMDateStyle = "mm:ss"
@@ -42,11 +55,23 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
     }
 }
 extension Date{
+    /// Fast date formeter
+    ///
+    ///     let str = Date().string(for: .full)
+    ///
+    ///- Parameters:
+    /// - style: The date style
     public func string(for style:AMDateStyle) -> String {
         return style.formater.string(from: self)
     }
 }
 extension String{
+    /// Fast date formeter
+    ///
+    ///     let date = "2021-08-26 10:10:10".string(for: .full)
+    ///
+    ///- Parameters:
+    /// - style: The date style
     public func date(for style:AMDateStyle) -> Date? {
         return style.formater.date(from: self)
     }
@@ -66,6 +91,12 @@ extension TimeInterval{
         let sec = inttime%60
         return String(format: "%02d:%02d", min,sec)
     }
+    /// Fast date formeter
+    ///
+    ///     let str = 1629951106.string(for: .full) //2021-08-26 12:11:46 UTC-8
+    ///
+    ///- Parameters:
+    /// - style: The date style
     public func string(for style:AMDateStyle) -> String {
         return style.formater.string(from: Date(timeIntervalSince1970: self))
     }
