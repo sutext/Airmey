@@ -36,7 +36,7 @@ open class AMWaitController: AMPopupController,AMWaitable {
         view.spacing = 10
         return view
     }()
-    required public init(_ msg:String?,timeout:TimeInterval?) {
+    required public init(_ msg:NSAttributedString?,timeout:TimeInterval?) {
         super.init(AMDimmingPresenter())
         self.presenter.dimming = 0
         self.presenter.onMaskClick = nil
@@ -46,7 +46,7 @@ open class AMWaitController: AMPopupController,AMWaitable {
                 self?.dismiss(animated: true)
             }
         }
-        self.titleLabel.text = msg
+        self.titleLabel.attributedText = msg
     }
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

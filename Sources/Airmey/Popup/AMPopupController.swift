@@ -39,15 +39,15 @@ open class AMPopupController:UIViewController{
 ///Loading style
 public protocol AMWaitable:AMPopupController{
     static var timeout:TimeInterval {get}
-    init(_ msg:String?,timeout:TimeInterval?)
+    init(_ msg:NSAttributedString?,timeout:TimeInterval?)
 }
 ///Tost style
 public protocol AMRemindable:AMPopupController{
-    init(_ msg:String,title:String?)
+    init(_ msg:NSAttributedString,title:String?)
 }
 ///Alert style
 public protocol AMAlertable:UIViewController{
-    init(_ msg:String,title:String?,confirm:String?,cancel:String?,onhide:AMPopupCenter.AlertHide?)
+    init(_ msg:NSAttributedString,title:String?,confirm:String?,cancel:String?,onhide:AMPopupCenter.AlertHide?)
 }
 ///ActionSheet style
 public protocol AMActionable:UIViewController{

@@ -38,6 +38,14 @@ extension AMPopupCenter{
                 duration:TimeInterval?=nil,
                 meta:AMRemindable.Type?=nil,
                 onhide:AMBlock?=nil) {
+        self.remind(NSAttributedString(string: msg), title: title, duration: duration, meta: meta, onhide: onhide)
+    }
+    /// presnet a remindable controller
+    public func remind(_ msg:NSAttributedString,
+                title:String?=nil,
+                duration:TimeInterval?=nil,
+                meta:AMRemindable.Type?=nil,
+                onhide:AMBlock?=nil) {
         let vc = (meta ?? Self.Remind).init(msg, title: title)
         vc.pop = self
         self.add(.remind(vc,duration:duration))
@@ -71,8 +79,29 @@ extension AMPopupCenter{
         cancel:String? = nil,
         meta:AMAlertable.Type? = nil,
         onhide:AlertHide? = nil)  {
+        self.alert(NSAttributedString(string: msg), title: title, confirm: confirm, cancel: cancel, meta: meta, onhide: onhide)
+    }
+    /// present an alertable controller
+    ///
+    ///- Note: Same msg alert never been present together
+    ///
+    ///- Parameters:
+    ///     - msg: The alert message must be provide.
+    ///     - title: The alert title
+    ///     - confirm: The confirm text. If nil use `Confirm`
+    ///     - cancel: The cancel text. if nil no Cancel option
+    ///     - meta: The alert implemention. if ni use defualt
+    ///     - onhide: The call back when click
+    ///
+    public func alert(
+        _ msg:NSAttributedString,
+        title:String? = nil,
+        confirm:String? = nil,
+        cancel:String? = nil,
+        meta:AMAlertable.Type? = nil,
+        onhide:AlertHide? = nil)  {
         let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
-        self.add(.alert(vc,msg:msg))
+        self.add(.alert(vc,key:msg.string))
     }
     /// present a waitable controller
     ///
@@ -82,6 +111,20 @@ extension AMPopupCenter{
     ///     - meta: The wating implemention
     ///
     public func wait(_ msg:String? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
+        var attr:NSAttributedString? = nil
+        if let str = msg {
+            attr = NSAttributedString(string: str)
+        }
+        self.wait(attr, timeout: timeout, meta: meta)
+    }
+    /// present a waitable controller
+    ///
+    ///- Parameters:
+    ///     - msg: The wating message
+    ///     - timeout: The wating timeout
+    ///     - meta: The wating implemention
+    ///
+    public func wait(_ msg:NSAttributedString? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
         let vc = (meta ?? Self.Wait).init(msg,timeout:timeout)
         vc.pop = self
         self.add(.wait(vc))
@@ -132,8 +175,8 @@ extension AMPopupCenter{
             self._clear()
         case .remind(let vc,let duration):
             self._remind(vc,duration: duration)
-        case .alert(let vc,let msg):
-            self._alert(vc, msg: msg,animated: true, finish: nil)
+        case .alert(let vc,let key):
+            self._alert(vc, key: key,animated: true, finish: nil)
         case .action(let vc):
             self._present(vc, animated: true, finish: nil)
         case .present(let vc, let animated,let finish):
@@ -159,16 +202,16 @@ extension AMPopupCenter{
             vc.dismiss(animated: animated,completion: block)
         }
     }
-    private func _alert(_ vc:UIViewController,msg:String,animated:Bool,finish:AMBlock?) {
+    private func _alert(_ vc:UIViewController,key:String,animated:Bool,finish:AMBlock?) {
         self.alerters = self.alerters.filter({ ele in
             return ele.value.controller != nil
         })
-        if self.alerters[msg] != nil{
+        if self.alerters[key] != nil{
             self.current = nil
             self.delayNext()
             return
         }
-        self.alerters[msg] = Alerter(vc)
+        self.alerters[key] = Alerter(vc)
         if let nvc = vc as? AMPopupController {
             nvc.pop = self
         }
@@ -236,7 +279,7 @@ extension AMPopupCenter{
         case idle
         case clear
         case wait(_ vc:AMWaitable)
-        case alert(_ vc:AMAlertable,msg:String)
+        case alert(_ vc:AMAlertable,key:String)
         case action(_ vc:AMActionable)
         case remind(_ vc:AMRemindable,duration:TimeInterval?)
         case present(
@@ -258,8 +301,8 @@ extension AMPopupCenter{
 extension AMPopupCenter{
     /// system implemention for AMAlertable AMActionable
     open class UIAlert:UIAlertController,AMAlertable,AMActionable{
-        public required convenience init(_ msg: String, title: String?, confirm: String?, cancel: String?, onhide: AlertHide?) {
-            self.init(title: title, message: msg, preferredStyle: .alert)
+        public required convenience init(_ msg: NSAttributedString, title: String?, confirm: String?, cancel: String?, onhide: AlertHide?) {
+            self.init(title: title, message: msg.string, preferredStyle: .alert)
             self.addAction(.init(title: confirm ?? "Confirm", style: .default, handler: { act in
                 onhide?(0)
             }))
@@ -272,7 +315,7 @@ extension AMPopupCenter{
         public required convenience init(_ items: [AMTextConvertible], onhide: ActionHide?) {
             self.init(title: nil, message: nil, preferredStyle: .actionSheet)
             for idx in (0..<items.count) {
-                self.addAction(.init(title: items[idx].text, style: .default, handler: { act in
+                self.addAction(.init(title: items[idx].attrText?.string, style: .default, handler: { act in
                     onhide?(items[idx],idx)
                 }))
             }

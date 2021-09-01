@@ -15,10 +15,10 @@ open class AMAlertController: AMPopupController,AMAlertable {
     public let messageLabel = UILabel()
     public let buttonStack = UIStackView()
     private var onhide:AMPopupCenter.AlertHide?
-    public required init(_ msg: String, title: String?, confirm: String?, cancel: String?, onhide: AMPopupCenter.AlertHide?) {
+    public required init(_ msg: NSAttributedString, title: String?, confirm: String?, cancel: String?, onhide: AMPopupCenter.AlertHide?) {
         super.init(AMDimmingPresenter())
         self.titleLabel.text = title
-        self.messageLabel.text = msg
+        self.messageLabel.attributedText = msg
         self.onhide = onhide
         self.addButton(confirm ?? "Confirm",index:0)
         if let cancel = cancel {

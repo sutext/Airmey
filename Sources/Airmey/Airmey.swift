@@ -112,14 +112,18 @@ extension Array {
 }
 
 public protocol AMTextConvertible {
-    var text:String?{get}
+    var attrText:NSAttributedString?{get}
 }
 extension String:AMTextConvertible{
-    public var text: String?{
+    public var attrText: NSAttributedString?{
+        return NSAttributedString(string: self)
+    }
+}
+extension NSAttributedString:AMTextConvertible{
+    public var attrText: NSAttributedString?{
         return self
     }
 }
-
 public extension UIColor{
     /// create a UIColor use hex rgb value.
     ///

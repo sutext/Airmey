@@ -75,7 +75,7 @@ extension AMActionController:UITableViewDataSource,UITableViewDelegate{
             cell?.separatorInset = UIEdgeInsets.zero
             cell?.backgroundColor = .clear
         }
-        cell!.textLabel?.text = self.items[indexPath.row].text;
+        cell!.textLabel?.attributedText = self.items[indexPath.row].attrText;
         return cell!;
     }
     open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
