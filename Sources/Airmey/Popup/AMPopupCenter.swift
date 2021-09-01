@@ -111,20 +111,6 @@ extension AMPopupCenter{
     ///     - meta: The wating implemention
     ///
     public func wait(_ msg:String? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
-        var attr:NSAttributedString? = nil
-        if let str = msg {
-            attr = NSAttributedString(string: str)
-        }
-        self.wait(attr, timeout: timeout, meta: meta)
-    }
-    /// present a waitable controller
-    ///
-    ///- Parameters:
-    ///     - msg: The wating message
-    ///     - timeout: The wating timeout
-    ///     - meta: The wating implemention
-    ///
-    public func wait(_ msg:NSAttributedString? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
         let vc = (meta ?? Self.Wait).init(msg,timeout:timeout)
         vc.pop = self
         self.add(.wait(vc))

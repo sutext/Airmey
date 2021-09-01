@@ -39,7 +39,7 @@ open class AMPopupController:UIViewController{
 ///Loading style
 public protocol AMWaitable:AMPopupController{
     static var timeout:TimeInterval {get}
-    init(_ msg:NSAttributedString?,timeout:TimeInterval?)
+    init(_ msg:String?,timeout:TimeInterval?)
 }
 ///Tost style
 public protocol AMRemindable:AMPopupController{
