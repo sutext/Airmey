@@ -9,18 +9,18 @@ import UIKit
 
 /// Default buildin Remind appearence
 open class AMRemindController: AMPopupController ,AMRemindable{
-    private lazy var blurView:UIView = {
+    public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
-        view.backgroundColor = UIColor(white: 0, alpha: 0.6)
+        view.backgroundColor = UIColor(white: 0, alpha: 0.7)
         view.layer.cornerRadius = 5
         return view;
     }()
-    private lazy var messageLabel:AMLabel = {
-        let label = AMLabel()
+    public lazy var messageLabel:UILabel = {
+        let label = UILabel()
         label.textAlignment = .center
         label.backgroundColor = .clear
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 15)
+        label.font = UIFont.systemFont(ofSize: 17)
         return label
     }()
     public required init(_ msg: String, title: String? = nil) {
@@ -38,10 +38,15 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         self.view.backgroundColor = .clear
         self.view.addSubview(self.blurView)
         self.blurView.addSubview(self.messageLabel)
-        self.messageLabel.am.center.equal(to: 0)
+        self.messageLabel.numberOfLines = 15
         self.blurView.amake{
-            $0.size.equal(to: (200,80))
+            $0.width.greater(than: 210)
             $0.center.equal(to: 0)
+        }
+        self.messageLabel.amake { am in
+            am.width.less(than: .screenWidth * 0.8)
+            am.height.greater(than: 45)
+            am.edge.equal(top:20,left: 15 , bottom: -20,right: -15 )
         }
     }
 }

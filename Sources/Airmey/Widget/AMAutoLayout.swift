@@ -563,7 +563,15 @@ public struct AMDimensionAnchor {
             return view.heightAnchor.less(than: offset)
         }
     }
-    
+    @discardableResult
+    public func less(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch (self.kind) {
+        case .width:
+            return view.widthAnchor.less(than: other.widthAnchor,offset: offset)
+        case .height:
+            return view.heightAnchor.less(than: other.heightAnchor,offset: offset)
+        }
+    }
     @discardableResult
     public func less(than other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch (self.kind,other.kind) {
@@ -618,7 +626,15 @@ public struct AMDimensionAnchor {
             return view.heightAnchor.greater(than: offset)
         }
     }
-    
+    @discardableResult
+    public func greater(than other:UIView, offset:CGFloat? = nil)->NSLayoutConstraint{
+        switch self.kind {
+        case .width:
+            return view.widthAnchor.greater(than: other.widthAnchor,offset: offset)
+        case .height:
+            return view.heightAnchor.greater(than: other.heightAnchor,offset: offset)
+        }
+    }
     @discardableResult
     public func greater(than other:Self, offset:CGFloat? = nil)->NSLayoutConstraint{
         switch (self.kind,other.kind) {

@@ -19,7 +19,8 @@ open class AMPopupCenter {
     open class var Action:AMActionable.Type{UIAlert.self}
     private var queue:[Operation] = []
     private var current:Operation?
-    private var waiter:AMWaitable?
+    private var alerters:[String:Alerter] = [:]
+    private weak var waiter:AMWaitable?
     public init(){}
 }
 extension AMPopupCenter{
@@ -42,11 +43,27 @@ extension AMPopupCenter{
         self.add(.remind(vc,duration:duration))
     }
     /// presnet an actionable controller
+    /// 
+    ///- Parameters:
+    ///     - items: The actionsheet itmes
+    ///     - meta: The actionsheet implemention class
+    ///
     public func action(_ items:[AMTextConvertible],meta:AMActionable.Type?=nil,onhide:ActionHide?=nil){
         let vc = (meta ?? Self.Action).init(items,onhide:onhide)
         self.add(.action(vc))
     }
     /// present an alertable controller
+    ///
+    ///- Note: Same msg alert never been present together
+    ///
+    ///- Parameters:
+    ///     - msg: The alert message must be provide.
+    ///     - title: The alert title
+    ///     - confirm: The confirm text. If nil use `Confirm`
+    ///     - cancel: The cancel text. if nil no Cancel option
+    ///     - meta: The alert implemention. if ni use defualt
+    ///     - onhide: The call back when click
+    ///
     public func alert(
         _ msg:String,
         title:String? = nil,
@@ -55,9 +72,15 @@ extension AMPopupCenter{
         meta:AMAlertable.Type? = nil,
         onhide:AlertHide? = nil)  {
         let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
-        self.add(.alert(vc))
+        self.add(.alert(vc,msg:msg))
     }
     /// present a waitable controller
+    ///
+    ///- Parameters:
+    ///     - msg: The wating message
+    ///     - timeout: The wating timeout
+    ///     - meta: The wating implemention
+    ///
     public func wait(_ msg:String? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
         let vc = (meta ?? Self.Wait).init(msg,timeout:timeout)
         vc.pop = self
@@ -109,8 +132,8 @@ extension AMPopupCenter{
             self._clear()
         case .remind(let vc,let duration):
             self._remind(vc,duration: duration)
-        case .alert(let vc):
-            self._present(vc, animated: true, finish: nil)
+        case .alert(let vc,let msg):
+            self._alert(vc, msg: msg,animated: true, finish: nil)
         case .action(let vc):
             self._present(vc, animated: true, finish: nil)
         case .present(let vc, let animated,let finish):
@@ -134,6 +157,25 @@ extension AMPopupCenter{
             popup._dismiss(animated: animated,completion: block)
         }else{
             vc.dismiss(animated: animated,completion: block)
+        }
+    }
+    private func _alert(_ vc:UIViewController,msg:String,animated:Bool,finish:AMBlock?) {
+        self.alerters = self.alerters.filter({ ele in
+            return ele.value.controller != nil
+        })
+        if self.alerters[msg] != nil{
+            self.current = nil
+            self.delayNext()
+            return
+        }
+        self.alerters[msg] = Alerter(vc)
+        if let nvc = vc as? AMPopupController {
+            nvc.pop = self
+        }
+        self.show(vc,animated: animated) {
+            finish?()
+            self.current = nil
+            self.delayNext()
         }
     }
     private func _present(_ vc:UIViewController,animated:Bool,finish:AMBlock?) {
@@ -180,8 +222,9 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        guard let top = self.top else {
-            fatalError("rootViewController not found in keywindow!")
+        guard let top = self.top else {//Give up showing when no root
+            completion?()
+            return
         }
         top.present(vc, animated: animated, completion: completion)
     }
@@ -193,7 +236,7 @@ extension AMPopupCenter{
         case idle
         case clear
         case wait(_ vc:AMWaitable)
-        case alert(_ vc:AMAlertable)
+        case alert(_ vc:AMAlertable,msg:String)
         case action(_ vc:AMActionable)
         case remind(_ vc:AMRemindable,duration:TimeInterval?)
         case present(
@@ -204,6 +247,12 @@ extension AMPopupCenter{
                 vc:UIViewController,
                 animated:Bool,
                 finish:AMBlock?)
+    }
+    class Alerter:NSObject {
+        weak var controller:UIViewController?
+        init(_ vc:UIViewController) {
+            self.controller = vc
+        }
     }
 }
 extension AMPopupCenter{

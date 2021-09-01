@@ -48,15 +48,21 @@ class PopupController: UIViewController {
             am.edge.equal(top: 0, bottom: 0)
         }
         self.addTest("Test multiple popup") {
+            pop.alert("test alert",confirm: "确定",cancel: "取消")
+
+            pop.alert("test alert",confirm: "确定",cancel: "取消")
+
+            pop.alert("test alert",confirm: "确定",cancel: "取消")
+
             pop.wait("loading....")
             pop.idle()
             pop.remind("test1")
-            pop.action(["apple","facebook"])
+//            pop.action(["apple","facebook"])
             pop.action(["facebook","apple"])
             pop.remind("testing....")
             pop.alert("test alert",confirm: "确定",cancel: "取消")
             pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
-            pop.present(PopupController())
+//            pop.present(PopupController())
 
         }
         self.addTest("Test Present") {
@@ -69,8 +75,11 @@ class PopupController: UIViewController {
         self.addTest("Test Wait") {
             pop.wait("loading...")
         }
-        self.addTest("show left") {
-            root?.showLeftController(animated: true)
+        self.addTest("Test remind") {
+            pop.remind("test remind")
+            
+            pop.remind("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
+            pop.remind("test remind")
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {
