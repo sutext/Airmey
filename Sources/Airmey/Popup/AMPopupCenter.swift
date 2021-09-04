@@ -33,16 +33,8 @@ extension AMPopupCenter{
         self.add(.present(vc: vc, animated: animated, finish: completion))
     }
     /// presnet a remindable controller
-    public func remind(_ msg:String,
-                title:String?=nil,
-                duration:TimeInterval?=nil,
-                meta:AMRemindable.Type?=nil,
-                onhide:AMBlock?=nil) {
-        self.remind(NSAttributedString(string: msg), title: title, duration: duration, meta: meta, onhide: onhide)
-    }
-    /// presnet a remindable controller
-    public func remind(_ msg:NSAttributedString,
-                title:String?=nil,
+    public func remind(_ msg:AMTextDisplayable,
+                title:AMTextDisplayable?=nil,
                 duration:TimeInterval?=nil,
                 meta:AMRemindable.Type?=nil,
                 onhide:AMBlock?=nil) {
@@ -56,7 +48,7 @@ extension AMPopupCenter{
     ///     - items: The actionsheet itmes
     ///     - meta: The actionsheet implemention class
     ///
-    public func action(_ items:[AMTextConvertible],meta:AMActionable.Type?=nil,onhide:ActionHide?=nil){
+    public func action(_ items:[AMTextDisplayable],meta:AMActionable.Type?=nil,onhide:AMActionBlock?=nil){
         let vc = (meta ?? Self.Action).init(items,onhide:onhide)
         self.add(.action(vc))
     }
@@ -73,35 +65,14 @@ extension AMPopupCenter{
     ///     - onhide: The call back when click
     ///
     public func alert(
-        _ msg:String,
-        title:String? = nil,
-        confirm:String? = nil,
-        cancel:String? = nil,
+        _ msg:AMTextDisplayable,
+        title:AMTextDisplayable? = nil,
+        confirm:AMTextDisplayable? = nil,
+        cancel:AMTextDisplayable? = nil,
         meta:AMAlertable.Type? = nil,
-        onhide:AlertHide? = nil)  {
-        self.alert(NSAttributedString(string: msg), title: title, confirm: confirm, cancel: cancel, meta: meta, onhide: onhide)
-    }
-    /// present an alertable controller
-    ///
-    ///- Note: Same msg alert never been present together
-    ///
-    ///- Parameters:
-    ///     - msg: The alert message must be provide.
-    ///     - title: The alert title
-    ///     - confirm: The confirm text. If nil use `Confirm`
-    ///     - cancel: The cancel text. if nil no Cancel option
-    ///     - meta: The alert implemention. if ni use defualt
-    ///     - onhide: The call back when click
-    ///
-    public func alert(
-        _ msg:NSAttributedString,
-        title:String? = nil,
-        confirm:String? = nil,
-        cancel:String? = nil,
-        meta:AMAlertable.Type? = nil,
-        onhide:AlertHide? = nil)  {
+        onhide:AMAlertBlock? = nil)  {
         let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
-        self.add(.alert(vc,key:msg.string))
+        self.add(.alert(vc,key:msg.text ?? ""))
     }
     /// present a waitable controller
     ///
@@ -259,8 +230,6 @@ extension AMPopupCenter{
     }
 }
 extension AMPopupCenter{
-    public typealias AlertHide = (Int)->Void
-    public typealias ActionHide = (AMTextConvertible?,Int?)->Void
     enum Operation{
         case idle
         case clear
@@ -287,21 +256,29 @@ extension AMPopupCenter{
 extension AMPopupCenter{
     /// system implemention for AMAlertable AMActionable
     open class UIAlert:UIAlertController,AMAlertable,AMActionable{
-        public required convenience init(_ msg: NSAttributedString, title: String?, confirm: String?, cancel: String?, onhide: AlertHide?) {
-            self.init(title: title, message: msg.string, preferredStyle: .alert)
-            self.addAction(.init(title: confirm ?? "Confirm", style: .default, handler: { act in
+        public required convenience init(
+            _ msg: AMTextDisplayable,
+            title: AMTextDisplayable?,
+            confirm: AMTextDisplayable?,
+            cancel: AMTextDisplayable?,
+            onhide: AMAlertBlock?) {
+            self.init(
+                title: title?.text,
+                message: msg.text,
+                preferredStyle: .alert)
+            self.addAction(.init(title: confirm?.text ?? "Confirm", style: .default, handler: { act in
                 onhide?(0)
             }))
             if let cancel = cancel {
-                self.addAction(.init(title: cancel, style: .default, handler: { act in
+                self.addAction(.init(title: cancel.text, style: .default, handler: { act in
                     onhide?(1)
                 }))
             }
         }
-        public required convenience init(_ items: [AMTextConvertible], onhide: ActionHide?) {
+        public required convenience init(_ items: [AMTextDisplayable], onhide: AMActionBlock?) {
             self.init(title: nil, message: nil, preferredStyle: .actionSheet)
             for idx in (0..<items.count) {
-                self.addAction(.init(title: items[idx].attrText?.string, style: .default, handler: { act in
+                self.addAction(.init(title: items[idx].text, style: .default, handler: { act in
                     onhide?(items[idx],idx)
                 }))
             }

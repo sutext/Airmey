@@ -88,8 +88,8 @@ extension AMPresenter:UIViewControllerAnimatedTransitioning{
 /// Rect animation presenter
 ///
 public class AMFramePresenter: AMPresenter {
-    private let initialFrame:CGRect
-    private let finalFrame:CGRect
+    public let initialFrame:CGRect
+    public let finalFrame:CGRect
     private lazy var dimmingView:AMView = {
         let view = AMView()
         view.onclick = {[weak self] _ in

@@ -36,6 +36,10 @@ open class AMPopupController:UIViewController{
         super.dismiss(animated: flag, completion: completion)
     }
 }
+
+public typealias AMAlertBlock = (Int)->Void
+public typealias AMActionBlock = (AMTextDisplayable?,Int?)->Void
+
 ///Loading style
 public protocol AMWaitable:AMPopupController{
     static var timeout:TimeInterval {get}
@@ -43,13 +47,18 @@ public protocol AMWaitable:AMPopupController{
 }
 ///Tost style
 public protocol AMRemindable:AMPopupController{
-    init(_ msg:NSAttributedString,title:String?)
+    init(_ msg:AMTextDisplayable,title:AMTextDisplayable?)
 }
 ///Alert style
 public protocol AMAlertable:UIViewController{
-    init(_ msg:NSAttributedString,title:String?,confirm:String?,cancel:String?,onhide:AMPopupCenter.AlertHide?)
+    init(
+        _ msg:AMTextDisplayable,
+        title:AMTextDisplayable?,
+        confirm:AMTextDisplayable?,
+        cancel:AMTextDisplayable?,
+        onhide:AMAlertBlock?)
 }
 ///ActionSheet style
 public protocol AMActionable:UIViewController{
-    init(_ items:[AMTextConvertible],onhide:AMPopupCenter.ActionHide?)
+    init(_ items:[AMTextDisplayable],onhide:AMActionBlock?)
 }

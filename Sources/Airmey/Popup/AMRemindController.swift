@@ -23,11 +23,13 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         label.font = UIFont.systemFont(ofSize: 17)
         return label
     }()
-    public required init(_ msg: NSAttributedString, title: String? = nil) {
+    public required init(
+        _ msg: AMTextDisplayable,
+        title: AMTextDisplayable? = nil) {
         super.init(AMDimmingPresenter())
         self.presenter.dimming = 0
         self.presenter.onMaskClick = nil
-        self.messageLabel.attributedText = msg
+        self.messageLabel.displayText = msg
     }
     
     public required init?(coder aDecoder: NSCoder) {

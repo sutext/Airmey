@@ -51,7 +51,7 @@ open class AMRefreshFooter: AMRefresh {
     public override var isEnabled: Bool{
         didSet{
             if !isEnabled {
-                self.textLabel.text = self.disabledText ?? self.text
+                self.textLabel.displayText = self.disabledText ?? self.text
                 self.indicator.stopAnimating()
             }
         }

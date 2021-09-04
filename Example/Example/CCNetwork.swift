@@ -18,11 +18,11 @@ class ENV {
     }
 }
 public let net = CCNetwork()
-public enum CCLoginType :String,CaseIterable,AMTextConvertible{    
+public enum CCLoginType :String,CaseIterable,AMTextDisplayable{    
     case apple
     case google
     case facebook
-    public var attrText: NSAttributedString?{NSAttributedString(string: rawValue)}
+    public var displayText: AMDisplayText{rawValue}
 }
 public class CCNetwork: AMNetwork {
     fileprivate init(){

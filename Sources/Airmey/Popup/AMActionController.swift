@@ -9,15 +9,14 @@ import UIKit
 
 ///ActionSheet contorller
 open class AMActionController:AMPopupController,AMActionable{
-    private var items:[AMTextConvertible]
+    public let items:[AMTextDisplayable]
+    public let tableView = UITableView()
     private let cancelBar = CancelBar()
-    private let tableView = UITableView()
     private let rowHeight:CGFloat = 50
     private var hideAtIndex:Int?
-    public required init(_ items:[AMTextConvertible],onhide:AMPopupCenter.ActionHide?=nil) {
+    public required init(_ items:[AMTextDisplayable],onhide:AMActionBlock?=nil) {
         let count = items.count <> 1...5
         self.items = items
-        self.cancelBar.text = "Cancel"
         super.init(AMFramePresenter(bottom: CGFloat(count)*self.rowHeight + .tabbarHeight))
         self.presenter.onhide = {[weak self] in
             if let idx = self?.hideAtIndex {
@@ -49,11 +48,26 @@ open class AMActionController:AMPopupController,AMActionable{
         self.tableView.backgroundColor = .clear
         self.tableView.dataSource = self
         self.tableView.delegate = self
+        self.cancelText = "Cancel"
+        self.cancelFont = .systemFont(ofSize: 20)
+        self.cancelColor = .hex(0xf93d32)
         self.tableView.amake { am in
             am.edge.equal(top: 0, left: 0, right: 0)
             am.height.equal(to: CGFloat((self.items.count <> 1...5)*50))
         }
         self.cancelBar.control.addTarget(self, action: #selector(cancelAction(sender:)), for: .touchUpInside)
+    }
+    public var cancelText:AMTextDisplayable?{
+        get {self.cancelBar.label.displayText}
+        set {self.cancelBar.label.displayText = newValue}
+    }
+    public var cancelColor:UIColor?{
+        get {self.cancelBar.label.textColor}
+        set {self.cancelBar.label.textColor = newValue}
+    }
+    public var cancelFont:UIFont?{
+        get {self.cancelBar.label.font}
+        set {self.cancelBar.label.font = newValue}
     }
     @objc dynamic func cancelAction(sender:UIControl){
         self.dismiss(animated: true)
@@ -72,10 +86,11 @@ extension AMActionController:UITableViewDataSource,UITableViewDelegate{
             cell = UITableViewCell(style: .default, reuseIdentifier: "actionCell");
             cell?.accessoryType = .none;
             cell?.textLabel?.textAlignment = .center;
+            cell?.textLabel?.textColor = .hex(0x2389f9)
             cell?.separatorInset = UIEdgeInsets.zero
             cell?.backgroundColor = .clear
         }
-        cell!.textLabel?.attributedText = self.items[indexPath.row].attrText;
+        cell!.textLabel?.displayText = self.items[indexPath.row];
         return cell!;
     }
     open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -90,22 +105,15 @@ extension AMActionController{
         let control = UIControl()
         override init(){
             super.init()
-            self.usingShadow()
             self.usingEffect()
             self.backgroundColor = .hex(0xffffff,alpha:0.7)
             self.contentView.addSubview(self.label)
             self.addSubview(self.control)
-            self.label.font = .systemFont(ofSize: 18)
-            self.label.textColor = .darkText
             self.label.am.center.equal(to: 0)
             self.control.am.edge.equal(to: 0)
             self.control.addTarget(self, action: #selector(CancelBar.touchDown), for: .touchDown)
             self.control.addTarget(self, action: #selector(CancelBar.touchUp), for: .touchUpInside)
             self.control.addTarget(self, action: #selector(CancelBar.touchUp), for: .touchUpOutside)
-        }
-        var text:String?{
-            get{ return self.label.text }
-            set{ self.label.text = newValue }
         }
         @objc func touchDown(){
             self.backgroundColor = .lightGray

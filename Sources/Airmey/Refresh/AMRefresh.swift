@@ -15,7 +15,7 @@ open class AMRefresh:UIControl{
     public let height:CGFloat
     /// enable UIImpactFeedback or not. By default `true`
     public var feedback:Bool = true
-    private var texts:[Status:String] = [:]
+    private var texts:[Status:AMTextDisplayable] = [:]
     private var fonts:[Status:UIFont] = [:]
     private var colors:[Status:UIColor] = [:]
     weak var scorllView:UIScrollView?
@@ -41,7 +41,7 @@ open class AMRefresh:UIControl{
             }
             if status != oldValue {
                 let status = self.status
-                self.textLabel.text = self.texts[status] ?? self.text
+                self.textLabel.displayText = self.texts[status] ?? self.text
                 self.textLabel.font = self.fonts[status] ?? self.font
                 self.textLabel.textColor = self.colors[status] ?? self.textColor
 //                scorllView?.isUserInteractionEnabled = (status != .refreshing)
@@ -68,9 +68,9 @@ open class AMRefresh:UIControl{
         }
     }
     /// default text  for any status
-    public var text:String?{
+    public var text:AMTextDisplayable?{
         didSet{
-            self.textLabel.text = text
+            self.textLabel.displayText = text
         }
     }
     /// default text color for any status
@@ -184,16 +184,16 @@ open class AMRefresh:UIControl{
     }
 }
 extension AMRefresh{
-    public func text(for status:Status)->String?{
+    public func text(for status:Status)->AMTextDisplayable?{
         self.texts[status]
     }
-    public func setText(_ text:String,for status:Status){
+    public func setText(_ text:AMTextDisplayable,for status:Status){
         self.texts[status] = text
         if status == self.status {
-            self.textLabel.text = text
+            self.textLabel.displayText = text
         }
     }
-    public func setTexts(_ texts:[Status:String]){
+    public func setTexts(_ texts:[Status:AMTextDisplayable]){
         texts.forEach {
             self.setText($0.value, for: $0.key)
         }
