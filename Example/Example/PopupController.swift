@@ -70,24 +70,24 @@ class PopupController: UIViewController {
             pop.alert("test 2",confirm: "确定",cancel: "取消")
             pop.alert("test 1",confirm: "确定",cancel: "取消")
             pop.remind("test1")
-//            pop.action(["apple","facebook"])
             pop.action(["facebook","apple"])
-            
             pop.alert("clear all",confirm: "确定",cancel: "取消") { idx in
-                pop.clear()
+                if idx == 0 {
+                    pop.clear()
+                }
             }
-
+            pop.remind("testing....")
+            pop.alert("test alert",confirm: "确定",cancel: "取消")
+            pop.remind(LoginError.invalidUsername)
         }
         self.addTest("Test Input") {
             pop.present(PopupInputController())
-//            pop.alert("xxxx")
         }
         self.addTest("clear") {
             pop.clear()
         }
         self.addTest("Test Wait") {
             pop.wait("loading...")
-//            pop.idle()
         }
         self.addTest("Test remind") {
             pop.remind("test remind")

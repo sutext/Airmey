@@ -46,15 +46,15 @@ extension NSAttributedString:AMTextDisplayable{
 public extension UILabel{
     /// set displayable text
     var displayText:AMTextDisplayable?{
-        get{ text ?? attributedText }
+        get{ attributedText ?? text }
         set {
             switch newValue?.displayText {
             case let str as String:
-                self.text = str
                 self.attributedText = nil
+                self.text = str
             case let attr as NSAttributedString:
-                self.attributedText = attr
                 self.text = nil
+                self.attributedText = attr
             default:
                 break
             }
@@ -64,15 +64,15 @@ public extension UILabel{
 public extension UITextView{
     /// set displayable text
     var displayText:AMTextDisplayable?{
-        get{ text ?? attributedText }
+        get{ attributedText ?? text }
         set {
             switch newValue?.displayText {
             case let str as String:
-                self.text = str
                 self.attributedText = nil
+                self.text = str
             case let attr as NSAttributedString:
-                self.attributedText = attr
                 self.text = nil
+                self.attributedText = attr
             default:
                 break
             }
@@ -82,15 +82,15 @@ public extension UITextView{
 public extension UITextField{
     /// set displayable text
     var displayText:AMTextDisplayable?{
-        get{ text ?? attributedText }
+        get{ attributedText ?? text }
         set {
             switch newValue?.displayText {
             case let str as String:
-                self.text = str
                 self.attributedText = nil
+                self.text = str
             case let attr as NSAttributedString:
-                self.attributedText = attr
                 self.text = nil
+                self.attributedText = attr
             default:
                 break
             }
