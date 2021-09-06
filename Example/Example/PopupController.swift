@@ -8,6 +8,21 @@
 import UIKit
 import Airmey
 let pop = PopupCenter()
+
+enum LoginError:Error {
+    case invalidPassword
+    case invalidUsername
+}
+extension LoginError:AMTextDisplayable{
+    var displayText: AMDisplayText{
+        switch self {
+        case .invalidPassword:
+            return "密码不正确"
+        case .invalidUsername:
+            return "用户不存在"
+        }
+    }
+}
 public class PopupCenter:AMPopupCenter{
     public override class var Alert: AMAlertable.Type{AMAlertController.self}
     public override class var Action: AMActionable.Type{AMActionController.self}
@@ -62,7 +77,7 @@ class PopupController: UIViewController {
             pop.remind("testing....")
             pop.alert("test alert",confirm: "确定",cancel: "取消")
             pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
-//            pop.present(PopupController())
+            pop.remind(LoginError.invalidUsername)
 
         }
         self.addTest("Test Present") {
@@ -74,6 +89,7 @@ class PopupController: UIViewController {
         }
         self.addTest("Test Wait") {
             pop.wait("loading...")
+//            pop.idle()
         }
         self.addTest("Test remind") {
             pop.remind("test remind")

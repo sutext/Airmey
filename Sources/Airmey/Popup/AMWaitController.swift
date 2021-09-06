@@ -8,7 +8,9 @@
 import UIKit
 
 open class AMWaitController: AMPopupController,AMWaitable {
-    open class var timeout:TimeInterval{ 10 }
+    /// Global default timeout interval `default` 5
+    /// subclass can override this var for custom
+    open class var timeout:TimeInterval{ 5 }
     public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)
@@ -37,14 +39,12 @@ open class AMWaitController: AMPopupController,AMWaitable {
         return view
     }()
     required public init(_ msg:String?,timeout:TimeInterval?) {
-        super.init(AMDimmingPresenter())
+        super.init(Presenter())
         self.presenter.dimming = 0
         self.presenter.onMaskClick = nil
         let timeout = timeout ?? Self.timeout
-        DispatchQueue.main.asyncAfter(deadline: .now()+timeout) {
-            self.presenter.onMaskClick = {[weak self] in
-                self?.dismiss(animated: true)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+            self.dismiss(animated: true)
         }
         self.titleLabel.text = msg
     }
@@ -63,5 +63,33 @@ open class AMWaitController: AMPopupController,AMWaitable {
             am.center.equal(to: 0)
         }
         self.stackView.am.center.equal(to: 0)
+    }
+}
+extension AMWaitController{
+    class Presenter: AMPresenter {
+        private lazy var dimmingView:AMView = {
+            let view = AMView()
+            view.onclick = {[weak self] _ in
+                self?.onMaskClick?()
+            }
+            return view;
+        }()
+        override func presentWillBegin(in pc: UIPresentationController) {
+            guard let container = pc.containerView else {
+                return
+            }
+            guard let presentView = pc.presentedView else {
+                return
+            }
+            dimmingView.frame = presentView.bounds
+            presentView.insertSubview(dimmingView, at: 0)
+            container.addSubview(presentView)
+        }
+        override func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+            0
+        }
+        override func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+            transitionContext.completeTransition(true)
+        }
     }
 }
