@@ -16,168 +16,112 @@ public protocol HTTPEncoder{
         headers:HTTPHeaders?,
         timeout:TimeInterval) -> Result<URLRequest,Error>
 }
-///
-/// JSON body encoder.
-///
-/// - Note JSNEncoder will use URLEncoder.query when method = HTTPMethod.get
-///
-public struct JSNEncoder:HTTPEncoder{
-    public init(){}
-    public func encode(
-        _ url: URL,
-        method: HTTPMethod,
-        params: HTTPParams?,
-        headers:HTTPHeaders?,
-        timeout: TimeInterval) -> Result<URLRequest,Error>{
-        if case .get = method {
-            return URLEncoder.query.encode(url, method: method, params: params, headers: headers, timeout: timeout)
-        }
-        var urlRequest = URLRequest(url:url , cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
-        urlRequest.allHTTPHeaderFields = headers?.values
-        urlRequest.httpMethod = method.rawValue
-        urlRequest.setHeader("application/json", for: .contentType)
-        guard let params = params, params.count>0 else {
-            return .success(urlRequest)
-        }
-        return .init{
-            urlRequest.httpBody = try JSONEncoder().encode(JSON(params))
-            return urlRequest
+extension HTTP{
+    ///
+    /// JSON body encoder.
+    ///
+    /// - Note JSNEncoder will use URLEncoder.query when method = HTTPMethod.get
+    ///
+    public struct JSONEncoder:HTTPEncoder{
+        public init(){}
+        public func encode(
+            _ url: URL,
+            method: HTTPMethod,
+            params: HTTPParams?,
+            headers:HTTPHeaders?,
+            timeout: TimeInterval) -> Result<URLRequest,Error>{
+            if case .get = method {
+                return URLEncoder.query.encode(url, method: method, params: params, headers: headers, timeout: timeout)
+            }
+            var urlRequest = URLRequest(url:url , cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
+            urlRequest.allHTTPHeaderFields = headers?.values
+            urlRequest.httpMethod = method.rawValue
+            urlRequest.setHeader("application/json", for: .contentType)
+            guard let params = params, params.count>0 else {
+                return .success(urlRequest)
+            }
+            return .init{
+                urlRequest.httpBody = try Foundation.JSONEncoder().encode(JSON(params))
+                return urlRequest
+            }
         }
     }
 }
-// MARK: -
-
-/// Creates a url-encoded query string to be set as or appended to any existing URL query string or set as the HTTP
-/// body of the URL request. Whether the query string is set or appended to any existing URL query string or set as
-/// the HTTP body depends on the destination of the encoding.
-///
-/// The `Content-Type` HTTP header field of an encoded request with HTTP body is set to
-/// `application/x-www-form-urlencoded; charset=utf-8`.
-///
-/// There is no published specification for how to encode collection types. By default the convention of appending
-/// `[]` to the key for array values (`foo[]=1&foo[]=2`), and appending the key surrounded by square brackets for
-/// nested dictionary values (`foo[bar]=baz`) is used. Optionally, `ArrayEncoding` can be used to omit the
-/// square brackets appended to array keys.
-///
-/// `BoolEncoding` can be used to configure how boolean values are encoded. The default behavior is to encode
-/// `true` as 1 and `false` as 0.
-public struct URLEncoder:HTTPEncoder {
-    // MARK: Helper Types
-
-    /// Defines whether the url-encoded query string is applied to the existing query string or HTTP body of the
-    /// resulting URL request.
-    public enum Destination {
-        /// Applies encoded query string result to existing query string for `GET`, `HEAD` and `DELETE` requests and
-        /// sets as the HTTP body for requests with any other HTTP method.
-        case methodDependent
-        /// Sets or appends encoded query string result to existing query string.
-        case queryString
-        /// Sets encoded query string result as the HTTP body of the URL request.
-        case httpBody
-
-        func needEncodeInURL(for method: HTTPMethod) -> Bool {
-            switch self {
-            case .methodDependent: return [.get, .head, .delete].contains(method)
-            case .queryString: return true
-            case .httpBody: return false
-            }
-        }
-    }
-
-    /// Configures how `Array` parameters are encoded.
-    public enum ArrayEncoder {
-        /// An empty set of square brackets is appended to the key for every value. This is the default behavior.
-        case brackets
-        /// No brackets are appended. The key is encoded as is.
-        case noBrackets
-
-        func encode(key: String) -> String {
-            switch self {
-            case .brackets:
-                return "\(key)[]"
-            case .noBrackets:
-                return key
-            }
-        }
-    }
-
-    /// Configures how `Bool` parameters are encoded.
-    public enum BoolEncoder {
-        /// Encode `true` as `1` and `false` as `0`. This is the default behavior.
-        case numeric
-        /// Encode `true` and `false` as string literals.
-        case literal
-
-        func encode(value: Bool) -> String {
-            switch self {
-            case .numeric:
-                return value ? "1" : "0"
-            case .literal:
-                return value ? "true" : "false"
-            }
-        }
-    }
-
-    // MARK: Properties
-
-    /// Returns a default `URLEncoder` instance with a `.methodDependent` destination.
-    public static var `default`: URLEncoder { URLEncoder() }
-
-    /// Returns a `URLEncoder` instance with a `.queryString` destination.
-    public static var query: URLEncoder { URLEncoder(destination: .queryString) }
-
-    /// Returns a `URLEncoder` instance with an `.httpBody` destination.
-    public static var body: URLEncoder { URLEncoder(destination: .httpBody) }
-
-    /// The destination defining where the encoded query string is to be applied to the URL request.
-    public let destination: Destination
-
-    /// The encoding to use for `Array` parameters.
-    public let arrayEncoder: ArrayEncoder
-
-    /// The encoding to use for `Bool` parameters.
-    public let boolEncoder: BoolEncoder
-    /// Creates an instance using the specified parameters.
+extension HTTP{
+    /// Creates a url-encoded query string to be set as or appended to any existing URL query string or set as the HTTP
+    /// body of the URL request. Whether the query string is set or appended to any existing URL query string or set as
+    /// the HTTP body depends on the destination of the encoding.
     ///
-    /// - Parameters:
-    ///   - destination:   `Destination` defining where the encoded query string will be applied. `.methodDependent` by default.
-    ///   - arrayEncoder: `ArrayEncoder` to use. `.brackets` by default.
-    ///   - boolEncoder:  `BoolEncoder` to use. `.numeric` by default.
-    public init(
-        destination: Destination = .methodDependent,
-        arrayEncoder: ArrayEncoder = .noBrackets,
-        boolEncoder: BoolEncoder = .numeric) {
-        self.destination = destination
-        self.arrayEncoder = arrayEncoder
-        self.boolEncoder = boolEncoder
-    }
+    /// The `Content-Type` HTTP header field of an encoded request with HTTP body is set to
+    /// `application/x-www-form-urlencoded; charset=utf-8`.
+    ///
+    /// There is no published specification for how to encode collection types. By default the convention of appending
+    /// `[]` to the key for array values (`foo[]=1&foo[]=2`), and appending the key surrounded by square brackets for
+    /// nested dictionary values (`foo[bar]=baz`) is used. Optionally, `ArrayEncoding` can be used to omit the
+    /// square brackets appended to array keys.
+    ///
+    /// `BoolEncoding` can be used to configure how boolean values are encoded. The default behavior is to encode
+    /// `true` as 1 and `false` as 0.
+    public struct URLEncoder:HTTPEncoder{
+        /// Returns a default `URLEncoder` instance with a `.methodDependent` destination.
+        public static var `default`: URLEncoder { URLEncoder() }
 
-    // MARK: Encoding
-    public func encode(
-        _ url:URL,
-        method:HTTPMethod,
-        params:HTTPParams?,
-        headers:HTTPHeaders?,
-        timeout:TimeInterval)-> Result<URLRequest,Error> {
-        var urlRequest = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
-        urlRequest.httpMethod = method.rawValue
-        urlRequest.allHTTPHeaderFields = headers?.values
-        guard let params = params?.mapValues(JSON.init) else {
+        /// Returns a `URLEncoder` instance with a `.queryString` destination.
+        public static var query: URLEncoder { URLEncoder(destination: .queryString) }
+
+        /// Returns a `URLEncoder` instance with an `.httpBody` destination.
+        public static var body: URLEncoder { URLEncoder(destination: .httpBody) }
+
+        /// The destination defining where the encoded query string is to be applied to the URL request.
+        public let destination: Destination
+
+        /// The encoding to use for `Array` parameters.
+        public let arrayEncoder: ArrayEncoder
+
+        /// The encoding to use for `Bool` parameters.
+        public let boolEncoder: BoolEncoder
+        /// Creates an instance using the specified parameters.
+        ///
+        /// - Parameters:
+        ///   - destination:   `Destination` defining where the encoded query string will be applied. `.methodDependent` by default.
+        ///   - arrayEncoder: `ArrayEncoder` to use. `.brackets` by default.
+        ///   - boolEncoder:  `BoolEncoder` to use. `.numeric` by default.
+        public init(
+            destination: Destination = .methodDependent,
+            arrayEncoder: ArrayEncoder = .noBrackets,
+            boolEncoder: BoolEncoder = .numeric) {
+            self.destination = destination
+            self.arrayEncoder = arrayEncoder
+            self.boolEncoder = boolEncoder
+        }
+        public func encode(
+            _ url:URL,
+            method:HTTPMethod,
+            params:HTTPParams?,
+            headers:HTTPHeaders?,
+            timeout:TimeInterval)-> Result<URLRequest,Error> {
+            var urlRequest = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
+            urlRequest.httpMethod = method.rawValue
+            urlRequest.allHTTPHeaderFields = headers?.values
+            guard let params = params?.mapValues(JSON.init) else {
+                return .success(urlRequest)
+            }
+            if destination.needEncodeInURL(for: method) {
+                if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+                    let percentEncodedQuery = (urlComponents.percentEncodedQuery.map { $0 + "&" } ?? "") + query(params)
+                    urlComponents.percentEncodedQuery = percentEncodedQuery
+                    urlRequest.url = urlComponents.url
+                }
+            } else {
+                urlRequest.setHeader("application/x-www-form-urlencoded; charset=utf-8", for: .contentType)
+                urlRequest.httpBody = Data(query(params).utf8)
+            }
             return .success(urlRequest)
         }
-        if destination.needEncodeInURL(for: method) {
-            if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true) {
-                let percentEncodedQuery = (urlComponents.percentEncodedQuery.map { $0 + "&" } ?? "") + query(params)
-                urlComponents.percentEncodedQuery = percentEncodedQuery
-                urlRequest.url = urlComponents.url
-            }
-        } else {
-            urlRequest.setHeader("application/x-www-form-urlencoded; charset=utf-8", for: .contentType)
-            urlRequest.httpBody = Data(query(params).utf8)
-        }
-        return .success(urlRequest)
     }
+}
 
+extension HTTP.URLEncoder {
     /// Creates a percent-escaped, URL encoded query string components from the given key-value pair recursively.
     ///
     /// - Parameters:
@@ -233,5 +177,62 @@ public struct URLEncoder:HTTPEncoder {
             components += queryComponents(from: key, value: value)
         }
         return components.map { "\($0)=\($1)" }.joined(separator: "&")
+    }
+}
+extension HTTP.URLEncoder{
+    // MARK: Helper Types
+
+    /// Defines whether the url-encoded query string is applied to the existing query string or HTTP body of the
+    /// resulting URL request.
+    public enum Destination {
+        /// Applies encoded query string result to existing query string for `GET`, `HEAD` and `DELETE` requests and
+        /// sets as the HTTP body for requests with any other HTTP method.
+        case methodDependent
+        /// Sets or appends encoded query string result to existing query string.
+        case queryString
+        /// Sets encoded query string result as the HTTP body of the URL request.
+        case httpBody
+
+        func needEncodeInURL(for method: HTTPMethod) -> Bool {
+            switch self {
+            case .methodDependent: return [.get, .head, .delete].contains(method)
+            case .queryString: return true
+            case .httpBody: return false
+            }
+        }
+    }
+
+    /// Configures how `Array` parameters are encoded.
+    public enum ArrayEncoder {
+        /// An empty set of square brackets is appended to the key for every value. This is the default behavior.
+        case brackets
+        /// No brackets are appended. The key is encoded as is.
+        case noBrackets
+
+        func encode(key: String) -> String {
+            switch self {
+            case .brackets:
+                return "\(key)[]"
+            case .noBrackets:
+                return key
+            }
+        }
+    }
+
+    /// Configures how `Bool` parameters are encoded.
+    public enum BoolEncoder {
+        /// Encode `true` as `1` and `false` as `0`. This is the default behavior.
+        case numeric
+        /// Encode `true` and `false` as string literals.
+        case literal
+
+        func encode(value: Bool) -> String {
+            switch self {
+            case .numeric:
+                return value ? "1" : "0"
+            case .literal:
+                return value ? "true" : "false"
+            }
+        }
     }
 }

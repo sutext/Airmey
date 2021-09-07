@@ -156,7 +156,7 @@ public class DownloadTask:HTTPTask{
     init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:Completion?) {
         self.transfer = transfer
         self.fileManager = fileManager
-        super.init(task, retrier: nil,decoder: JSNDecoder(),completion: completion)
+        super.init(task, retrier: nil,decoder: HTTP.JSONDecoder(),completion: completion)
     }
     override func finish(_ error: Error?) -> TimeInterval? {
         guard case .completed = state else {

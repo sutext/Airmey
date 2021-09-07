@@ -11,28 +11,28 @@ import Foundation
 public protocol HTTPDecoder{
     func decode(_ data:Data?,response:HTTPURLResponse)throws -> JSON
 }
-///
-///  application/json respone decoder
-///
-/// - Note JSNDecoder named 
-///
-public struct JSNDecoder:HTTPDecoder{
-    public func decode(_ data: Data?, response: HTTPURLResponse) throws -> JSON {
-        guard [200,204,205].contains(response.statusCode) else {
-            throw HTTPError.invalidStatus(code:response.statusCode, info:.init(parse: data))
+extension HTTP{
+    public struct JSONDecoder:HTTPDecoder{
+        public init(){}
+        public func decode(_ data: Data?, response: HTTPURLResponse) throws -> JSON {
+            guard [200,204,205].contains(response.statusCode) else {
+                throw HTTPError.invalidStatus(code:response.statusCode, info:.init(parse: data))
+            }
+            return JSON(parse: data)
         }
-        return JSON(parse: data)
+    }
+    public struct PlistDecoder:HTTPDecoder{
+        public init(){}
+        public func decode(_ data: Data?, response: HTTPURLResponse) throws -> JSON {
+            guard [200,204,205].contains(response.statusCode) else {
+                throw HTTPError.invalidStatus(code:response.statusCode, info:.init(parse: data))
+            }
+            guard let data = data else {
+                return .null
+            }
+            let obj = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
+            return JSON(obj)
+        }
     }
 }
-public struct PlistDecoder:HTTPDecoder{
-    public func decode(_ data: Data?, response: HTTPURLResponse) throws -> JSON {
-        guard [200,204,205].contains(response.statusCode) else {
-            throw HTTPError.invalidStatus(code:response.statusCode, info:.init(parse: data))
-        }
-        guard let data = data else {
-            return .null
-        }
-        let obj = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
-        return JSON(obj)
-    }
-}
+
