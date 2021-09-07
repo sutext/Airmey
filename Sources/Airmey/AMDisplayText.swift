@@ -21,7 +21,12 @@ public protocol AMTextDisplayable{
 }
 /// convenience getter of display text
 extension AMTextDisplayable{
-    var displayString:String?{
+    /// attributed string value
+    public var attrText:NSAttributedString?{
+        return self.displayText as? NSAttributedString
+    }
+    /// string value
+    public var text:String?{
         switch self.displayText {
         case let str as String:
             return str
