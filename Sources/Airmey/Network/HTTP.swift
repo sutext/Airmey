@@ -10,9 +10,11 @@ import Foundation
 
 ///HTTP namespace
 public enum HTTP{}
-
+///HTTP finish callback
+public typealias HTTPFinish = (Response<JSON>)->Void
+///HTTP request Parameters
 public typealias HTTPParams = [String:JSONValue]
-
+///HTTP request Errors
 public enum HTTPError:Error{
     case encode(Error)
     case download(info:String)
@@ -20,6 +22,7 @@ public enum HTTPError:Error{
     case invalidStatus(code:Int,info:JSON)
     case invalidResponse(resp:URLResponse?)
 }
+///HTTP request methods
 public enum HTTPMethod:String{
     case get = "GET"
     case put = "PUT"

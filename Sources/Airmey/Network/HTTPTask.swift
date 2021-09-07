@@ -11,17 +11,16 @@ import Foundation
 /// `Request` is the common superclass of all request types and provides common state  and callback handling.
 /// - Note provides progress interface for any request
 open class HTTPTask{
-    typealias Completion = (Response<JSON>)->Void
     private(set) var task:URLSessionTask
     @Protected
     private var mutableData: Data? = nil
     let decoder:HTTPDecoder
-    let completion:Completion?
+    let completion:HTTPFinish?
     init(
         _ task:URLSessionTask,
         retrier:Retrier?,
         decoder:HTTPDecoder,
-        completion:Completion?){
+        completion:HTTPFinish?){
         self.task = task
         self.completion = completion
         self.retrier  = retrier
@@ -128,7 +127,7 @@ public class UploadTask:HTTPTask{
         _ task: URLSessionTask,
         decoder:HTTPDecoder,
         fileManager: FileManager,
-        completion:Completion?) {
+        completion:HTTPFinish?) {
         self.fileManager = fileManager
         super.init(task, retrier: nil,decoder: decoder,completion: completion)
     }
@@ -153,7 +152,7 @@ public class DownloadTask:HTTPTask{
     private var fileManager:FileManager
     var transfer:URLTransfer?
     var fileURL:URL?
-    init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:Completion?) {
+    init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:HTTPFinish?) {
         self.transfer = transfer
         self.fileManager = fileManager
         super.init(task, retrier: nil,decoder: HTTP.JSONDecoder(),completion: completion)
