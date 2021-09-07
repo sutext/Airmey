@@ -58,7 +58,7 @@ public class CCNetwork: AMNetwork {
         old
     }
     @discardableResult
-    func request(_ req: CCRequest, completion: ((Response<JSON>) -> Void)? = nil) -> HTTPTask? {
+    func request(_ req: CCRequest, completion: HTTPFinish? = nil) -> HTTPTask? {
         return self.request(req.path, params: req.params, options: req.options) { resp in
             DispatchQueue.main.async {
                 completion?(resp)

@@ -127,7 +127,7 @@ open class AMNetwork {
         _  path:String,
         params:HTTPParams?=nil,
         options:Options?=nil,
-        completion:((Response<JSON>)->Void)? = nil)->HTTPTask?{
+        completion:HTTPFinish? = nil)->HTTPTask?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:path))
@@ -285,7 +285,7 @@ open class AMNetwork {
         to path:String,
         params:HTTPParams?=nil,
         options:Options?=nil,
-        completion:((Response<JSON>)->Void)? = nil)->HTTPTask?{
+        completion:HTTPFinish? = nil)->HTTPTask?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
               let url = URL(string:path,relativeTo:baseURL) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:path))
@@ -332,7 +332,7 @@ open class AMNetwork {
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
-    public func download<R:AMDownload>(_ req:R,completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
+    public func download<R:AMDownload>(_ req:R,completion:HTTPFinish?=nil)->DownloadTask?{
         guard let url = URL(string:req.url) else {
             let result:Result<JSON,Error> = .failure(HTTPError.invalidURL(url:req.url))
             completion?(Response(result: result))
@@ -374,7 +374,7 @@ open class AMNetwork {
         queue:DispatchQueue?=nil,
         params:HTTPParams?=nil,
         headers:[String:String]?=nil,
-        completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
+        completion:HTTPFinish?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         var aheaders = HTTPHeaders(self.headers)
         guard let url = URL(string:url) else {
@@ -418,7 +418,7 @@ open class AMNetwork {
         resume data:Data,
         queue:DispatchQueue?=nil,
         transfer: DownloadTask.URLTransfer? = nil,
-        completion:((Response<JSON>)->Void)?=nil)->DownloadTask?{
+        completion:HTTPFinish?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         return self.session.download(
             resume: data,
