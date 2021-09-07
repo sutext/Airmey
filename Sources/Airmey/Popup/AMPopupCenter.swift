@@ -71,8 +71,10 @@ extension AMPopupCenter{
         cancel:AMTextDisplayable? = nil,
         meta:AMAlertable.Type? = nil,
         onhide:AMAlertBlock? = nil)  {
-        let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
-        self.add(.alert(vc,key:msg.text ?? ""))
+        if let key = msg.displayString {
+            let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
+            self.add(.alert(vc,key:key))
+        }
     }
     /// present a waitable controller
     ///
@@ -263,14 +265,14 @@ extension AMPopupCenter{
             cancel: AMTextDisplayable?,
             onhide: AMAlertBlock?) {
             self.init(
-                title: title?.text,
-                message: msg.text,
+                title: title?.displayString,
+                message: msg.displayString,
                 preferredStyle: .alert)
-            self.addAction(.init(title: confirm?.text ?? "Confirm", style: .default, handler: { act in
+            self.addAction(.init(title: confirm?.displayString ?? "Confirm", style: .default, handler: { act in
                 onhide?(0)
             }))
             if let cancel = cancel {
-                self.addAction(.init(title: cancel.text, style: .default, handler: { act in
+                self.addAction(.init(title: cancel.displayString, style: .default, handler: { act in
                     onhide?(1)
                 }))
             }
@@ -278,7 +280,7 @@ extension AMPopupCenter{
         public required convenience init(_ items: [AMTextDisplayable], onhide: AMActionBlock?) {
             self.init(title: nil, message: nil, preferredStyle: .actionSheet)
             for idx in (0..<items.count) {
-                self.addAction(.init(title: items[idx].text, style: .default, handler: { act in
+                self.addAction(.init(title: items[idx].displayString, style: .default, handler: { act in
                     onhide?(items[idx],idx)
                 }))
             }
