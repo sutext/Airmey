@@ -21,22 +21,15 @@ public protocol AMTextDisplayable{
 }
 /// convenience getter of display text
 extension AMTextDisplayable{
-    /// if NSAttributedString convertiable
-    public var attrText:NSAttributedString?{
-        if let value = self.displayText as? NSAttributedString {
-            return value
+    var displayString:String?{
+        switch self.displayText {
+        case let str as String:
+            return str
+        case let str as NSAttributedString:
+            return str.string
+        default:
+            return nil
         }
-        return nil
-    }
-    /// if String convertiable
-    public var text:String?{
-        if let value = self.displayText as? String {
-            return value
-        }
-        if let value = self.displayText as? NSAttributedString {
-            return value.string
-        }
-        return nil
     }
 }
 extension String:AMTextDisplayable{
@@ -52,10 +45,13 @@ public extension UILabel{
             fatalError("Getter is inaccurately. Please use text or attributedText")
         }
         set {
-            if let text = newValue?.text {
-                self.text = text
-            }else if let attr = newValue?.attrText {
+            switch newValue?.displayText {
+            case let str as String:
+                self.text = str
+            case let attr as NSAttributedString:
                 self.attributedText = attr
+            default:
+                break
             }
         }
     }
@@ -67,10 +63,13 @@ public extension UITextView{
             fatalError("Getter is inaccurately. Please use text or attributedText")
         }
         set {
-            if let text = newValue?.text {
-                self.text = text
-            }else if let attr = newValue?.attrText {
+            switch newValue?.displayText {
+            case let str as String:
+                self.text = str
+            case let attr as NSAttributedString:
                 self.attributedText = attr
+            default:
+                break
             }
         }
     }
@@ -82,10 +81,13 @@ public extension UITextField{
             fatalError("Getter is inaccurately. Please use text or attributedText")
         }
         set {
-            if let text = newValue?.text {
-                self.text = text
-            }else if let attr = newValue?.attrText {
+            switch newValue?.displayText {
+            case let str as String:
+                self.text = str
+            case let attr as NSAttributedString:
                 self.attributedText = attr
+            default:
+                break
             }
         }
     }

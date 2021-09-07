@@ -9,38 +9,38 @@
 import CoreData
 import Foundation
 
-///AMManagedObject ID protocol
-public protocol AMObjectID:Codable,Hashable{
-    /// The raw stirng value
-    var rawValue:String{get}
-}
-extension Int:AMObjectID{
-    public var rawValue: String{description}
-}
-extension Int8:AMObjectID{
-    public var rawValue: String{description}
-}
-extension Int16:AMObjectID{
-    public var rawValue: String{description}
-}
-extension Int32:AMObjectID{
-    public var rawValue: String{description}
-}
-extension Int64:AMObjectID{
-    public var rawValue: String{description}
-}
-extension UUID:AMObjectID{
-    public var rawValue: String{uuidString}
-}
-extension String:AMObjectID{
-    public var rawValue: String{self}
-}
-extension Optional:AMObjectID where Wrapped:AMObjectID{
-    public var rawValue: String{
+/// AMManagedObject ID protocol
+/// Do not declare new conformances to this protocol;
+/// They will not work as expected
+public protocol AMObjectID:Codable,Hashable{}
+
+extension Int:AMObjectID{}
+extension Int8:AMObjectID{}
+extension Int16:AMObjectID{}
+extension Int32:AMObjectID{}
+extension Int64:AMObjectID{}
+extension UUID:AMObjectID{}
+extension String:AMObjectID{}
+extension Optional:AMObjectID where Wrapped:AMObjectID{}
+
+extension AMObjectID{
+    var objectId:String{
         switch self {
-        case .some(let v):
-            return v.rawValue
-        case .none:
+        case let int as Int8:
+            return String(int)
+        case let int as Int16:
+            return String(int)
+        case let int as Int32:
+            return String(int)
+        case let int as Int64:
+            return String(int)
+        case let int as Int:
+            return String(int)
+        case let id as UUID:
+            return id.uuidString
+        case let str as String:
+            return str
+        default:
             return ""
         }
     }
@@ -246,10 +246,10 @@ extension AMStorage{
     /// - Returns: The managed object  if matching the id
     ///
     public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
-        guard id.rawValue.count > 0 else {
+        guard  id.objectId.count > 0 else {
             return nil
         }
-        let predicate = NSPredicate(format:"id == %@",id.rawValue)
+        let predicate = NSPredicate(format:"id == %@",id.objectId)
         return self.query(type, where: predicate).first
     }
     ///
@@ -303,11 +303,11 @@ extension AMStorage{
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
         guard let id = try? type.id(for: model),
-              id.rawValue.count>0 else {
+              id.objectId.count>0 else {
             throw AMError.invalidId
         }
         let request = type.fetchRequest()
-        request.predicate = NSPredicate(format:"id == %@",id.rawValue);
+        request.predicate = NSPredicate(format:"id == %@",id.objectId);
         let object = (try? self.moc.fetch(request))?.first as? Object ?? type.init(context: self.moc)
         object.awake(from: model)
         object.setValue(id, forKey: "id")
