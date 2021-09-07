@@ -8,6 +8,9 @@
 
 import Foundation
 
+///HTTP namespace
+public enum HTTP{}
+
 public typealias HTTPParams = [String:JSONValue]
 
 public enum HTTPError:Error{

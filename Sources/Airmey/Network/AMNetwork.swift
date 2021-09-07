@@ -40,10 +40,10 @@ open class AMNetwork {
     open var method:HTTPMethod{.get}
     /// global retryer  `nil` by default . override for custom
     open var retrier:Retrier?{ nil }
-    /// global request encoder  `JSNEncoder()` by default. override for custom
-    open var encoder:HTTPEncoder{ JSNEncoder() }
-    /// global request encoder  `JSNEncoder()` by default. override for custom
-    open var decoder:HTTPDecoder{ JSNDecoder() }
+    /// global request encoder. By default use  `HTTP.JSONEncoder()`. override for custom
+    open var encoder:HTTPEncoder{ HTTP.JSONEncoder() }
+    /// global request decoder. By default use  `HTTP.JSONDecoder()`. override for custom
+    open var decoder:HTTPDecoder{ HTTP.JSONDecoder() }
     /// global http headers `[:]` by default, override for custom
     open var headers:[String:String]{ [:] }
     /// global timeout in secends `60` by default. override for custom

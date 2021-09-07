@@ -50,7 +50,7 @@ class Session:NSObject{
         decoder:HTTPDecoder,
         fileManager:FileManager = .default,
         completion:((Response<JSON>)->Void)?=nil)->HTTPTask?{
-        let result = URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
+        let result = HTTP.URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
         guard let urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
             completion?(Response<JSON>(result: result))
@@ -69,7 +69,7 @@ class Session:NSObject{
         headers:HTTPHeaders?,
         fileManager:FileManager = .default,
         completion:((Response<JSON>)->Void)?=nil)->HTTPTask?{
-        let result = URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
+        let result = HTTP.URLEncoder.query.encode(url, method: .post, params: params, headers: headers, timeout: 0)
         guard var urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
             completion?(Response<JSON>(result: result))
@@ -113,7 +113,7 @@ class Session:NSObject{
         fileManager:FileManager = .default,
         transfer:DownloadTask.URLTransfer? = nil,
         completion:((Response<JSON>)->Void)?)->DownloadTask?{
-        let result = URLEncoder.query.encode(url, method: .get, params: params, headers: headers, timeout: 0)
+        let result = HTTP.URLEncoder.query.encode(url, method: .get, params: params, headers: headers, timeout: 0)
         guard let urlreq = result.value else{
             let result:Result<JSON,Swift.Error> = .failure(HTTPError.encode(result.error!))
             completion?(Response<JSON>(result: result))
