@@ -699,14 +699,68 @@ public struct AMEdgeAnchor {
     init(view:UIView) {
         self.maker = AMAnchorMaker(view)
     }
+    
+    /// Add edge offset constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - insets: top = left = -bottom = -right = insets
     @discardableResult
-    public func equal(to:CGFloat)->ConstConstraint {
-        let left = maker.left.equal(to: to)
-        let right = maker.right.equal(to: to)
-        let top =   maker.top.equal(to: to)
-        let bottom = maker.bottom.equal(to: to)
+    public func equal(insets:CGFloat)->ConstConstraint {
+        let top = maker.top.equal(to: insets)
+        let left = maker.left.equal(to: insets)
+        let right = maker.right.equal(to: -insets)
+        let bottom = maker.bottom.equal(to: -insets)
         return (top,left,bottom,right)
     }
+    @discardableResult
+    public func equal(to:UIView,insets:CGFloat)->ConstConstraint {
+        return self.equal(to: to.am.edge, insets: insets)
+    }
+    @discardableResult
+    public func equal(to:AMEdgeAnchor,insets:CGFloat)->ConstConstraint {
+        let top = maker.top.equal(to: to.maker.top,offset: insets)
+        let left = maker.left.equal(to: to.maker.left,offset: insets)
+        let right = maker.right.equal(to: to.maker.right,offset: -insets)
+        let bottom = maker.bottom.equal(to: to.maker.bottom,offset: -insets)
+        return (top,left,bottom,right)
+    }
+    
+    
+    /// Add edge offset constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - offset: top=left=bottom=right=offset
+    @discardableResult
+    public func equal(to offset:CGFloat)->ConstConstraint {
+        let top = maker.top.equal(to: offset)
+        let left = maker.left.equal(to: offset)
+        let right = maker.right.equal(to: offset)
+        let bottom = maker.bottom.equal(to: offset)
+        return (top,left,bottom,right)
+    }
+    @discardableResult
+    public func equal(to:UIView,offset:CGFloat?=nil)->ConstConstraint {
+        return self.equal(to: to.am.edge, offset: offset)
+    }
+    @discardableResult
+    public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
+        let top = maker.top.equal(to: to.maker.top,offset: offset)
+        let left = maker.left.equal(to: to.maker.left,offset: offset)
+        let right = maker.right.equal(to: to.maker.right,offset: offset)
+        let bottom = maker.bottom.equal(to: to.maker.bottom,offset: offset)
+        return (top,left,bottom,right)
+    }
+    
+    /// Add edge offset constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - top: top offset . `nil` means not add constraint.
+    ///     - left: top offset . `nil` means not add constraint.
+    ///     - bottom: top offset . `nil` means not add constraint.
+    ///     - right: top offset . `nil` means not add constraint.
     @discardableResult
     public func equal(
         top:CGFloat?=nil,
@@ -731,11 +785,6 @@ public struct AMEdgeAnchor {
         }
         return (topC,leftC,bottomC,rightC)
     }
-    
-    @discardableResult
-    public func equal(to:UIView,offset:CGFloat?=nil)->ConstConstraint {
-        return self.equal(to: to.am.edge, offset: offset)
-    }
     @discardableResult
     public func equal(
         to:UIView,
@@ -745,26 +794,6 @@ public struct AMEdgeAnchor {
         right:CGFloat?=nil)->Constraint {
         return self.equal(to: to.am.edge,top: top,left: left,bottom: bottom,right: right)
     }
-    ///
-    /// Make edge inset constraint
-    ///
-    ///     self.am.edge.equal(to:other.am.edege)
-    ///     self.am.edge.equal(to:other.am.edege,10)
-    ///
-    ///
-    @discardableResult
-    public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
-        let left = maker.left.equal(to: to.maker.left,offset: offset)
-        let right = maker.right.equal(to: to.maker.right,offset: offset)
-        let top = maker.top.equal(to: to.maker.top,offset: offset)
-        let bottom = maker.bottom.equal(to: to.maker.bottom,offset: offset)
-        return (top,left,bottom,right)
-    }
-    ///
-    /// Make edge inset constraint
-    ///
-    ///     self.am.edge.equal(to:other.am.edege,(10,10,nil,10))
-    ///
     @discardableResult
     public func equal(
         to:AMEdgeAnchor,
@@ -877,10 +906,19 @@ extension UIView{
     }
     /// rebuild constraints
     public func remake(builder:(AMAnchorMaker)->Void) {
-        NSLayoutConstraint.deactivate(self.constraints)
-        self.removeConstraints(self.constraints)
+        self.superview?.constraints.forEach({ layout in
+            if NSStringFromClass(type(of: layout)) == "NSLayoutConstraint",
+               (layout.firstItem as? UIView) == self {
+                layout.isActive = false
+            }
+        })
+        self.constraints.forEach({ layout in
+            if NSStringFromClass(type(of: layout)) == "NSLayoutConstraint",
+               (layout.firstItem as? UIView) == self {
+                layout.isActive = false
+            }
+        })
         builder(am)
-        self.updateFocusIfNeeded()
     }
 }
 

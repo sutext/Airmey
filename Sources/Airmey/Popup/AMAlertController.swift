@@ -31,6 +31,10 @@ open class AMAlertController: AMPopupController,AMAlertable {
             self?.clicked(at: 0)
         }
         if let cancel = cancel {
+            let line = UIView()
+            line.backgroundColor = .hex(0xbbbbbb,alpha:0.7)
+            line.am.size.equal(to: (0.5,48))
+            self.buttonStack.addArrangedSubview(line)
             self.buttonStack.addArrangedSubview(self.cancelLabel)
             self.cancelLabel.displayText = cancel
             self.cancelLabel.onclick = {[weak self] _ in
@@ -60,7 +64,7 @@ open class AMAlertController: AMPopupController,AMAlertable {
         self.stackView.alignment = .center
         self.stackView.spacing = 12
         
-        self.titleLabel.textColor = .black
+        self.titleLabel.textColor = .hex(0x2389f9)
         self.messageLabel.textColor = .darkGray
         self.messageLabel.numberOfLines = 15
         self.buttonStack.axis = .horizontal

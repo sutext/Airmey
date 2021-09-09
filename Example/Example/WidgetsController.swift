@@ -13,6 +13,7 @@ class WidgetsController: UIViewController {
     let contentView = AMEffectView(.light)
     let stackView = UIStackView()
     let digitLabel  = AMDigitLabel()
+    let testView = UIView()
     init() {
         super.init(nibName: nil, bundle: nil)
         self.tabBarItem = UITabBarItem(title: "Widgets", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
@@ -23,7 +24,10 @@ class WidgetsController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.view.addSubview(testView)
         self.view.addSubview(contentView)
+        self.view.addSubview(digitLabel)
+
         self.contentView.addSubview(self.stackView)
         self.contentView.am.edge.equal(to: 0)
         self.stackView.axis = .vertical
@@ -31,17 +35,27 @@ class WidgetsController: UIViewController {
         self.stackView.distribution = .equalCentering
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: 0)
+        self.testView.backgroundColor = .red
         digitLabel.textColor = .black
         digitLabel.digit = 0
         digitLabel.formater = {
             String(format: "$%.2f", Float($0)/100)
         }
-        self.stackView.addArrangedSubview(digitLabel)
+        digitLabel.amake { am in
+            am.centerX.equal(to: 0)
+            am.top.equal(to: 80)
+        }
+        self.testView.amake { am in
+            am.size.equal(to: 100)
+        }
         self.addTest("测试swiper") {[weak self] in
             self?.navigationController?.pushViewController(SwiperController(), animated: true)
         }
         self.addTest("digitLabel") {
-            self.digitLabel.digit += 1000
+            self.digitLabel.remake { am in
+                am.centerX.equal(to: 0)
+                am.top.equal(to: 150)
+            }
         }
     }
     func addTest(_ text:String,action:(()->Void)?) {
