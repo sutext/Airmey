@@ -25,19 +25,26 @@ open class AMPopupCenter {
 }
 extension AMPopupCenter{
     /// dismiss any UIViewController
-    public func dismiss(_ vc:UIViewController,animated:Bool=true,completion:AMBlock?=nil){
+    public func dismiss(
+        _ vc:UIViewController,
+        animated:Bool=true,
+        completion:AMBlock?=nil){
         self.add(.dismiss(vc: vc, animated: animated, finish: completion))
     }
     /// present any UIViewController
-    public func present(_ vc:UIViewController,animated:Bool=true,completion:AMBlock?=nil){
+    public func present(
+        _ vc:UIViewController,
+        animated:Bool=true,
+        completion:AMBlock?=nil){
         self.add(.present(vc: vc, animated: animated, finish: completion))
     }
     /// presnet a remindable controller
-    public func remind(_ msg:AMTextDisplayable,
-                title:AMTextDisplayable?=nil,
-                duration:TimeInterval?=nil,
-                meta:AMRemindable.Type?=nil,
-                onhide:AMBlock?=nil) {
+    public func remind(
+        _ msg:AMTextDisplayable,
+        title:AMTextDisplayable?=nil,
+        duration:TimeInterval?=nil,
+        meta:AMRemindable.Type?=nil,
+        onhide:AMBlock?=nil) {
         let vc = (meta ?? Self.Remind).init(msg, title: title)
         vc.pop = self
         self.add(.remind(vc,duration:duration))
@@ -48,7 +55,10 @@ extension AMPopupCenter{
     ///     - items: The actionsheet itmes
     ///     - meta: The actionsheet implemention class
     ///
-    public func action(_ items:[AMTextDisplayable],meta:AMActionable.Type?=nil,onhide:AMActionBlock?=nil){
+    public func action(
+        _ items:[AMTextDisplayable],
+        meta:AMActionable.Type?=nil,
+        onhide:AMActionBlock?=nil){
         let vc = (meta ?? Self.Action).init(items,onhide:onhide)
         self.add(.action(vc))
     }
@@ -83,7 +93,11 @@ extension AMPopupCenter{
     ///     - timeout: The wating timeout
     ///     - meta: The wating implemention
     ///
-    public func wait(_ msg:String? = nil,timeout:TimeInterval?=nil,meta:AMWaitable.Type?=nil)  {
+    public func wait(
+        _ msg:String? = nil,
+        timeout:TimeInterval?=nil,
+        meta:AMWaitable.Type?=nil){
+        
         let vc = (meta ?? Self.Wait).init(msg,timeout:timeout)
         vc.pop = self
         self.add(.wait(vc))
