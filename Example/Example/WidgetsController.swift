@@ -8,12 +8,11 @@
 import UIKit
 import Airmey
 
-
 class WidgetsController: UIViewController {
     let contentView = AMEffectView(.light)
     let stackView = UIStackView()
     let digitLabel  = AMDigitLabel()
-    let testView = UIView()
+    let testView = AMImageView()
     init() {
         super.init(nibName: nil, bundle: nil)
         self.tabBarItem = UITabBarItem(title: "Widgets", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
@@ -27,7 +26,6 @@ class WidgetsController: UIViewController {
         self.view.addSubview(testView)
         self.view.addSubview(contentView)
         self.view.addSubview(digitLabel)
-
         self.contentView.addSubview(self.stackView)
         self.contentView.am.edge.equal(to: 0)
         self.stackView.axis = .vertical
@@ -41,12 +39,13 @@ class WidgetsController: UIViewController {
         digitLabel.formater = {
             String(format: "$%.2f", Float($0)/100)
         }
-        digitLabel.amake { am in
+        self.testView.amake { am in
             am.centerX.equal(to: 0)
             am.top.equal(to: 80)
+            am.size.equal(to: 200)
         }
-        self.testView.amake { am in
-            am.size.equal(to: 100)
+        digitLabel.amake { am in
+            am.edge.equal(to: view, insets: 100)
         }
         self.addTest("测试swiper") {[weak self] in
             self?.navigationController?.pushViewController(SwiperController(), animated: true)

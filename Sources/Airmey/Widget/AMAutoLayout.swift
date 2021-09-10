@@ -650,39 +650,50 @@ public struct AMDimensionAnchor {
     }
 }
 public struct AMCenterAnchor {
-    private let maker:AMAnchorMaker
+    private let view:UIView
     public typealias Constraint = (x:NSLayoutConstraint,y:NSLayoutConstraint)
     init(view:UIView) {
-        self.maker = AMAnchorMaker(view)
+        self.view = view
     }
+    
+    /// Add center equal constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview(nil) or brotherview
+    ///     - offset: centerX=centerY=offset
     @discardableResult
-    public func equal(to:CGFloat)->Constraint {
-        return (maker.centerX.equal(to: to),maker.centerY.equal(to: to))
-    }
-    @discardableResult
-    public func equal(to:(x:CGFloat,y:CGFloat))->Constraint {
-        return (maker.centerX.equal(to: to.x),maker.centerY.equal(to: to.y))
+    public func equal(to offset:CGFloat)->Constraint {
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su, offset: offset)
     }
     @discardableResult
     public func equal(to:UIView,offset:CGFloat?=nil)->Constraint {
-        return self.equal(to: to.am.center, offset: offset)
+        return (
+            view.centerXAnchor.equal(to: to.centerXAnchor,offset: offset),
+            view.centerYAnchor.equal(to: to.centerYAnchor,offset: offset))
+    }
+    
+    /// Add center equal constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview(nil) or brotherview
+    ///     - offset: centerX=offset.x   centerY=offset.y
+    @discardableResult
+    public func equal(to:(x:CGFloat,y:CGFloat))->Constraint {
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su, offset: to)
     }
     @discardableResult
     public func equal(to:UIView,offset:(x:CGFloat,y:CGFloat))->Constraint {
-        return self.equal(to: to.am.center, offset: offset)
-    }
-    @discardableResult
-    public func equal(to:AMCenterAnchor,offset:CGFloat?=nil)->Constraint {
         return (
-            maker.centerX.equal(to: to.maker.centerX,offset: offset),
-            maker.centerY.equal(to: to.maker.centerY,offset: offset))
+            view.centerXAnchor.equal(to: to.centerXAnchor,offset: offset.x),
+            view.centerYAnchor.equal(to: to.centerYAnchor,offset: offset.y))
     }
-    @discardableResult
-    public func equal(to:AMCenterAnchor,offset:(x:CGFloat,y:CGFloat))->Constraint {
-        return (
-            maker.centerX.equal(to: to.maker.centerX,offset: offset.x),
-            maker.centerY.equal(to: to.maker.centerY,offset: offset.y))
-    }
+    
 }
 public struct AMEdgeAnchor {
     public typealias Constraint = (
@@ -695,34 +706,29 @@ public struct AMEdgeAnchor {
         left:NSLayoutConstraint,
         bottom:NSLayoutConstraint,
         right:NSLayoutConstraint)
-    private let maker:AMAnchorMaker
+    private let view:UIView
     init(view:UIView) {
-        self.maker = AMAnchorMaker(view)
+        self.view = view
     }
     
     /// Add edge offset constraint
     ///
     ///- Parameters:
-    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - to: superview or brotherview
     ///     - insets: top = left = -bottom = -right = insets
     @discardableResult
     public func equal(insets:CGFloat)->ConstConstraint {
-        let top = maker.top.equal(to: insets)
-        let left = maker.left.equal(to: insets)
-        let right = maker.right.equal(to: -insets)
-        let bottom = maker.bottom.equal(to: -insets)
-        return (top,left,bottom,right)
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su,insets: insets)
     }
     @discardableResult
     public func equal(to:UIView,insets:CGFloat)->ConstConstraint {
-        return self.equal(to: to.am.edge, insets: insets)
-    }
-    @discardableResult
-    public func equal(to:AMEdgeAnchor,insets:CGFloat)->ConstConstraint {
-        let top = maker.top.equal(to: to.maker.top,offset: insets)
-        let left = maker.left.equal(to: to.maker.left,offset: insets)
-        let right = maker.right.equal(to: to.maker.right,offset: -insets)
-        let bottom = maker.bottom.equal(to: to.maker.bottom,offset: -insets)
+        let top = view.topAnchor.equal(to: to.topAnchor,offset: insets)
+        let left = view.leadingAnchor.equal(to: to.leadingAnchor,offset: insets)
+        let right = view.trailingAnchor.equal(to: to.trailingAnchor,offset: -insets)
+        let bottom = view.bottomAnchor.equal(to: to.bottomAnchor,offset: -insets)
         return (top,left,bottom,right)
     }
     
@@ -730,33 +736,28 @@ public struct AMEdgeAnchor {
     /// Add edge offset constraint
     ///
     ///- Parameters:
-    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - to: superview or brotherview
     ///     - offset: top=left=bottom=right=offset
     @discardableResult
     public func equal(to offset:CGFloat)->ConstConstraint {
-        let top = maker.top.equal(to: offset)
-        let left = maker.left.equal(to: offset)
-        let right = maker.right.equal(to: offset)
-        let bottom = maker.bottom.equal(to: offset)
-        return (top,left,bottom,right)
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su,offset: offset)
     }
     @discardableResult
     public func equal(to:UIView,offset:CGFloat?=nil)->ConstConstraint {
-        return self.equal(to: to.am.edge, offset: offset)
-    }
-    @discardableResult
-    public func equal(to:AMEdgeAnchor,offset:CGFloat?=nil)->ConstConstraint {
-        let top = maker.top.equal(to: to.maker.top,offset: offset)
-        let left = maker.left.equal(to: to.maker.left,offset: offset)
-        let right = maker.right.equal(to: to.maker.right,offset: offset)
-        let bottom = maker.bottom.equal(to: to.maker.bottom,offset: offset)
+        let top = view.topAnchor.equal(to: to.topAnchor,offset: offset)
+        let left = view.leadingAnchor.equal(to: to.leadingAnchor,offset: offset)
+        let right = view.trailingAnchor.equal(to: to.trailingAnchor,offset: offset)
+        let bottom = view.bottomAnchor.equal(to: to.bottomAnchor,offset: offset)
         return (top,left,bottom,right)
     }
     
     /// Add edge offset constraint
     ///
     ///- Parameters:
-    ///     - to: superview or brotherview or superview.am.edege or  brotherview.am.edge
+    ///     - to: superview or brotherview
     ///     - top: top offset . `nil` means not add constraint.
     ///     - left: top offset . `nil` means not add constraint.
     ///     - bottom: top offset . `nil` means not add constraint.
@@ -767,23 +768,10 @@ public struct AMEdgeAnchor {
         left:CGFloat?=nil,
         bottom:CGFloat?=nil,
         right:CGFloat?=nil)->Constraint {
-        var leftC:NSLayoutConstraint? = nil
-        if let v = left {
-            leftC = maker.left.equal(to: v)
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
         }
-        var rightC:NSLayoutConstraint? = nil
-        if let v = right {
-            rightC = maker.right.equal(to: v)
-        }
-        var topC:NSLayoutConstraint? = nil
-        if let v = top {
-            topC = maker.top.equal(to: v)
-        }
-        var bottomC:NSLayoutConstraint? = nil
-        if let v = bottom {
-            bottomC = maker.bottom.equal(to: v)
-        }
-        return (topC,leftC,bottomC,rightC)
+        return self.equal(to: su, top: top, left: left, bottom: bottom, right: right)
     }
     @discardableResult
     public func equal(
@@ -792,67 +780,76 @@ public struct AMEdgeAnchor {
         left:CGFloat?=nil,
         bottom:CGFloat?=nil,
         right:CGFloat?=nil)->Constraint {
-        return self.equal(to: to.am.edge,top: top,left: left,bottom: bottom,right: right)
-    }
-    @discardableResult
-    public func equal(
-        to:AMEdgeAnchor,
-        top:CGFloat?=nil,
-        left:CGFloat?=nil,
-        bottom:CGFloat?=nil,
-        right:CGFloat?=nil)->Constraint {
+        
+        var topC:NSLayoutConstraint? = nil
+        if let v = top {
+            topC = view.topAnchor.equal(to: to.topAnchor,offset: v)
+        }
         var leftC:NSLayoutConstraint? = nil
         if let v = left {
-            leftC = maker.left.equal(to: to.maker.left,offset: v)
+            leftC = view.leadingAnchor.equal(to: to.leadingAnchor,offset: v)
         }
         var rightC:NSLayoutConstraint? = nil
         if let v = right {
-            rightC = maker.right.equal(to: to.maker.right,offset: v)
-        }
-        var topC:NSLayoutConstraint? = nil
-        if let v = top {
-            topC = maker.top.equal(to: to.maker.top,offset: v)
+            rightC = view.trailingAnchor.equal(to: to.trailingAnchor,offset: v)
         }
         var bottomC:NSLayoutConstraint? = nil
         if let v = bottom {
-            bottomC = maker.bottom.equal(to: to.maker.bottom,offset: v)
+            bottomC = view.bottomAnchor.equal(to: to.bottomAnchor,offset: v)
         }
         return (topC,leftC,bottomC,rightC)
     }
 }
 public struct AMSizeAnchor {
     public typealias Constraint = (width:NSLayoutConstraint,height:NSLayoutConstraint)
-    private let maker:AMAnchorMaker
+    private let view:UIView
     init(view:UIView) {
-        self.maker = AMAnchorMaker(view)
+        self.view = view
     }
+    
+    /// Add size equal constraint
+    ///
+    ///- Parameters:
+    ///     - offset: width=height=to
     @discardableResult
     public func equal(to:CGFloat)->Constraint {
-        return (maker.width.equal(to: to),maker.height.equal(to: to))
+        return (view.widthAnchor.equal(to: to),
+                view.heightAnchor.equal(to: to))
+
     }
-    @discardableResult
-    public func equal(to:(width:CGFloat,height:CGFloat))->Constraint {
-        return (maker.width.equal(to: to.width),maker.height.equal(to: to.height))
-    }
+    
+    /// Add size equal constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview(nil) or brotherview
+    ///     - offset: width=height=offset
     @discardableResult
     public func equal(to:UIView,offset:CGFloat?=nil)->Constraint {
-        return self.equal(to: to.am.size, offset: offset)
+        return (view.widthAnchor.equal(to: to.widthAnchor,offset: offset),
+                view.heightAnchor.equal(to: to.heightAnchor,offset: offset))
     }
+    
+    /// Add size equal constraint
+    ///
+    ///- Parameters:
+    ///     - offset: width=to.width, height=to.height
+    @discardableResult
+    public func equal(to :(width:CGFloat,height:CGFloat))->Constraint {
+        return (view.widthAnchor.equal(to: to.width),
+                view.heightAnchor.equal(to: to.height))
+    }
+    
+    /// Add size equal constraint
+    ///
+    ///- Parameters:
+    ///     - to: superview(nil) or brotherview
+    ///     - offset: width=offset.width, height=offset.height
     @discardableResult
     public func equal(
         to:UIView,
         offset:(width:CGFloat,height:CGFloat))->Constraint {
-        return self.equal(to: to.am.size, offset: offset)
-    }
-    @discardableResult
-    public func equal(to:AMSizeAnchor,offset:CGFloat?=nil)->Constraint {
-        return (maker.width.equal(to: to.maker.width,offset: offset),
-            maker.height.equal(to: to.maker.height,offset: offset))
-    }
-    @discardableResult
-    public func equal(to:AMSizeAnchor,offset:(width:CGFloat,height:CGFloat))->Constraint {
-        return (maker.width.equal(to: to.maker.width,offset: offset.width),
-                maker.height.equal(to: to.maker.height,offset: offset.height))
+        return (view.widthAnchor.equal(to: to.widthAnchor,offset: offset.width),
+                view.heightAnchor.equal(to: to.heightAnchor,offset: offset.height))
     }
 }
 
@@ -862,37 +859,37 @@ public struct AMAnchorMaker {
         self.view = view
     }
     public var left:AMXAxisAnchor{
-        return AMXAxisAnchor(kind:.left,view:self.view)
+        return AMXAxisAnchor(kind:.left,view: view)
     }
     public var right:AMXAxisAnchor{
-        return AMXAxisAnchor(kind:.right,view:self.view)
+        return AMXAxisAnchor(kind:.right,view: view)
     }
     public var centerX:AMXAxisAnchor{
-        return AMXAxisAnchor(kind:.center,view:self.view)
+        return AMXAxisAnchor(kind:.center,view: view)
     }
     public var top:AMYAxisAnchor{
-        return AMYAxisAnchor(kind:.top,view:self.view)
+        return AMYAxisAnchor(kind:.top,view: view)
     }
     public var bottom:AMYAxisAnchor{
-        return AMYAxisAnchor(kind:.bottom,view:self.view)
+        return AMYAxisAnchor(kind:.bottom,view: view)
     }
     public var centerY:AMYAxisAnchor{
-        return AMYAxisAnchor(kind:.center,view:self.view)
+        return AMYAxisAnchor(kind:.center,view: view)
     }
     public var width:AMDimensionAnchor{
-        return AMDimensionAnchor(kind: .width, view: self.view)
+        return AMDimensionAnchor(kind: .width, view: view)
     }
     public var height:AMDimensionAnchor{
-        return AMDimensionAnchor(kind: .height, view: self.view)
+        return AMDimensionAnchor(kind: .height, view: view)
     }
     public var edge:AMEdgeAnchor{
-        return AMEdgeAnchor(view: self.view)
+        return AMEdgeAnchor(view: view)
     }
     public var size:AMSizeAnchor{
-        return AMSizeAnchor(view: self.view)
+        return AMSizeAnchor(view: view)
     }
     public var center:AMCenterAnchor{
-        return AMCenterAnchor(view: self.view)
+        return AMCenterAnchor(view: view)
     }
 }
 extension UIView{
@@ -906,6 +903,12 @@ extension UIView{
     }
     /// rebuild constraints
     public func remake(builder:(AMAnchorMaker)->Void) {
+        /// Clear All custom relation constraints
+        /// All relation constraints between  view and brotherview and superview exsit in his superview.constraints
+        /// All Dimension constraints exsit in his constraints
+        /// All custom constraints is class of NSLayoutConstraint
+
+        
         self.superview?.constraints.forEach({ layout in
             if NSStringFromClass(type(of: layout)) == "NSLayoutConstraint",
                (layout.firstItem as? UIView) == self {
