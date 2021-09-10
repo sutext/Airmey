@@ -10,19 +10,17 @@ import UIKit
 
 public extension CGFloat{
     /// The screen scle factor
-    static let scaleFactor:CGFloat   = .screenWidth / 375.0
+    static let scaleFactor:CGFloat   = {
+        minimum(UIScreen.main.bounds.width, UIScreen.main.bounds.height) / 375.0
+    }()
     /// The toolbar or tabbar height
     static let tabbarHeight:CGFloat  = 49 + .footerHeight
     /// The navigation bar height
     static let navbarHeight:CGFloat  = 44 + .headerHeight
     /// The screen width
-    static let screenWidth:CGFloat   = {
-        minimum(CGRect.screen.width, CGRect.screen.height)
-    }()
+    static var screenWidth:CGFloat { UIScreen.main.bounds.width }
     ///The screen height
-    static let screenHeight:CGFloat  = {
-        maximum(CGRect.screen.width, CGRect.screen.height)
-    }()
+    static var screenHeight:CGFloat{ UIScreen.main.bounds.height }
     ///The scree header height. got 44 when iphonex like. otherwise got 20.
     static let headerHeight:CGFloat  = {
         if #available(iOS 13.0, *) {
