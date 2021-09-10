@@ -137,7 +137,7 @@ public class AMFramePresenter: AMPresenter {
         container.addSubview(pc.presentedView!)
         pc.presentedViewController.view.frame = self.initialFrame
         container.insertSubview(self.dimmingView, at: 0)
-        self.dimmingView.frame = .screen
+        self.dimmingView.am.edge.equal(to: 0)
         coordinator.animate{_ in
             self.dimmingView.alpha = 1
             pc.presentedViewController.view.frame = self.finalFrame
@@ -178,8 +178,8 @@ public class AMDimmingPresenter: AMPresenter {
         guard let coordinator = pc.presentedViewController.transitionCoordinator else {
             return
         }
-        self.dimmingView.frame = presentView.bounds
         presentView.insertSubview(self.dimmingView, at: 0)
+        dimmingView.am.edge.equal(to: 0)
         container.addSubview(presentView)
         presentView.alpha = 0
         coordinator.animate{ _ in

@@ -14,15 +14,20 @@ public extension CGFloat{
         minimum(UIScreen.main.bounds.width, UIScreen.main.bounds.height) / 375.0
     }()
     /// The toolbar or tabbar height
-    static let tabbarHeight:CGFloat  = 49 + .footerHeight
+    static var tabbarHeight:CGFloat { 49 + .footerHeight }
     /// The navigation bar height
-    static let navbarHeight:CGFloat  = 44 + .headerHeight
+    static var navbarHeight:CGFloat { 44 + .headerHeight }
     /// The screen width
     static var screenWidth:CGFloat { UIScreen.main.bounds.width }
     ///The screen height
     static var screenHeight:CGFloat{ UIScreen.main.bounds.height }
     ///The scree header height. got 44 when iphonex like. otherwise got 20.
-    static let headerHeight:CGFloat  = {
+    static var headerHeight:CGFloat {
+        if UIDevice.current.orientation.isLandscape,
+           let orins = UIApplication.shared.keyWindow?.rootViewController?.supportedInterfaceOrientations,
+           (orins.contains(.landscapeRight) || orins.contains(.landscapeLeft)){
+            return 20
+        }
         if #available(iOS 13.0, *) {
             if let height =  UIApplication.shared.keyWindow?.windowScene?.statusBarManager?.statusBarFrame.size.height{
                 return height
@@ -31,14 +36,19 @@ public extension CGFloat{
         } else {
             return  UIApplication.shared.statusBarFrame.size.height
         }
-    }()
+    }
     ///The scree footer height. got 34 when iphonex like. otherwise got 0.
-    static let footerHeight:CGFloat  = {
+    static var footerHeight:CGFloat {
+        if UIDevice.current.orientation.isLandscape,
+           let orins = UIApplication.shared.keyWindow?.rootViewController?.supportedInterfaceOrientations,
+           (orins.contains(.landscapeRight) || orins.contains(.landscapeLeft)){
+            return 20
+        }
         if (AMPhone.isSlim){
             return 34
         }
         return 0
-    }()
+    }
     ///The scaled scalar using scaleFactor.
     static func scaled(_ origin:CGFloat) -> CGFloat{
         return origin * .scaleFactor

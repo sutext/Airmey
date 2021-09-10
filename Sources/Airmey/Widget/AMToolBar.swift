@@ -29,14 +29,17 @@ open class AMToolBar: UIView {
         self.contentHeight = Self.contentHeight
         super.init(frame: .zero)
         self.addSubview(self.contentView)
+    }
+    open override func layoutSubviews() {
+        super.layoutSubviews()
         switch self.style{
         case .header:
-            self.contentView.amake {
+            self.contentView.remake {
                 $0.edge.equal(top:.headerHeight,left: 0,bottom: 0,right: 0)
                 self.heightConstraint = $0.height.equal(to: contentHeight)
             }
         case .footer:
-            self.contentView.amake {
+            self.contentView.remake {
                 $0.edge.equal(top:0,left: 0,bottom: -.footerHeight,right: 0)
                 self.heightConstraint = $0.height.equal(to: contentHeight)
             }
@@ -54,14 +57,14 @@ open class AMToolBar: UIView {
         }
     }
     /// the tool bar height
-    public lazy var height:CGFloat = {
+    public var height:CGFloat {
         switch style {
         case .header:
             return contentHeight + .headerHeight
         case .footer:
             return contentHeight + .footerHeight
         }
-    }()
+    }
     /// add shadow line
     /// using nil for remove shaddow
     public func usingShadow(_ color:UIColor? = .hex(0xbbbbbb,alpha:0.7)){
