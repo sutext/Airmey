@@ -688,12 +688,24 @@ public struct AMCenterAnchor {
         return self.equal(to: su, offset: to)
     }
     @discardableResult
+    public func equal(to:CGPoint)->Constraint {
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su, offset: to)
+    }
+    @discardableResult
     public func equal(to:UIView,offset:(x:CGFloat,y:CGFloat))->Constraint {
         return (
             view.centerXAnchor.equal(to: to.centerXAnchor,offset: offset.x),
             view.centerYAnchor.equal(to: to.centerYAnchor,offset: offset.y))
     }
-    
+    @discardableResult
+    public func equal(to:UIView,offset:CGPoint)->Constraint {
+        return (
+            view.centerXAnchor.equal(to: to.centerXAnchor,offset: offset.x),
+            view.centerYAnchor.equal(to: to.centerYAnchor,offset: offset.y))
+    }
 }
 public struct AMEdgeAnchor {
     public typealias Constraint = (
@@ -838,7 +850,11 @@ public struct AMSizeAnchor {
         return (view.widthAnchor.equal(to: to.width),
                 view.heightAnchor.equal(to: to.height))
     }
-    
+    @discardableResult
+    public func equal(to :CGSize)->Constraint {
+        return (view.widthAnchor.equal(to: to.width),
+                view.heightAnchor.equal(to: to.height))
+    }
     /// Add size equal constraint
     ///
     ///- Parameters:
@@ -848,6 +864,11 @@ public struct AMSizeAnchor {
     public func equal(
         to:UIView,
         offset:(width:CGFloat,height:CGFloat))->Constraint {
+        return (view.widthAnchor.equal(to: to.widthAnchor,offset: offset.width),
+                view.heightAnchor.equal(to: to.heightAnchor,offset: offset.height))
+    }
+    @discardableResult
+    public func equal(to:UIView,offset:CGSize)->Constraint {
         return (view.widthAnchor.equal(to: to.widthAnchor,offset: offset.width),
                 view.heightAnchor.equal(to: to.heightAnchor,offset: offset.height))
     }
