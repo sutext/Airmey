@@ -40,4 +40,8 @@ class RootViewController: AMLayoutViewContrller {
             nav.pushViewController(controller, animated: true)
         }
     }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask{
+        [.landscapeRight,.portrait]
+    }
+    override var shouldAutorotate: Bool { true } 
 }

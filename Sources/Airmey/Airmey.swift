@@ -11,7 +11,7 @@ import UIKit
 public extension CGFloat{
     /// The screen scle factor
     static let scaleFactor:CGFloat   = {
-        minimum(UIScreen.main.bounds.width, UIScreen.main.bounds.height) / 375.0
+        minimum(.screenWidth, .screenHeight) / 375.0
     }()
     /// The toolbar or tabbar height
     static var tabbarHeight:CGFloat { 49 + .footerHeight }
@@ -21,33 +21,19 @@ public extension CGFloat{
     static var screenWidth:CGFloat { UIScreen.main.bounds.width }
     ///The screen height
     static var screenHeight:CGFloat{ UIScreen.main.bounds.height }
-    ///The scree header height. got 44 when iphonex like. otherwise got 20.
-    static var headerHeight:CGFloat {
-        if UIDevice.current.orientation.isLandscape,
-           let orins = UIApplication.shared.keyWindow?.rootViewController?.supportedInterfaceOrientations,
-           (orins.contains(.landscapeRight) || orins.contains(.landscapeLeft)){
-            return 20
-        }
-        if #available(iOS 13.0, *) {
-            if let height =  UIApplication.shared.keyWindow?.windowScene?.statusBarManager?.statusBarFrame.size.height{
-                return height
-            }
-            return AMPhone.isSlim ? 44 : 20
-        } else {
+    ///The scree header height. Usually it's safeAreaInsets.top
+    static var headerHeight:CGFloat{
+        guard let window = UIApplication.shared.keyWindow else{
             return  UIApplication.shared.statusBarFrame.size.height
         }
+        return window.safeAreaInsets.top
     }
-    ///The scree footer height. got 34 when iphonex like. otherwise got 0.
-    static var footerHeight:CGFloat {
-        if UIDevice.current.orientation.isLandscape,
-           let orins = UIApplication.shared.keyWindow?.rootViewController?.supportedInterfaceOrientations,
-           (orins.contains(.landscapeRight) || orins.contains(.landscapeLeft)){
-            return 20
+    ////The scree footer height. Usually it's safeAreaInsets.bottom
+    static var footerHeight:CGFloat{
+        if let window = UIApplication.shared.keyWindow{
+            return window.safeAreaInsets.bottom
         }
-        if (AMPhone.isSlim){
-            return 34
-        }
-        return 0
+        return AMPhone.isSlim ? 34 : 0
     }
     ///The scaled scalar using scaleFactor.
     static func scaled(_ origin:CGFloat) -> CGFloat{

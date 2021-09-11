@@ -314,10 +314,17 @@ public class Retrier {
 }
 extension Retrier{
     public enum Policy:Equatable{
+        /// retry immediately
         case immediately
         case exponential(base:Int,scale:Double)
         case fixedDelay(TimeInterval)
-        func delay(at count:UInt) -> TimeInterval {
+        
+        ///calculate next retry time
+        ///
+        ///- Parameters:
+        /// - count: curent retry times
+        ///
+        public func delay(at count:UInt) -> TimeInterval {
             switch self {
             case .immediately:
                 return 0

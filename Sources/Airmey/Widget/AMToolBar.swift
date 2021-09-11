@@ -29,24 +29,22 @@ open class AMToolBar: UIView {
         self.contentHeight = Self.contentHeight
         super.init(frame: .zero)
         self.addSubview(self.contentView)
-    }
-    open override func layoutSubviews() {
-        super.layoutSubviews()
         switch self.style{
         case .header:
-            self.contentView.remake {
-                $0.edge.equal(top:.headerHeight,left: 0,bottom: 0,right: 0)
-                self.heightConstraint = $0.height.equal(to: contentHeight)
-            }
+            self.contentView.bottomAnchor.equal(to: self.bottomAnchor)
+            self.contentView.topAnchor.equal(to: self.safeAreaLayoutGuide.topAnchor)
+            self.contentView.leadingAnchor.equal(to: self.safeAreaLayoutGuide.leadingAnchor)
+            self.contentView.trailingAnchor.equal(to: self.safeAreaLayoutGuide.trailingAnchor)
         case .footer:
-            self.contentView.remake {
-                $0.edge.equal(top:0,left: 0,bottom: -.footerHeight,right: 0)
-                self.heightConstraint = $0.height.equal(to: contentHeight)
-            }
+            self.contentView.bottomAnchor.equal(to: self.safeAreaLayoutGuide.bottomAnchor)
+            self.contentView.topAnchor.equal(to: self.topAnchor)
+            self.contentView.leadingAnchor.equal(to: self.safeAreaLayoutGuide.leadingAnchor)
+            self.contentView.trailingAnchor.equal(to: self.safeAreaLayoutGuide.trailingAnchor)
         }
+        self.heightConstraint = self.contentView.am.height.equal(to: contentHeight)
     }
     /// override for your custom
-    open class var style:Style{.footer}
+    open class var style:Style{ .footer }
     /// the toolbar content height. by default decide by style. override for custom
     open class var contentHeight:CGFloat{
         switch style{

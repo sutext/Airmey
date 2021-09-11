@@ -9,10 +9,10 @@ import UIKit
 
 public enum AMPhone {
     public static let width:Width? = {
-        Width(rawValue: Int(UIScreen.main.bounds.size.width))
+        Width(rawValue: Int(min(CGFloat.screenWidth, CGFloat.headerHeight)))
     }()
     public static let height:Height? = {
-        Height(rawValue: Int(UIScreen.main.bounds.size.height))
+        Height(rawValue: Int(max(CGFloat.screenWidth, CGFloat.headerHeight)))
     }()
     ///Is slim screen device eg. X XS XSMAX 11 11Pro 11ProMAx 12mini 12 12Pro 12ProMax
     public static let isSlim:Bool = {

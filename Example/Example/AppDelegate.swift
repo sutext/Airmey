@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window?.rootViewController = RootViewController()
         self.window?.makeKeyAndVisible()
-        print(CGFloat.headerHeight)
+        print(UIApplication.shared.keyWindow?.safeAreaInsets)
 
         return true
     }
