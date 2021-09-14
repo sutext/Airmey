@@ -34,7 +34,8 @@ open class AMAlertController: AMPopupController,AMAlertable {
             let line = UIView()
             line.backgroundColor = .hex(0xbbbbbb,alpha:0.7)
             line.am.size.equal(to: (0.5,48))
-            self.buttonStack.addArrangedSubview(line)
+            self.buttonStack.addSubview(line)
+            line.am.center.equal(to: 0)
             self.buttonStack.addArrangedSubview(self.cancelLabel)
             self.cancelLabel.displayText = cancel
             self.cancelLabel.onclick = {[weak self] _ in
