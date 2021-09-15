@@ -727,9 +727,16 @@ public struct AMEdgeAnchor {
     ///
     ///- Parameters:
     ///     - to: superview or brotherview
-    ///     - insets: top = left = -bottom = -right = insets
+    ///     - insets: Add Constraint with:  top = left = -bottom = -right = insets
     @discardableResult
     public func equal(insets:CGFloat)->ConstConstraint {
+        guard let su = self.view.superview else {
+            fatalError("The superview must exsit!")
+        }
+        return self.equal(to: su,insets: insets)
+    }
+    @discardableResult
+    public func equal(insets:UIEdgeInsets)->ConstConstraint {
         guard let su = self.view.superview else {
             fatalError("The superview must exsit!")
         }
@@ -743,7 +750,14 @@ public struct AMEdgeAnchor {
         let bottom = view.bottomAnchor.equal(to: to.bottomAnchor,offset: -insets)
         return (top,left,bottom,right)
     }
-    
+    @discardableResult
+    public func equal(to:UIView,insets:UIEdgeInsets)->ConstConstraint {
+        let top = view.topAnchor.equal(to: to.topAnchor,offset: insets.top)
+        let left = view.leadingAnchor.equal(to: to.leadingAnchor,offset: insets.left)
+        let right = view.trailingAnchor.equal(to: to.trailingAnchor,offset: -insets.right)
+        let bottom = view.bottomAnchor.equal(to: to.bottomAnchor,offset: -insets.bottom)
+        return (top,left,bottom,right)
+    }
     
     /// Add edge offset constraint
     ///
