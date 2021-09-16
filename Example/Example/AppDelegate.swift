@@ -14,8 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window?.rootViewController = RootViewController()
         self.window?.makeKeyAndVisible()
-        print(UIApplication.shared.keyWindow?.safeAreaInsets)
-
         return true
     }
 }

@@ -150,10 +150,14 @@ public class DownloadTask:HTTPTask{
     /// temp file url transfer
     public typealias URLTransfer = (_ tempURL:URL,_ response:HTTPURLResponse?) -> URL
     private var fileManager:FileManager
-    var transfer:URLTransfer?
-    var fileURL:URL?
+    private let transfer:URLTransfer
+    private var fileURL:URL?
     init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:HTTPFinish?) {
-        self.transfer = transfer
+        self.transfer = transfer ?? {url,_ in
+            let filename = "Airmey_\(url.lastPathComponent)"
+            let destination = url.deletingLastPathComponent().appendingPathComponent(filename)
+            return destination
+        }
         self.fileManager = fileManager
         super.init(task, retrier: nil,decoder: HTTP.JSONDecoder(),completion: completion)
     }
@@ -186,10 +190,6 @@ public class DownloadTask:HTTPTask{
         return nil
     }
     func finishDownload(_ location:URL){
-        guard let transfer = transfer else {
-            self.fileURL = location
-            return
-        }
         let destination = transfer(location,response)
         do {
             try? fileManager.removeItem(at: destination)

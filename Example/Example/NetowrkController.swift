@@ -48,10 +48,10 @@ class NetowrkController: UIViewController {
         }
         self.addTest("下载图片") {
             pop.wait("downloading...")
-            let req = net.download("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg"){
+            let req = net.download("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg", completion: {
                 pop.idle()
                 debugPrint($0)
-            }
+            })
             self.progress = req?.progress
             
         }
