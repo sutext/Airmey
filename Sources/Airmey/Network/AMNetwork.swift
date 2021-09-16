@@ -365,6 +365,7 @@ open class AMNetwork {
     ///     - url: A full resource url
     ///     - params: The download request parameters
     ///     - headers: The download request headers
+    ///     - transfer: The download file transfer
     ///     - completion: Call back the temporary file location. At this time transfer not suport
     /// - Returns: Thre request handler for task control and progress control
     ///
@@ -374,6 +375,7 @@ open class AMNetwork {
         queue:DispatchQueue?=nil,
         params:HTTPParams?=nil,
         headers:[String:String]?=nil,
+        transfer: DownloadTask.URLTransfer? = nil,
         completion:HTTPFinish?=nil)->DownloadTask?{
         let queue = queue ?? self.queue
         var aheaders = HTTPHeaders(self.headers)
@@ -390,7 +392,7 @@ open class AMNetwork {
             params: params,
             headers: aheaders,
             fileManager: fileManager,
-            transfer: nil) { resp in
+            transfer: transfer) { resp in
             var resp = resp
             if let err = resp.error{
                 do {
