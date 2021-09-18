@@ -15,7 +15,7 @@ public class AMImageCache {
     private let rootQueue = DispatchQueue(label: "com.airmey.imageQueue")
     private let imageCache = NSCache<NSString,UIImage>()//big image cache
     private let thumbCache = NSCache<NSString,UIImage>()//thumb image cache
-    private let diskCache = URLCache(memoryCapacity: 80*1024*1024, diskCapacity: 500*1024*1024, diskPath: "com.airmey.imageCache")
+    private let diskCache = URLCache(memoryCapacity: 120*1024*1024, diskCapacity: 1000*1024*1024, diskPath: "com.airmey.imageCache")
     private let queue = DispatchQueue.main
     private lazy var downloader:URLSession = {
         let config = URLSessionConfiguration.default
@@ -34,8 +34,8 @@ public class AMImageCache {
     }()
 
     private init(){
-        self.thumbCache.countLimit = 50
-        self.imageCache.countLimit = 20
+        self.thumbCache.countLimit = 80
+        self.imageCache.countLimit = 50
     }
 }
 extension AMImageCache{
@@ -67,15 +67,16 @@ extension AMImageCache{
     }
     
     /// request a remote image sync
-    public func image(with url:String,scale:CGFloat = 3,finish: ONResult<UIImage>?) {
+    @discardableResult
+    public func image(with url:String,scale:CGFloat = 3,finish: ONResult<UIImage>?) -> URLSessionDataTask?{
         guard let requrl = URL(string: url) else {
             finish?(.failure(AMError.invalidURL(url: url)))
-            return
+            return nil
         }
         var request = URLRequest(url: requrl)
         request.httpMethod = "GET"
         request.addValue("image/*", forHTTPHeaderField: "Accept")
-        self.downloader.dataTask(with: request) { data, resp, error in
+        let task = self.downloader.dataTask(with: request) { data, resp, error in
             guard let data = data else{
                 let error = error ?? AMError.invalidData(data: data)
                 self.queue.async { finish?(.failure(error)) }
@@ -88,7 +89,9 @@ extension AMImageCache{
             }
             self.imageCache.setObject(image, forKey: url as NSString)
             self.queue.async { finish?(.success(image)) }
-        }.resume()
+        }
+        task.resume()
+        return task
     }
 }
 extension AMImageCache{
@@ -171,6 +174,21 @@ extension AMImageCache{
         }
     }
 }
+extension UIView{
+    var imageTask:URLSessionDataTask?{
+        get{
+            let key  = UnsafeRawPointer.init(bitPattern: "airmey_image_task_key".hashValue)!
+            if let task = objc_getAssociatedObject(self, key) as? URLSessionDataTask{
+                return task
+            }
+            return nil
+        }
+        set{
+            let key  = UnsafeRawPointer.init(bitPattern: "airmey_image_task_key".hashValue)!
+            objc_setAssociatedObject(self, key, newValue, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+}
 extension UIImageView{
     public func setImage(
         with url:String,
@@ -182,10 +200,9 @@ extension UIImageView{
             finish?(self,.success(image))
             return
         }
-        if let placeholder = placeholder,self.image == nil {
-            self.image = placeholder;
-        }
-        AMImageCache.shared.image(with: url,scale:scale) { result in
+        self.image = placeholder;
+        self.imageTask?.cancel()
+        self.imageTask = AMImageCache.shared.image(with: url,scale:scale) { result in
             guard case .success(let image) = result else{
                 finish?(self,result)
                 return
@@ -205,9 +222,7 @@ extension UIImageView{
             finish?(self,.success(image))
             return
         }
-        if let placeholder = placeholder ,self.image == nil{
-            self.image = placeholder;
-        }
+        self.image = placeholder;
         AMImageCache.shared.image(with: asset) { result in
             guard case .success(let image) = result else{
                 finish?(self,result)
@@ -228,9 +243,7 @@ extension UIImageView{
             finish?(self,.success(image))
             return
         }
-        if let placeholder = placeholder ,self.image == nil{
-            self.image = placeholder;
-        }
+        self.image = placeholder;
         AMImageCache.shared.thumb(with: asset,size:size) { result in
             guard case .success(let image) = result else{
                 finish?(self,result)
@@ -253,10 +266,9 @@ extension UIButton{
             finish?(self,.success(image))
             return
         }
-        if let placeholder = placeholder,self.image(for: state) == nil {
-            self.setImage(placeholder, for: state)
-        }
-        AMImageCache.shared.image(with: url,scale:scale) { result in
+        self.setImage(placeholder, for: state)
+        self.imageTask?.cancel()
+        self.imageTask = AMImageCache.shared.image(with: url,scale:scale) { result in
             guard case .success(let image) = result else{
                 finish?(self,result)
                 return
