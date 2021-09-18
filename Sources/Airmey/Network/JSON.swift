@@ -27,7 +27,7 @@ public extension JSON{
         return try JSON.parse(Data(string.utf8))
     }
     static func parse(_ data:Data)throws ->JSON{
-        let obj = try JSONSerialization.jsonObject(with: data, options: [])
+        let obj = try JSONSerialization.jsonObject(with: data, options: [.allowFragments])
         return JSON(obj)
     }
     init(parse string: String?){

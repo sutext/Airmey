@@ -19,6 +19,9 @@ class TestJsonController: UIViewController {
     }
     override func viewDidLoad() {        
         super.viewDidLoad()
+        
+        print(JSON(parse: try? JSONEncoder().encode(true)))
+
         print(NSNumber.init(value: true).stringValue)
         print(NSNumber.init(value: false).stringValue)
         print(JSON(1))
