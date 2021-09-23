@@ -17,7 +17,6 @@ class SwiperController: UIViewController {
         self.segment = CCSegmentControl(items: chanels)
         self.nodes = chanels.map(ChildController.init)
         super.init(nibName: nil, bundle: nil)
-        hidesBottomBarWhenPushed = true
     }
     
     required init?(coder: NSCoder) {
