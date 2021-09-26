@@ -33,6 +33,7 @@ class TableViewController: UIViewController {
         self.tableView.delegate = self
         self.tableView.dataSource = self
         self.tableView.using(refresh: AMRefreshHeader(.gif(images)))
+        self.tableView.using(refresh: AMRefreshFooter())
         self.tableView.header?.beginRefreshing()
     }
 }
@@ -43,7 +44,7 @@ extension TableViewController:AMTableViewDelegate{
             DispatchQueue.main.asyncAfter(deadline: .now() + 2){
                 refresh.endRefreshing()
                 self.count = (10...20).randomElement()!
-                tableView.footer?.isEnabled = self.count>13
+//                tableView.footer?.isEnabled = self.count>13
                 self.tableView.reloadData()
             }
         case .footer:
@@ -51,6 +52,9 @@ extension TableViewController:AMTableViewDelegate{
                 refresh.endRefreshing()
                 self.count += 10
                 self.tableView.reloadData()
+                if self.count > 50{
+                    refresh.isEnabled = false
+                }
             }
         }
     }

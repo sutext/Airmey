@@ -82,14 +82,12 @@ open class AMRefreshFooter: AMRefresh {
             return
         }
         let offset = scview.contentOffset.y
-        let happenOffset = -self.originalInset.top
-        let elasticHeight = scview.contentSize.height - (scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
-        guard elasticHeight > 0 ,offset > happenOffset else {
-            self.isHidden = true
+        let happenedOffset = -self.originalInset.top
+        let moveableOffset = scview.contentSize.height - (scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
+        guard moveableOffset > 0 ,offset > happenedOffset else {
             return
         }
-        self.isHidden  = false
-        let percent = (offset-happenOffset-elasticHeight)/self.height
+        let percent = (offset-happenedOffset-moveableOffset)/self.height
         if scview.isDragging {
             if self.status == .idle , percent >= threshold {
                 self.status = .draging
@@ -104,7 +102,9 @@ open class AMRefreshFooter: AMRefresh {
         guard let scview = self.scorllView else{
             return
         }
-        self.topConstt?.constant = max(scview.contentSize.height, scview.bounds.height-self.originalInset.bottom-self.originalInset.top)
+        let boundsHeight = scview.bounds.height-self.originalInset.bottom-self.originalInset.top
+        self.isHidden = (scview.contentSize.height - boundsHeight <= 0)
+        self.topConstt?.constant = max(scview.contentSize.height, boundsHeight)
     }
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
