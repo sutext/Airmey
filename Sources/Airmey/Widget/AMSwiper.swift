@@ -96,7 +96,10 @@ extension AMSwiper:UIPageViewControllerDelegate,UIPageViewControllerDataSource{
                 direction = .reverse
             }
         }
-        self.pageController.setViewControllers([controller], direction: direction ?? .forward, animated: direction != nil, completion: nil);
+        self.isDraging = true
+        self.pageController.setViewControllers([controller], direction: direction ?? .forward, animated: direction != nil) { _ in
+            self.isDraging = false
+        };
         self.rebuild(with: controller)
         return true
     }
@@ -111,7 +114,10 @@ extension AMSwiper:UIPageViewControllerDelegate,UIPageViewControllerDataSource{
         guard let nextone = self.nextNode else {
             return false
         }
-        self.pageController.setViewControllers([nextone], direction: .forward, animated: true, completion: nil);
+        self.isDraging = true
+        self.pageController.setViewControllers([nextone], direction: .forward, animated: true) { _ in
+            self.isDraging = false
+        };
         self.rebuild(with: nextone)
         return true
     }
@@ -126,10 +132,14 @@ extension AMSwiper:UIPageViewControllerDelegate,UIPageViewControllerDataSource{
         guard let prevone = self.prevNode else {
             return false
         }
-        self.pageController.setViewControllers([prevone], direction: .reverse, animated: true, completion: nil);
+        self.isDraging = true
+        self.pageController.setViewControllers([prevone], direction: .reverse, animated: true) { _ in
+            self.isDraging = false
+        };
         self.rebuild(with: prevone)
         return true
     }
+    
     private func rebuild(with newNode:UIViewController)  {
         if newNode === self.nextNode {
             self.prevNode = self.currNode
