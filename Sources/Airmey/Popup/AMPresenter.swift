@@ -19,7 +19,7 @@ open class AMPresenter: NSObject {
     /// config mask click action
     public var onMaskClick:AMBlock?
     /// config transition duration
-    public var transitionDuration:TimeInterval = 0.25
+    public var transitionDuration:TimeInterval = 0.3
     /// The dimming rate of black background view by default `0.4`
     ///- Note: You must set this value before present. Otherwise it doesn't work
     public var dimming:CGFloat = 0.4

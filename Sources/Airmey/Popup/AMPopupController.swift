@@ -6,11 +6,47 @@
 //
 
 import UIKit
-
+extension UIViewController{
+    var am_pop:AMPopupCenter?{
+        get{
+            let key  = UnsafeRawPointer.init(bitPattern: "am_pop_key".hashValue)!
+            return objc_getAssociatedObject(self, key) as? AMPopupCenter
+        }
+        set{
+            let key  = UnsafeRawPointer.init(bitPattern: "am_pop_key".hashValue)!
+            objc_setAssociatedObject(self, key, newValue, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+    @objc private func builtinDismiss(animated flag: Bool, completion: AMBlock? = nil){
+        if let pop = self.am_pop {
+            pop.dismiss(self, animated: flag, completion: completion)
+        }else{
+            self.builtinDismiss(animated: flag, completion: completion)
+        }
+    }
+    open func _dismiss(animated flag: Bool, completion: AMBlock? = nil) {
+        self.builtinDismiss(animated: flag, completion: nil)
+        /// make callback surely
+        if flag {
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
+                completion?()
+            }
+        }else{
+            completion?()
+        }
+    }
+    class func swizzleDismiss() {
+        let originalSelctor = #selector(UIViewController.dismiss(animated:completion:))
+        let swizzledSelector = #selector(UIViewController.builtinDismiss(animated:completion:))
+        let aClass = UIViewController.self
+        let originalMethod = class_getInstanceMethod(aClass, originalSelctor)
+        let swizzledMethod = class_getInstanceMethod(aClass, swizzledSelector)
+        method_exchangeImplementations(originalMethod!, swizzledMethod!)
+    }
+}
 open class AMPopupController:UIViewController{
-    var pop:AMPopupCenter?
+    /// public presenter
     public let presenter:AMPresenter
-    
     ///
     /// AMPopupController designed initializer
     /// - Parameters:
@@ -28,12 +64,6 @@ open class AMPopupController:UIViewController{
     }
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    open override func dismiss(animated flag: Bool, completion: AMBlock? = nil) {
-        self.pop?.dismiss(self, animated: flag, completion: completion)
-    }
-    func _dismiss(animated flag: Bool, completion: AMBlock? = nil){
-        super.dismiss(animated: flag, completion: completion)
     }
 }
 

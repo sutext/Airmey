@@ -27,38 +27,26 @@ class SwiperController: UIViewController {
         self.view.addSubview(swiper)
         self.view.addSubview(segment)
         segment.am.edge.equal(top: .navbarHeight, left: 0, right: 0)
-        segment.delegate = self
         segment.set(badge: 1, at: 0)
         swiper.am.edge.equal(to: 0)
-        swiper.dataSource = self
         swiper.delegate = self
+        swiper.indicator = segment
         swiper.reload()
     }
 }
-extension SwiperController:CCSegmentDelegate{
-    func segment(_ segment: CCSegmentControl, valueChanged value: Int, from: Int) {
-        
-        self.swiper.jump(to: nodes[value])
-    }
-}
+
 extension SwiperController:AMSwiperDelegate{
-    func swiper(_ swiper: AMSwiper, didDisplay node: UIViewController) {
-        let idx = nodes.firstIndex{ node  == $0}
-        if let idx = idx {
-            self.segment.selectedIndex = idx
-        }
-    }
-    func swiper(_ swiper: AMSwiper, indexOf node: UIViewController) -> Int {
-        let idx = nodes.firstIndex{ node  == $0}
-        return idx ?? 0
-    }
-}
-extension SwiperController:AMSwiperDataSource{
     
     func headNode(for swiper: AMSwiper) -> UIViewController? {
         return nodes[0]
     }
-    
+    func swiper(_ swiper: AMSwiper, nodeAtIndex index: Int) -> UIViewController {
+        return nodes[index]
+    }
+    func swiper(_ swiper: AMSwiper, indexOfNode node: UIViewController) -> Int {
+        let idx = nodes.firstIndex{ node  == $0}
+        return idx ?? 0
+    }
     func swiper(_ swiper: AMSwiper, nodeAfter node: UIViewController) -> UIViewController? {
         let idx = nodes.firstIndex{ node  == $0}
         guard let idx = idx else {

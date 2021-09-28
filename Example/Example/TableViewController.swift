@@ -9,7 +9,7 @@ import UIKit
 import Airmey
 
 class TableViewController: UIViewController {
-    var count = 0
+    var count = 20
     let tableView = UITableView()
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -26,15 +26,18 @@ class TableViewController: UIViewController {
         self.title = "TableView"
         self.navbar.title = "TableView"
         let images = (1...45).compactMap { UIImage(named: String(format: "loading%02i", $0)) }
-        self.tableView.am.edge.equal(to: 0)
+        self.tableView.am.edge.equal(top:navbar.height,left: 0,bottom: -.tabbarHeight,right: 0)
         self.tableView.contentInsetAdjustmentBehavior = .never
-        self.tableView.contentInset = UIEdgeInsets(top: navbar.height, left: 0, bottom: .tabbarHeight, right: 0)
+//        self.tableView.contentInset = UIEdgeInsets(top: navbar.height, left: 0, bottom: .tabbarHeight, right: 0)
+        
         self.tableView.register(Cell.self)
         self.tableView.delegate = self
         self.tableView.dataSource = self
         self.tableView.using(refresh: AMRefreshHeader(.gif(images)))
         self.tableView.using(refresh: AMRefreshFooter())
-        self.tableView.header?.beginRefreshing()
+        DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+            self.tableView.header?.beginRefreshing()
+        }
     }
 }
 extension TableViewController:AMTableViewDelegate{

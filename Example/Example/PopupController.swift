@@ -80,8 +80,22 @@ class PopupController: UIViewController {
             pop.remind(LoginError.invalidUsername)
 
         }
-        self.addTest("Test Present") {
-            pop.action(["test"])
+        self.addTest("Test Pop") {
+            let vc = UIViewController()
+            vc.view.backgroundColor = .white
+            UIApplication.shared.keyWindow?.rootViewController?.present(vc, animated: true, completion: {
+                DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+                    vc.dismiss(animated: true){
+                        
+                    }
+                    pop.wait("loading")
+                    DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+                        pop.idle()
+                        pop.remind("error")
+                    }
+                }
+            })
+            
 //            pop.present(UpdateController())
         }
         self.addTest("clear") {

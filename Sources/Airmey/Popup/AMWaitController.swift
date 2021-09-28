@@ -43,8 +43,8 @@ open class AMWaitController: AMPopupController,AMWaitable {
         self.presenter.dimming = 0
         self.presenter.onMaskClick = nil
         let timeout = timeout ?? Self.timeout
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
-            self.dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {[weak self] in
+            self?.dismiss(animated: true)
         }
         self.titleLabel.text = msg
     }
@@ -67,6 +67,9 @@ open class AMWaitController: AMPopupController,AMWaitable {
 }
 extension AMWaitController{
     class Presenter: AMPresenter {
+        override init() {
+            super.init()
+        }
         private lazy var dimmingView:AMView = {
             let view = AMView()
             view.onclick = {[weak self] _ in
@@ -85,11 +88,13 @@ extension AMWaitController{
             presentView.insertSubview(dimmingView, at: 0)
             container.addSubview(presentView)
         }
-        override func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-            0
-        }
-        override func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
-            transitionContext.completeTransition(true)
+        override func dismissWillBegin(in pc: UIPresentationController) {
+            guard let coordinator = pc.presentedViewController.transitionCoordinator else {
+                return
+            }
+            coordinator.animate{ _ in
+                pc.presentedView?.alpha = 0
+            }
         }
     }
 }

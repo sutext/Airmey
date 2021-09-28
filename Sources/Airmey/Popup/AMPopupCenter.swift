@@ -6,7 +6,6 @@
 //
 
 import UIKit
-
 ///Add an  popup operation queue
 open class AMPopupCenter {
     /// default Wait controller  override it for custom
@@ -20,8 +19,10 @@ open class AMPopupCenter {
     private var queue:[Operation] = []
     private var current:Operation?
     private var alerters:[String:Alerter] = [:]
-    private weak var waiter:AMWaitable?
-    public init(){}
+    private weak var waiter:UIViewController?
+    public init(){
+        UIViewController.swizzleDismiss()
+    }
 }
 extension AMPopupCenter{
     /// dismiss any UIViewController
@@ -36,6 +37,7 @@ extension AMPopupCenter{
         _ vc:UIViewController,
         animated:Bool=true,
         completion:AMBlock?=nil){
+        vc.am_pop = self
         self.add(.present(vc: vc, animated: animated, finish: completion))
     }
     /// presnet a remindable controller
@@ -46,7 +48,7 @@ extension AMPopupCenter{
         meta:AMRemindable.Type?=nil,
         onhide:AMBlock?=nil) {
         let vc = (meta ?? Self.Remind).init(msg, title: title)
-        vc.pop = self
+        vc.am_pop = self
         self.add(.remind(vc,duration:duration))
     }
     /// presnet an actionable controller
@@ -60,6 +62,7 @@ extension AMPopupCenter{
         meta:AMActionable.Type?=nil,
         onhide:AMActionBlock?=nil){
         let vc = (meta ?? Self.Action).init(items,onhide:onhide)
+        vc.am_pop = self
         self.add(.action(vc))
     }
     /// present an alertable controller
@@ -83,6 +86,7 @@ extension AMPopupCenter{
         onhide:AMAlertBlock? = nil)  {
         if let key = msg.text {
             let vc = (meta ?? Self.Alert).init(msg, title: title,confirm: confirm,cancel: cancel, onhide: onhide)
+            vc.am_pop = self
             self.add(.alert(vc,key:key))
         }
     }
@@ -99,7 +103,7 @@ extension AMPopupCenter{
         meta:AMWaitable.Type?=nil){
         
         let vc = (meta ?? Self.Wait).init(msg,timeout:timeout)
-        vc.pop = self
+        vc.am_pop = self
         self.add(.wait(vc))
     }
     /// dismiss current wating controller
@@ -169,11 +173,7 @@ extension AMPopupCenter{
             self.current = nil
             self.delayNext()
         }
-        if let popup = vc as? AMPopupController {
-            popup._dismiss(animated: animated,completion: block)
-        }else{
-            vc.dismiss(animated: animated,completion: block)
-        }
+        vc._dismiss(animated: animated,completion: block)
     }
     private func _alert(_ vc:UIViewController,key:String,animated:Bool,finish:AMBlock?) {
         self.alerters = self.alerters.filter({ ele in
@@ -185,9 +185,6 @@ extension AMPopupCenter{
             return
         }
         self.alerters[key] = Alerter(vc)
-        if let nvc = vc as? AMPopupController {
-            nvc.pop = self
-        }
         self.show(vc,animated: animated) {
             finish?()
             self.current = nil
@@ -195,16 +192,13 @@ extension AMPopupCenter{
         }
     }
     private func _present(_ vc:UIViewController,animated:Bool,finish:AMBlock?) {
-        if let nvc = vc as? AMPopupController {
-            nvc.pop = self
-        }
         self.show(vc,animated: animated) {
             finish?()
             self.current = nil
             self.delayNext()
         }
     }
-    private func _remind(_ vc:AMRemindable,duration:TimeInterval?) {
+    private func _remind(_ vc:UIViewController,duration:TimeInterval?) {
         self.show(vc)
         DispatchQueue.main.asyncAfter(deadline: .now()+(duration ?? 1)) {
             vc._dismiss(animated: true){
@@ -213,7 +207,7 @@ extension AMPopupCenter{
             }
         }
     }
-    private func _wait(_ vc:AMWaitable)  {
+    private func _wait(_ vc:UIViewController)  {
         guard self.waiter == nil else {
             self.current = nil
             self.delayNext()
@@ -238,21 +232,30 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        guard let top = self.top else {//Give up showing when no root
+        ///Give up showing when no root
+        guard let top = self.top else {
             completion?()
             return
         }
-        top.present(vc, animated: animated, completion: completion)
+        /// make callback surely
+        top.present(vc, animated: animated, completion: nil)
+        if animated {
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
+                completion?()
+            }
+        }else{
+            completion?()
+        }
     }
 }
 extension AMPopupCenter{
     enum Operation{
         case idle
         case clear
-        case wait(_ vc:AMWaitable)
-        case alert(_ vc:AMAlertable,key:String)
-        case action(_ vc:AMActionable)
-        case remind(_ vc:AMRemindable,duration:TimeInterval?)
+        case wait(_ vc:UIViewController)
+        case alert(_ vc:UIViewController,key:String)
+        case action(_ vc:UIViewController)
+        case remind(_ vc:UIViewController,duration:TimeInterval?)
         case present(
                 vc:UIViewController,
                 animated:Bool,

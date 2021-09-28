@@ -40,6 +40,7 @@ open class AMRefreshHeader: AMRefresh {
             var insets = self.originalInset
             insets.top = self.height+insets.top
             UIView.animate(withDuration: 0.25) {
+                self.scorllView?.contentOffset = CGPoint(x: 0, y: -self.height)
                 self.scorllView?.contentInset = insets
             }
         }else{
