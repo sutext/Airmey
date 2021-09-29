@@ -8,7 +8,7 @@
 
 import UIKit
 
-/// Describe
+/// swiper indicator eg: UIPageControl UISegmentedControl ...
 @objc public protocol AMSwiperIndicator where Self:UIView{
     /// set swiper handler if need
     @objc optional func setup(swiper:AMSwiper)
@@ -55,11 +55,11 @@ public class AMSwiper: UIView {
     /// the current node index
     /// - Note: AMSwiperDelegate.swiper(_:nodeAtIndex:)) must be provide!
     public private(set) var currentIndex:Int?
-    /// the current swiper
+    /// the current node
     public private(set) var currNode:UIViewController?
-    /// the next swiper if exsit
+    /// the next node if exsit
     public private(set) var nextNode:UIViewController?
-    /// the prev swiper if exsit
+    /// the prev node if exsit
     public private(set) var prevNode:UIViewController?
     /// The swiper delegate and datasource
     public weak var delegate:AMSwiperDelegate?

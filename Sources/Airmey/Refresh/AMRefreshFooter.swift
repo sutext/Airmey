@@ -103,7 +103,7 @@ open class AMRefreshFooter: AMRefresh {
             return
         }
         let boundsHeight = scview.bounds.height-self.originalInset.bottom-self.originalInset.top
-        self.isHidden = (scview.contentSize.height - boundsHeight <= 0)
+//        self.isHidden = (scview.contentSize.height - boundsHeight <= 0)
         self.topConstt?.constant = max(scview.contentSize.height, boundsHeight)
     }
     required public init?(coder aDecoder: NSCoder) {
