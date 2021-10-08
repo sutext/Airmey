@@ -197,3 +197,32 @@ public class AMDimmingPresenter: AMPresenter {
         }
     }
 }
+
+/// Add Fade Effect to the target view controller
+public class FadePresenter: AMPresenter {
+    public override func presentWillBegin(in pc: UIPresentationController) {
+        guard let container = pc.containerView else {
+            return
+        }
+        guard let presentView = pc.presentedView else {
+            return
+        }
+        guard let coordinator = pc.presentedViewController.transitionCoordinator else {
+            return
+        }
+        container.addSubview(presentView)
+        presentView.alpha = 0.0
+        coordinator.animate { _ in
+            presentView.alpha = 1.0
+        }
+    }
+    
+    public override func dismissWillBegin(in pc: UIPresentationController) {
+        guard let coordinator = pc.presentedViewController.transitionCoordinator else {
+            return
+        }
+        coordinator.animate { _ in
+            pc.presentedView?.alpha = 0.0
+        }
+    }
+}
