@@ -24,7 +24,7 @@ extension UIViewController{
             self.builtinDismiss(animated: flag, completion: completion)
         }
     }
-    open func _dismiss(animated flag: Bool, completion: AMBlock? = nil) {
+    func _dismiss(animated flag: Bool, completion: AMBlock? = nil) {
         self.builtinDismiss(animated: flag, completion: nil)
         /// make callback surely
         if flag {
@@ -36,12 +36,12 @@ extension UIViewController{
         }
     }
     class func swizzleDismiss() {
-        let originalSelctor = #selector(UIViewController.dismiss(animated:completion:))
+        let originalSelector = #selector(UIViewController.dismiss(animated:completion:))
         let swizzledSelector = #selector(UIViewController.builtinDismiss(animated:completion:))
         let aClass = UIViewController.self
-        let originalMethod = class_getInstanceMethod(aClass, originalSelctor)
-        let swizzledMethod = class_getInstanceMethod(aClass, swizzledSelector)
-        method_exchangeImplementations(originalMethod!, swizzledMethod!)
+        let originalMethod = class_getInstanceMethod(aClass, originalSelector)!
+        let swizzledMethod = class_getInstanceMethod(aClass, swizzledSelector)!
+        method_exchangeImplementations(originalMethod, swizzledMethod)
     }
 }
 open class AMPopupController:UIViewController{

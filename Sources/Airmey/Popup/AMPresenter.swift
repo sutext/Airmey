@@ -18,6 +18,8 @@ open class AMPresenter: NSObject {
     public var onhide:AMBlock?
     /// config mask click action
     public var onMaskClick:AMBlock?
+    /// remove presenters view or not
+    public var shouldRemovePresentersView:Bool = false
     /// config transition duration
     public var transitionDuration:TimeInterval = 0.3
     /// The dimming rate of black background view by default `0.4`
@@ -56,6 +58,9 @@ open class AMPresenter: NSObject {
         }
         override func dismissalTransitionDidEnd(_ completed: Bool) {
             self.presenter?.dismissDidEnd(in: self,completed: completed)
+        }
+        override var shouldRemovePresentersView: Bool{
+            self.presenter?.shouldRemovePresentersView ?? false
         }
     }
 }
