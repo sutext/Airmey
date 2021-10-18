@@ -65,6 +65,7 @@ open class AMPopupController:UIViewController{
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    open override var shouldAutorotate: Bool { presenter.shouldAutorotate }    
 }
 
 public typealias AMAlertBlock = (Int)->Void

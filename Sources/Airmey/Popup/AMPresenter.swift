@@ -22,9 +22,12 @@ open class AMPresenter: NSObject {
     public var shouldRemovePresentersView:Bool = false
     /// config transition duration
     public var transitionDuration:TimeInterval = 0.3
+    /// config autorotate
+    public var shouldAutorotate:Bool = false
     /// The dimming rate of black background view by default `0.4`
     ///- Note: You must set this value before present. Otherwise it doesn't work
     public var dimming:CGFloat = 0.4
+    
     ///override method
     ///empty implemention by default
     open func presentWillBegin(in pc:UIPresentationController){
