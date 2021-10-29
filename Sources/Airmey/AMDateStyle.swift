@@ -9,7 +9,7 @@ import Foundation
 
 /// Definition a date style
 ///
-/// User can extension his custom style:
+/// User can extension your custom style:
 ///
 ///     extension AMDateStyle{
 ///         static let day:AMDateStyle = "yyyy-MM-dd"
@@ -20,12 +20,16 @@ import Foundation
 ///     }
 ///
 public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equatable{
-    public static let  full:AMDateStyle = "yyyy-MM-dd HH:mm:ss"
-    public static let  mmss:AMDateStyle = "mm:ss"
-    public static let  hhmmss:AMDateStyle = "HH:mm:ss"
-    public static let  rfc822:AMDateStyle = {
+    /// common full date style  `yyyy-MM-dd HH:mm:ss`
+    public static let full:AMDateStyle = "yyyy-MM-dd HH:mm:ss"
+    /// `mm:ss`
+    public static let mmss:AMDateStyle = "mm:ss"
+    /// `HH:mm:ss`
+    public static let hhmmss:AMDateStyle = "HH:mm:ss"
+    /// `EEE, dd MMM yyyy HH:mm:ss z`
+    public static let rfc822:AMDateStyle = {
         let s:AMDateStyle = "EEE, dd MMM yyyy HH:mm:ss z"
-        s.update = {
+        s.updater = {
             $0.dateFormat = $1
             $0.locale = Locale(identifier: "en")
             $0.timeZone = TimeZone(secondsFromGMT: 0)
@@ -33,10 +37,11 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
         return s
     }()
     public let rawValue: String
-    public var update:((DateFormatter,String)->Void)
+    /// The DateFormatter updater hock after initialization
+    public var updater:((DateFormatter,String)->Void)
     required public init(rawValue: String) {
         self.rawValue = rawValue
-        self.update = {
+        self.updater = {
             $0.dateFormat = $1
         }
     }
@@ -45,12 +50,13 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
     }
     fileprivate var formater:DateFormatter {
         let dic = Thread.current.threadDictionary
-        if let formater = dic["AMDateStyle:\(self.rawValue)"] as? DateFormatter{
+        let key = "AMDateStyle:\(self.rawValue)"
+        if let formater = dic[key] as? DateFormatter{
             return formater
         }
         let formater = DateFormatter()
-        self.update(formater,self.rawValue)
-        dic["AMDateStyle:\(self.rawValue)"] = formater
+        self.updater(formater,self.rawValue)
+        dic[key] = formater
         return formater
     }
 }

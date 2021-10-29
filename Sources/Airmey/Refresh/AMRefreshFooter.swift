@@ -9,7 +9,6 @@
 import UIKit
 
 /// Builtin Refresh Footer
-///
 open class AMRefreshFooter: AMRefresh {
     private var topConstt:NSLayoutConstraint?
     private let stackView = UIStackView()

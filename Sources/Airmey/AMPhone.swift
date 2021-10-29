@@ -8,9 +8,11 @@
 import UIKit
 
 public enum AMPhone {
+    /// mobile phone device width
     public static let width:Width? = {
         Width(rawValue: Int(min(CGFloat.screenWidth, CGFloat.headerHeight)))
     }()
+    /// mobie phone device height
     public static let height:Height? = {
         Height(rawValue: Int(max(CGFloat.screenWidth, CGFloat.headerHeight)))
     }()
@@ -46,24 +48,28 @@ public enum AMPhone {
             return false
         }
     }()
+    /// The device id base on keychain
     public static let uuid : String  = {
         if let uuid = getUUID() {
             return uuid
         }
         return addUUID()
     }()
+    /// The sandbox cache directory
     public static var cacheDir:String{
         if let str  = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first {
             return str
         }
         return tmpDir
     }
+    /// The sandbox document directory
     public static var docDir:String{
         if let str  = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first {
             return str
         }
         return tmpDir
     }
+    /// The sandbox tem directory
     public static var tmpDir:String{
         return NSTemporaryDirectory()
     }

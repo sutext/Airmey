@@ -44,6 +44,7 @@ extension NSLayoutXAxisAnchor{
         return const
     }
 }
+
 ///These sample methods of layout anchor create an active constraint
 extension NSLayoutYAxisAnchor{
     @discardableResult
@@ -937,13 +938,11 @@ extension UIView{
         builder(am)
     }
     /// rebuild constraints
+    /// Clear All custom relation constraints
+    /// All relation constraints between  view and brotherview and superview exsit in his superview.constraints
+    /// All Dimension constraints exsit in his constraints
+    /// All custom constraints is class of NSLayoutConstraint
     public func remake(builder:(AMAnchorMaker)->Void) {
-        /// Clear All custom relation constraints
-        /// All relation constraints between  view and brotherview and superview exsit in his superview.constraints
-        /// All Dimension constraints exsit in his constraints
-        /// All custom constraints is class of NSLayoutConstraint
-
-        
         self.superview?.constraints.forEach({ layout in
             if NSStringFromClass(type(of: layout)) == "NSLayoutConstraint",
                (layout.firstItem as? UIView) == self {

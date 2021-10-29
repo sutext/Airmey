@@ -136,7 +136,8 @@ extension AMPopupCenter{
         }
     }
     private func next() {
-        guard self.current == nil,!self.queue.isEmpty else {
+        guard self.current == nil,
+              !self.queue.isEmpty else {
             return
         }
         self.current = self.queue.removeFirst()

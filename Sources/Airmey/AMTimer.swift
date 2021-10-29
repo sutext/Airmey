@@ -19,7 +19,7 @@ extension Thread{
     private class Airmey:NSObject{
         @objc func entry(){
             Thread.current.name = "com.airmey.thread.daemon"
-            RunLoop.current.add(NSMachPort(), forMode: RunLoop.Mode.default)
+            RunLoop.current.add(NSMachPort(), forMode: .default)
             RunLoop.current.run()
         }
     }

@@ -6,9 +6,8 @@
 //
 
 import UIKit
-///
+
 /// Builtin Refresh Header
-///
 open class AMRefreshHeader: AMRefresh {
     public let loading:Loading
     public init(_ indicator:Loading = Loading(),height:CGFloat?=nil) {
