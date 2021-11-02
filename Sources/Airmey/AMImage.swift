@@ -167,6 +167,24 @@ public extension UIImage{
         context?.fill(CGRect(origin: .zero, size: size));
         return UIGraphicsGetImageFromCurrentImageContext()
     }
+    static func rect(_ color: UIColor, radius: CGFloat = 1, size: CGSize, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
+        let view = UIView.init(frame: .init(x: 0, y: 0, width: size.width, height: size.height))
+        view.backgroundColor = color
+        view.layer.masksToBounds = true
+        view.layer.cornerRadius = radius
+        view.layer.borderWidth = borderWidth
+        view.layer.borderColor = borderColor.cgColor
+        
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
+        defer {
+            UIGraphicsEndImageContext()
+        }
+        if let context = UIGraphicsGetCurrentContext() {
+            view.layer.render(in: context)
+        }
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        return image
+    }
     /// create single color circle image
     static func round(_ color:UIColor,radius:CGFloat,scale:CGFloat=UIScreen.main.scale)->UIImage?{
         let width = radius*2
