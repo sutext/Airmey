@@ -157,30 +157,28 @@ public extension UIImage{
         }
     }
     /// create single color rectangle image
-    static func rect(_ color:UIColor,size:CGSize,scale:CGFloat=UIScreen.main.scale)->UIImage?{
-        UIGraphicsBeginImageContextWithOptions(size, false, scale)
-        let context = UIGraphicsGetCurrentContext()
-        defer {
-            UIGraphicsEndImageContext()
+    /// 
+    /// - Parameters:
+    ///     - color: shape color
+    ///     - scale: image scale
+    ///     - radius: cornerRadius of shape default 0
+    ///     - border: border width and color default nil
+    static func rect(_ color: UIColor, size: CGSize, radius: CGFloat = 0, border: (color:UIColor,width:CGFloat)? = nil) -> UIImage?{
+        let layer = CAShapeLayer()
+        layer.frame = CGRect(origin: .zero, size: size)
+        layer.backgroundColor = color.cgColor
+        layer.masksToBounds = true
+        layer.cornerRadius = radius
+        if let border = border {
+            layer.borderWidth = border.width
+            layer.borderColor = border.color.cgColor
         }
-        context?.setFillColor(color.cgColor)
-        context?.fill(CGRect(origin: .zero, size: size));
-        return UIGraphicsGetImageFromCurrentImageContext()
-    }
-    static func rect(_ color: UIColor, radius: CGFloat = 1, size: CGSize, borderWidth: CGFloat = 0, borderColor: UIColor = .clear) -> UIImage? {
-        let view = UIView.init(frame: .init(x: 0, y: 0, width: size.width, height: size.height))
-        view.backgroundColor = color
-        view.layer.masksToBounds = true
-        view.layer.cornerRadius = radius
-        view.layer.borderWidth = borderWidth
-        view.layer.borderColor = borderColor.cgColor
-        
         UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         defer {
             UIGraphicsEndImageContext()
         }
         if let context = UIGraphicsGetCurrentContext() {
-            view.layer.render(in: context)
+            layer.render(in: context)
         }
         let image = UIGraphicsGetImageFromCurrentImageContext()
         return image
@@ -289,7 +287,7 @@ public extension UIImage{
     /// - size: The layer size
     /// - points: The layer gradual points
     ///
-        static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
+    static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
         CALayer.gradual(size, points: points).capture
     }
 }
