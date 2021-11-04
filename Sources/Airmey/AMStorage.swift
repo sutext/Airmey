@@ -168,15 +168,19 @@ extension AMStorage{
         var err:Error? = nil
         self.moc.performAndWait {
             do {
-                results = try self.create(type, models:models)
                 let olds = self.query(type, where: predicate)
+                results = try self.create(type, models:models)
+                var rms = [Object]()
                 olds.forEach{ old in
                     let idx = results.firstIndex { new in
                         new.id == old.id
                     }
                     if idx == nil{
-                        self.moc.delete(old)
+                        rms.append(old)
                     }
+                }
+                rms.forEach { obj in
+                    self.moc.delete(obj)
                 }
                 try self.moc.save();
             } catch{
