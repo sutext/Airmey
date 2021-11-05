@@ -59,7 +59,7 @@ class WidgetsController: UIViewController {
     }
     func addTest(_ text:String,action:(()->Void)?) {
         let imageLabel = AMImageLabel(.left)
-        imageLabel.image = .round(.red, radius: 5)
+        imageLabel.image = .rect(.red, size: CGSize(width: 20, height: 20), radius: 5, border: (.blue,2))
         imageLabel.text = text
         imageLabel.font = .systemFont(ofSize: 17)
         imageLabel.textColor = .black

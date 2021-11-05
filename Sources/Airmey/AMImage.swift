@@ -157,15 +157,31 @@ public extension UIImage{
         }
     }
     /// create single color rectangle image
-    static func rect(_ color:UIColor,size:CGSize,scale:CGFloat=UIScreen.main.scale)->UIImage?{
-        UIGraphicsBeginImageContextWithOptions(size, false, scale)
-        let context = UIGraphicsGetCurrentContext()
+    /// 
+    /// - Parameters:
+    ///     - color: shape color
+    ///     - scale: image scale
+    ///     - radius: cornerRadius of shape default 0
+    ///     - border: border width and color default nil
+    static func rect(_ color: UIColor, size: CGSize, radius: CGFloat = 0, border: (color:UIColor,width:CGFloat)? = nil) -> UIImage?{
+        let layer = CAShapeLayer()
+        layer.frame = CGRect(origin: .zero, size: size)
+        layer.backgroundColor = color.cgColor
+        layer.masksToBounds = true
+        layer.cornerRadius = radius
+        if let border = border {
+            layer.borderWidth = border.width
+            layer.borderColor = border.color.cgColor
+        }
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         defer {
             UIGraphicsEndImageContext()
         }
-        context?.setFillColor(color.cgColor)
-        context?.fill(CGRect(origin: .zero, size: size));
-        return UIGraphicsGetImageFromCurrentImageContext()
+        if let context = UIGraphicsGetCurrentContext() {
+            layer.render(in: context)
+        }
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        return image
     }
     /// create single color circle image
     static func round(_ color:UIColor,radius:CGFloat,scale:CGFloat=UIScreen.main.scale)->UIImage?{
@@ -271,7 +287,7 @@ public extension UIImage{
     /// - size: The layer size
     /// - points: The layer gradual points
     ///
-        static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
+    static func gradual(_ size:CGSize,points:[CALayer.GradualPoint])->UIImage?{
         CALayer.gradual(size, points: points).capture
     }
 }
