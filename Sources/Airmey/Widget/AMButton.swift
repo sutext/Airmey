@@ -37,6 +37,7 @@ open class AMButton: UIButton {
     }
     public private(set) var style:TitleStyle = .default;
     public private(set) var imageSize:CGSize = CGSize.zero;
+    public var spacing:CGFloat = 0;
     private var innerLabel:UILabel?
     public var onclick :ONClick?{
         didSet{
@@ -122,7 +123,7 @@ extension AMButton{
                 return .zero
             }
             let imageRect = CGRect(x: self.contentEdgeInsets.left, y: self.contentEdgeInsets.top, width: self.imageSize.width, height: self.imageSize.height);
-            var resultRect = CGRect(x:imageRect.size.width/2-titleSize.width/2+imageRect.origin.x, y:imageRect.size.height+imageRect.origin.y, width:titleSize.width, height:titleSize.height);
+            var resultRect = CGRect(x:imageRect.size.width/2-titleSize.width/2+imageRect.origin.x, y:imageRect.size.height+imageRect.origin.y+spacing, width:titleSize.width, height:titleSize.height);
             resultRect.origin.y += self.titleEdgeInsets.top;
             return resultRect
         default:
