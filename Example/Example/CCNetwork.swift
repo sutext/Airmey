@@ -52,7 +52,7 @@ public class CCNetwork: AMNetwork {
         return result
     }
     public override func `catch`(_ error: Swift.Error) throws {
-        throw Error.invalidData
+        throw error
     }
     public override func verify(_ old: Response<JSON>) -> Response<JSON> {
         old
@@ -155,7 +155,7 @@ extension CCNetwork{
 }
 struct CCRequest :ExpressibleByStringLiteral{
     var path: String
-    var params: HTTPParams?
+    var params: Parameters?
     var options: AMNetwork.Options?
     init(stringLiteral value: StringLiteralType) {
         self.path = value
@@ -163,7 +163,7 @@ struct CCRequest :ExpressibleByStringLiteral{
 }
 class UploadAvatar: AMFormUpload {
     var path: String
-    var params: HTTPParams?
+    var params: Parameters?
     var options: AMNetwork.Options?
     var form: FormData
     func convert(_ json: JSON) throws -> JSON {
@@ -182,7 +182,7 @@ class UploadAvatar: AMFormUpload {
 class DownloadImage: AMDownload {        
     var url: String
     var queue: DispatchQueue?
-    var params: HTTPParams?
+    var params: Parameters?
     var headers: [String:String]?
     var transfer: DownloadTask.URLTransfer?
     init(_ url:String) {

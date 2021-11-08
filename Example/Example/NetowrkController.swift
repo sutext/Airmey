@@ -56,7 +56,7 @@ class NetowrkController: UIViewController {
             
         }
         self.addTest("测试GET") {
-            net.request("app/checkPhoneRegistration",options: .get(.api)){
+            net.request("app/checkPhoneRegistration",params: [],options: .get(.api)){
                 debugPrint($0)
             }
         }

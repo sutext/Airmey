@@ -125,7 +125,7 @@ open class AMNetwork {
     @discardableResult
     public func request(
         _  path:String,
-        params:HTTPParams?=nil,
+        params:Parameters?=nil,
         options:Options?=nil,
         completion:HTTPFinish? = nil)->HTTPTask?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
@@ -283,7 +283,7 @@ open class AMNetwork {
     public func upload(
         _ file:URL,
         to path:String,
-        params:HTTPParams?=nil,
+        params:Parameters?=nil,
         options:Options?=nil,
         completion:HTTPFinish? = nil)->HTTPTask?{
         guard let baseURL = options?.baseURL ?? self.baseURL ,
@@ -373,7 +373,7 @@ open class AMNetwork {
     public func download(
         _ url:String,
         queue:DispatchQueue?=nil,
-        params:HTTPParams?=nil,
+        params:Parameters?=nil,
         headers:[String:String]?=nil,
         transfer: DownloadTask.URLTransfer? = nil,
         completion:HTTPFinish?=nil)->DownloadTask?{

@@ -24,7 +24,7 @@ class Session:NSObject{
     func request(
         _ url:URL,
         method:HTTPMethod,
-        params:HTTPParams?,
+        params:Parameters?,
         headers:HTTPHeaders,
         encoder:HTTPEncoder,
         decoder:HTTPDecoder,
@@ -45,7 +45,7 @@ class Session:NSObject{
     func upload(
         _ url:URL,
         file:URL,
-        params:HTTPParams?,
+        params:Parameters?,
         headers:HTTPHeaders?,
         decoder:HTTPDecoder,
         fileManager:FileManager = .default,
@@ -64,7 +64,7 @@ class Session:NSObject{
     func upload(
         _ url:URL,
         form:FormData,
-        params:HTTPParams?,
+        params:Parameters?,
         decoder:HTTPDecoder,
         headers:HTTPHeaders?,
         fileManager:FileManager = .default,
@@ -108,7 +108,7 @@ class Session:NSObject{
     }
     func download(
         _ url: URL,
-        params:HTTPParams?,
+        params:Parameters?,
         headers:HTTPHeaders?,
         fileManager:FileManager = .default,
         transfer:DownloadTask.URLTransfer? = nil,

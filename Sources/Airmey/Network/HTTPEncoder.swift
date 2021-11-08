@@ -12,7 +12,7 @@ public protocol HTTPEncoder{
     func encode(
         _ url:URL,
         method:HTTPMethod,
-        params:HTTPParams?,
+        params:Parameters?,
         headers:HTTPHeaders?,
         timeout:TimeInterval) -> Result<URLRequest,Error>
 }
@@ -27,9 +27,10 @@ extension HTTP{
         public func encode(
             _ url: URL,
             method: HTTPMethod,
-            params: HTTPParams?,
+            params: Parameters?,
             headers:HTTPHeaders?,
-            timeout: TimeInterval) -> Result<URLRequest,Error>{
+            timeout: TimeInterval) -> Result<URLRequest,Error>
+        {
             if case .get = method {
                 return URLEncoder.query.encode(url, method: method, params: params, headers: headers, timeout: timeout)
             }
@@ -37,11 +38,11 @@ extension HTTP{
             urlRequest.allHTTPHeaderFields = headers?.values
             urlRequest.httpMethod = method.rawValue
             urlRequest.setHeader("application/json", for: .contentType)
-            guard let params = params, params.count>0 else {
+            guard let params = params?.json else {
                 return .success(urlRequest)
             }
             return .init{
-                urlRequest.httpBody = try Foundation.JSONEncoder().encode(JSON(params))
+                urlRequest.httpBody = try Foundation.JSONEncoder().encode(params)
                 return urlRequest
             }
         }
@@ -97,14 +98,18 @@ extension HTTP{
         public func encode(
             _ url:URL,
             method:HTTPMethod,
-            params:HTTPParams?,
+            params:Parameters?,
             headers:HTTPHeaders?,
-            timeout:TimeInterval)-> Result<URLRequest,Error> {
+            timeout:TimeInterval)-> Result<URLRequest,Error>
+        {
             var urlRequest = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
             urlRequest.httpMethod = method.rawValue
             urlRequest.allHTTPHeaderFields = headers?.values
-            guard let params = params?.mapValues(JSON.init) else {
+            guard let json = params?.json else {
                 return .success(urlRequest)
+            }
+            guard let params = json.object else{
+                return .failure(HTTPError.invalidParams(info: "URLEncoder only suport HTTPParams(key-value encode)"))
             }
             if destination.needEncodeInURL(for: method) {
                 if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true) {

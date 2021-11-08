@@ -18,7 +18,7 @@ public struct Response<M>{
     public var error:Error?{ result.error }
     public var statusCode:Int?{ response?.statusCode }
     init(
-        data:JSON = nil,
+        data:JSON = .null,
         result:Result<M,Error>,
         request:URLRequest? = nil,
         metrics:URLSessionTaskMetrics?=nil,

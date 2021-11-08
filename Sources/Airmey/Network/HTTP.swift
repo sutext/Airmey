@@ -19,6 +19,7 @@ public enum HTTPError:Error{
     case encode(Error)
     case download(info:String)
     case invalidURL(url:String)
+    case invalidParams(info:String)
     case invalidStatus(code:Int,info:JSON)
     case invalidResponse(resp:URLResponse?)
 }

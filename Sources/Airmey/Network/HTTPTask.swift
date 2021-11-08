@@ -100,7 +100,7 @@ open class HTTPTask{
     func retry(when error:Error)->TimeInterval?{
         guard let delay = self.retrier?.doRetry(self, when: error) else {
             let response = Response<JSON>(
-                data: nil,
+                data: .null,
                 result: .failure(error),
                 request: request,
                 metrics: metrics,
@@ -182,7 +182,7 @@ public class DownloadTask:HTTPTask{
             return retry(when: HTTPError.download(info:"invalid destination file url"))
         }
         self.completion?(Response<JSON>(
-                            data: nil,
+                            data: .null,
                             result: .success(JSON(location)),
                             request: request,
                             metrics: metrics,
