@@ -7,11 +7,11 @@
 
 import UIKit
 
-class AMTextView: UITextView {
+public class AMTextView: UITextView {
     /// 占位文字
-    var placeholder: String?
+    public var placeholder: String?
     /// 占位文字颜色
-    var placeholderColor: UIColor? = UIColor.lightGray
+    public var placeholderColor: UIColor? = UIColor.lightGray
     
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
@@ -29,7 +29,7 @@ class AMTextView: UITextView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func draw(_ rect: CGRect) {
+    public override func draw(_ rect: CGRect) {
         // 如果有文字,就直接返回,不需要画占位文字
         if self.hasText {
             return
