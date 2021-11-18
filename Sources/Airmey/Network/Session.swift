@@ -124,11 +124,16 @@ class Session:NSObject{
         self.add(req)
         return req
     }
+    
+    /// tasks异步写入加锁
+    private let lock = NSLock.init()
 }
 
 extension Session{
     func add(_ task:HTTPTask) {
+        lock.lock()
         self.tasks[task.id] = task
+        lock.unlock()
         task.resume()
     }
     func remove(_ task:HTTPTask){
