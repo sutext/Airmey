@@ -78,6 +78,9 @@ extension AMPhotoBrowserController{
         }
         return photoView.config.defaultThumbRect
     }
+    open func photoView(_ photoView: AMPhotoView, longPressedAt point: CGPoint) {
+        
+    }
 }
 extension AMPhotoBrowserController:UIViewControllerTransitioningDelegate{
     private class PresentationController:UIPresentationController{
