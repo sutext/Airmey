@@ -10,6 +10,8 @@
 		335FC0A7269EE66100137ECE /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335FC0A6269EE66100137ECE /* TableViewController.swift */; };
 		3372C6D32664A785007351D0 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6D22664A785007351D0 /* UpdateController.swift */; };
 		3372C6DB266502C4007351D0 /* CCNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3372C6DA266502C4007351D0 /* CCNetwork.swift */; };
+		3383D1D7275F652F001753F8 /* CoreDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3383D1D6275F652F001753F8 /* CoreDataController.swift */; };
+		3383D1DA275F6A2D001753F8 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3383D1D8275F6A2D001753F8 /* Model.xcdatamodeld */; };
 		338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D4265FD69500987BA7 /* AppDelegate.swift */; };
 		338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338E70D8265FD69500987BA7 /* NetowrkController.swift */; };
 		338E70DE265FD69600987BA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DD265FD69600987BA7 /* Assets.xcassets */; };
@@ -43,6 +45,8 @@
 		335FC0A6269EE66100137ECE /* TableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewController.swift; sourceTree = "<group>"; };
 		3372C6D22664A785007351D0 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		3372C6DA266502C4007351D0 /* CCNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCNetwork.swift; sourceTree = "<group>"; };
+		3383D1D6275F652F001753F8 /* CoreDataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataController.swift; sourceTree = "<group>"; };
+		3383D1D9275F6A2D001753F8 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		338E70D1265FD69500987BA7 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		338E70D4265FD69500987BA7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		338E70D8265FD69500987BA7 /* NetowrkController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetowrkController.swift; sourceTree = "<group>"; };
@@ -107,6 +111,8 @@
 				33C2684F2678A4390086F2B9 /* CCSegmentControl.swift */,
 				33C268512678A4A60086F2B9 /* CCBadgeLabel.swift */,
 				33C268532679D1D90086F2B9 /* WebImageController.swift */,
+				3383D1D6275F652F001753F8 /* CoreDataController.swift */,
+				3383D1D8275F6A2D001753F8 /* Model.xcdatamodeld */,
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
 				338E70E2265FD69600987BA7 /* Info.plist */,
@@ -197,6 +203,7 @@
 			files = (
 				33E37D992662B14000D953D0 /* PopupController.swift in Sources */,
 				335FC0A7269EE66100137ECE /* TableViewController.swift in Sources */,
+				3383D1D7275F652F001753F8 /* CoreDataController.swift in Sources */,
 				33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */,
 				3372C6D32664A785007351D0 /* UpdateController.swift in Sources */,
 				3372C6DB266502C4007351D0 /* CCNetwork.swift in Sources */,
@@ -205,6 +212,7 @@
 				338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */,
 				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,
 				33C268542679D1D90086F2B9 /* WebImageController.swift in Sources */,
+				3383D1DA275F6A2D001753F8 /* Model.xcdatamodeld in Sources */,
 				33C2684C267897850086F2B9 /* SwiperController.swift in Sources */,
 				33E7266126932A7400FCFCC8 /* CCNavBar.swift in Sources */,
 				33C268522678A4A60086F2B9 /* CCBadgeLabel.swift in Sources */,
@@ -411,6 +419,19 @@
 			productName = Airmey;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		3383D1D8275F6A2D001753F8 /* Model.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				3383D1D9275F6A2D001753F8 /* Model.xcdatamodel */,
+			);
+			currentVersion = 3383D1D9275F6A2D001753F8 /* Model.xcdatamodel */;
+			path = Model.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 338E70C9265FD69500987BA7 /* Project object */;
 }

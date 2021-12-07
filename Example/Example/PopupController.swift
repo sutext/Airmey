@@ -64,7 +64,6 @@ class PopupController: UIViewController {
         }
         self.addTest("Test multiple popup") {
             pop.alert("test alert",confirm: "确定",cancel: "取消")
-
             pop.alert("test alert",confirm: "确定",cancel: "取消")
 
             pop.alert("test alert",confirm: "确定",cancel: "取消")

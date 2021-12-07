@@ -27,11 +27,12 @@ class RootViewController: AMLayoutViewContrller {
         let popup = UINavigationController(rootViewController: PopupController())
         let json = UINavigationController(rootViewController: TestJsonController())
         let widget = UINavigationController(rootViewController: WidgetsController())
+        let coreData = UINavigationController(rootViewController: CoreDataController())
         table.setNavigationBarHidden(true, animated: false)
         popup.setNavigationBarHidden(true, animated: false)
         json.setNavigationBarHidden(true, animated: false)
         widget.setNavigationBarHidden(true, animated: false)
-        self.tabbarController.viewControllers = [table,popup,json,widget]
+        self.tabbarController.viewControllers = [table,popup,json,widget,coreData]
         self.leftViewController = NetowrkController()
     }
     func push(_ controller:UIViewController)  {

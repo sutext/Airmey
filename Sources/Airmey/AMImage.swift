@@ -111,6 +111,9 @@ public extension UIImage{
         case bmp = 0x42
         case tiff = 0x4d
         public init?(_ data:Data){
+            if data.isEmpty {
+                return nil
+            }
             var c:UInt8 = 0
             data.copyBytes(to: &c, count: 1)
             self.init(rawValue: c)

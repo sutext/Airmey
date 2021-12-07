@@ -118,7 +118,7 @@ extension AMStorage{
             self.moc.performAndWait {
                 do {
                     self.moc.delete(object)
-                    try self.moc.save();
+                    try self._save()
                 } catch {
                     err = error
                 }
@@ -142,7 +142,7 @@ extension AMStorage{
                     objects.forEach {
                         self.moc.delete($0)
                     }
-                    try self.moc.save();
+                    try self._save();
                 } catch {
                     err = error
                 }
@@ -182,7 +182,7 @@ extension AMStorage{
                 rms.forEach { obj in
                     self.moc.delete(obj)
                 }
-                try self.moc.save();
+                try self._save();
             } catch{
                 err = error
             }
@@ -207,7 +207,7 @@ extension AMStorage{
         self.moc.performAndWait {
             do {
                 obj = try self.create(type, model: model)
-                try self.moc.save();
+                try self._save();
             } catch {
                 err = error
             }
@@ -232,7 +232,7 @@ extension AMStorage{
         self.moc.performAndWait {
             do {
                 results = try self.create(type, models:models)
-                try self.moc.save();
+                try self._save();
             } catch{
                 err = error
             }
@@ -266,15 +266,20 @@ extension AMStorage{
     /// - Returns: The managed objects matching the predicate
     ///
     public func query<Object:NSManagedObject>(_ type:Object.Type,where predicate:NSPredicate?=nil,page:(index:Int,size:Int)?=nil,sorts:[NSSortDescriptor]? = nil)->[Object]{
-        let request = type.fetchRequest()
-        request.predicate = predicate
-        request.sortDescriptors = sorts
-        if let page = page {
-            request.fetchLimit = page.size
-            request.fetchOffset = page.index * page.size
+        var results:[Object] = []
+        self.moc.performAndWait {
+            let request = type.fetchRequest()
+            request.predicate = predicate
+            request.sortDescriptors = sorts
+            if let page = page {
+                request.fetchLimit = page.size
+                request.fetchOffset = page.index * page.size
+            }
+            if let objs =  try? self.moc.fetch(request) as? [Object]{
+                results = objs
+            }
         }
-        let objs = try? self.moc.fetch(request) as? [Object];
-        return objs ?? []
+        return results
     }
     ///
     ///  Query the count of objects that matching the predicate
@@ -284,26 +289,38 @@ extension AMStorage{
     /// - Returns: The managed objects count that matching the predicate
     ///
     public func count<Object:NSManagedObject>(for type:Object.Type,where predicate:NSPredicate?=nil)->Int{
-        let request = type.fetchRequest()
-        request.predicate = predicate
-        let count = try? self.moc.count(for: request)
-        return count ?? 0
+        var count = 0
+        self.moc.performAndWait {
+            let request = type.fetchRequest()
+            request.predicate = predicate
+            if let int = try? self.moc.count(for: request) {
+                count = int
+            }
+        }
+        return count
     }
     /// commit all the insert or update operation
     public func save(){
         self.moc.performAndWait{
-            do{
-                try self.moc.save();
-            }catch{
-                print(error.localizedDescription)
-            }
+            try? self._save()
         }
     }
+    
 }
 //MARK: private methods
 extension AMStorage{
+    private func _save() throws{
+        if self.moc.hasChanges {
+            try self.moc.save();
+        }
+    }
     private func create<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model])throws->[Object]{
-        return try models.map{try self.create(type, model: $0)}
+        var result:[Object] = []
+        for mod in models {
+            let obj = try self.create(type, model: mod)
+            result.append(obj)
+        }
+        return result
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type, model:Object.Model)throws->Object{
         guard let id = try? type.id(for: model),
@@ -312,10 +329,10 @@ extension AMStorage{
         }
         let request = type.fetchRequest()
         request.predicate = NSPredicate(format:"id == %@",id.objectId);
-        let object = (try? self.moc.fetch(request))?.first as? Object ?? type.init(context: self.moc)
-        object.awake(from: model)
-        object.setValue(id, forKey: "id")
-        return object
+        let obj = (try self.moc.fetch(request).first as? Object) ?? type.init(context: self.moc)
+        obj.awake(from: model)
+        obj.setValue(id, forKey: "id")
+        return obj
     }
 }
 //MARK: async methods
