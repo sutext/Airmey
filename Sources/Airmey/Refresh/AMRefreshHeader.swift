@@ -9,6 +9,10 @@ import UIKit
 
 /// Builtin Refresh Header
 open class AMRefreshHeader: AMRefresh {
+    ///用于兼容下拉加载更多
+    public var noMoreData: Bool = true
+    ///下拉完成，是否还原原有inset
+    public var enableReductionInset: Bool = true
     public let loading:Loading
     public init(_ indicator:Loading = Loading(),height:CGFloat?=nil) {
         self.loading = indicator
@@ -43,8 +47,17 @@ open class AMRefreshHeader: AMRefresh {
                 self.scorllView?.contentInset = insets
             }
         }else{
-            UIView.animate(withDuration: 0.25) {
-                self.scorllView?.contentInset = self.originalInset
+            func reductionInset() {
+                UIView.animate(withDuration: 0.25) {
+                    self.scorllView?.contentInset = self.originalInset
+                }
+            }
+            if enableReductionInset {
+                reductionInset()
+            } else {
+                if noMoreData {
+                    reductionInset()
+                }
             }
         }
     }
@@ -147,4 +160,6 @@ extension AMRefresh{
         }
     }
 }
+
+
 
