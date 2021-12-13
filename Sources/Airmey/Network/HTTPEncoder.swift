@@ -37,9 +37,7 @@ extension HTTP{
             var urlRequest = URLRequest(url:url , cachePolicy: .useProtocolCachePolicy, timeoutInterval: timeout)
             urlRequest.allHTTPHeaderFields = headers?.values
             urlRequest.httpMethod = method.rawValue
-            if headers?[.contentType] == nil {
-                urlRequest.setHeader("application/json", for: .contentType)
-            }
+            urlRequest.setHeader("application/json", for: .contentType)
             guard let params = params?.json else {
                 return .success(urlRequest)
             }
