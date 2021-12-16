@@ -71,27 +71,31 @@ class CoreDataController: UIViewController {
         }
         self.addTest("Test concurrence") {
             DispatchQueue(label: "thread1").async {
-                for _ in 0..<10 {
+                for _ in 0..<10000 {
                   let _ = try?  orm.insert(UserObject.self, model: self.randomUser())
                 }
             }
             DispatchQueue(label: "thread2").async {
                 var models:[JSON] = []
-                for _ in 0..<10 {
+                for _ in 0..<10000 {
                     models.append(self.randomUser())
                 }
                 let _ = try? orm.insert(UserObject.self, models: models)
             }
             DispatchQueue(label: "thread3").asyncAfter(deadline: .now()+0.01) {
                 var models:[JSON] = []
-                for _ in 0..<50 {
+                for _ in 0..<500 {
                     models.append(self.randomUser())
                 }
-                let predicate = NSPredicate(format: "id < 1000000000000")
+                let predicate = NSPredicate(format: "id > 1000000000000")
                 if let users = (try? orm.overlay(UserObject.self,models:models,where: predicate)) {
-                    print(users.map{$0.toJSON()})
                     print(users.count)
                 }
+            }
+            DispatchQueue(label: "thread4").asyncAfter(deadline: .now()+0.01) {
+                let users = orm.query(UserObject.self)
+                print(users.map{$0.toJSON()})
+                print("all count:",users.count)
             }
         }
     }
