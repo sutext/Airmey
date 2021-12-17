@@ -22,7 +22,7 @@ open class AMNetwork {
         didSet{
             if status != oldValue{
                 DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .AMNetworkStatusChanged, object: status)
+                    NotificationCenter.default.post(name: .AMNetworkStatusChanged, object: self,userInfo: ["status":status])
                 }
             }
         }

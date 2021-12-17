@@ -23,6 +23,7 @@ class NetowrkController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         self.tabBarItem = UITabBarItem(title: "Network", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
+        self.modalPresentationStyle = .fullScreen
     }
     
     required init?(coder: NSCoder) {

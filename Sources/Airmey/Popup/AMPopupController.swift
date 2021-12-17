@@ -26,12 +26,23 @@ extension UIViewController{
     }
     func _dismiss(animated flag: Bool, completion: AMBlock? = nil) {
         self.builtinDismiss(animated: flag, completion: nil)
+        let window = self.view.window as? POPWindow
+        func hideWindow(){
+            if let wind = window {
+                wind.isHidden = true
+                if let idx = self.am_pop?.windows.firstIndex(of: wind) {
+                    self.am_pop?.windows.remove(at: idx)
+                }
+            }
+        }
         /// make callback surely
         if flag {
             DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
+                hideWindow()
                 completion?()
             }
         }else{
+            hideWindow()
             completion?()
         }
     }

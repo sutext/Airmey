@@ -6,6 +6,22 @@
 //
 
 import UIKit
+
+class POPWindow:UIWindow{
+    init() {
+        super.init(frame: UIScreen.main.bounds)
+        self.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.alert.rawValue + 1.0)
+        self.backgroundColor = .clear
+        self.rootViewController = UIViewController(nibName: nil, bundle: nil)
+        self.rootViewController?.view.backgroundColor = .clear
+    }
+    required init?(coder: NSCoder) {
+        fatalError("Not allowed")
+    }
+    func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
+        self.rootViewController?.present(viewControllerToPresent, animated: flag, completion: completion)
+    }
+}
 ///Add an  popup operation queue
 open class AMPopupCenter {
     /// default Wait controller  override it for custom
@@ -20,6 +36,7 @@ open class AMPopupCenter {
     private var current:Operation?
     private var alerters:[String:Alerter] = [:]
     private weak var waiter:UIViewController?
+    internal var windows:[POPWindow] = []
     public init(){
         UIViewController.swizzleDismiss()
     }
@@ -233,13 +250,10 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        ///Give up showing when no root
-        guard let top = self.top else {
-            completion?()
-            return
-        }
-        /// make callback surely
-        top.present(vc, animated: animated, completion: nil)
+        let window = POPWindow()
+        self.windows.append(window)
+        window.isHidden = false
+        window.present(vc, animated: animated, completion: nil)
         if animated {
             DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
                 completion?()

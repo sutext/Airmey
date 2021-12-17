@@ -75,27 +75,11 @@ class PopupController: UIViewController {
             pop.action(["facebook","apple"])
             pop.remind("testing....")
             pop.alert("test alert",confirm: "确定",cancel: "取消")
-            pop.alert("test1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1test1test1test1test1test1testest1test1test1test1test1test1test1test1test1test1tes")
-            pop.remind(LoginError.invalidUsername)
 
         }
         self.addTest("Test Pop") {
-            let vc = UIViewController()
-            vc.view.backgroundColor = .white
-            UIApplication.shared.keyWindow?.rootViewController?.present(vc, animated: true, completion: {
-                DispatchQueue.main.asyncAfter(deadline: .now()+1) {
-                    vc.dismiss(animated: true){
-                        
-                    }
-                    pop.wait("loading")
-                    DispatchQueue.main.asyncAfter(deadline: .now()+1) {
-                        pop.idle()
-                        pop.remind("error")
-                    }
-                }
-            })
-            
-//            pop.present(UpdateController())
+ 
+//            pop.alert("xxxx")
         }
         self.addTest("clear") {
             pop.clear()

@@ -17,6 +17,8 @@ class SwiperController: UIViewController {
         self.segment = CCSegmentControl(items: chanels)
         self.nodes = chanels.map(ChildController.init)
         super.init(nibName: nil, bundle: nil)
+        self.modalPresentationStyle = .fullScreen
+
     }
     
     required init?(coder: NSCoder) {
