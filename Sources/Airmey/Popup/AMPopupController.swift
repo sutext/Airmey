@@ -17,7 +17,7 @@ extension AMPopupLevel{
     ///         window.windowLevel = .alert + 1
     ///
     public static func +(lhs:AMPopupLevel,rhs:CGFloat)->UIWindow.Level{
-        return AMPopupLevel(rawValue: lhs.rawValue - rhs)
+        return AMPopupLevel(rawValue: lhs.rawValue + rhs)
     }
     public static func -(lhs:AMPopupLevel,rhs:CGFloat)->UIWindow.Level{
         return AMPopupLevel(rawValue: lhs.rawValue - rhs)
