@@ -11,6 +11,7 @@ open class AMWaitController: AMPopupController,AMWaitable {
     /// Global default timeout interval `default` 5
     /// subclass can override this var for custom
     open class var timeout:TimeInterval{ 5 }
+    public override var popupLevel: AMPopupLevel { .wait } 
     public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.6)

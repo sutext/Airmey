@@ -6,7 +6,44 @@
 //
 
 import UIKit
+
+/// Describe the popup level base on UIWindow.Level
+public typealias AMPopupLevel = UIWindow.Level
+
+extension AMPopupLevel{
+    /// Just for set window level friendly
+    ///
+    ///         let window = UIWindow()
+    ///         window.windowLevel = .alert + 1
+    ///
+    public static func +(lhs:AMPopupLevel,rhs:CGFloat)->UIWindow.Level{
+        return AMPopupLevel(rawValue: lhs.rawValue - rhs)
+    }
+    public static func -(lhs:AMPopupLevel,rhs:CGFloat)->UIWindow.Level{
+        return AMPopupLevel(rawValue: lhs.rawValue - rhs)
+    }
+    /// global default wait window level
+    /// by default use .alert + 2000
+    public static var wait:AMPopupLevel { .alert + 2000 }
+    /// global default remind window level
+    /// by default use .alert + 1000
+    public static var remind:AMPopupLevel { .alert + 1000 }
+    /// global default remind window level
+    /// by default use .alert
+    public static var action:AMPopupLevel { .alert }
+}
+
 extension UIViewController{
+    /// override this property for change the popup window level
+    /// by default use UIWindow.Level.alert
+    ///
+    ///     public var popupLevel:UIWindow.Level {
+    ///         .alert + 1
+    ///     }
+    ///
+    @objc public var popupLevel:AMPopupLevel {
+        .alert
+    }
     var am_pop:AMPopupCenter?{
         get{
             let key  = UnsafeRawPointer.init(bitPattern: "am_pop_key".hashValue)!
@@ -26,7 +63,7 @@ extension UIViewController{
     }
     func _dismiss(animated flag: Bool, completion: AMBlock? = nil) {
         self.builtinDismiss(animated: flag, completion: nil)
-        let window = self.view.window as? POPWindow
+        let window = self.view.window as? AMPopupWindow
         func hideWindow(){
             if let wind = window {
                 wind.isHidden = true
@@ -76,7 +113,7 @@ open class AMPopupController:UIViewController{
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    open override var shouldAutorotate: Bool { presenter.shouldAutorotate }    
+    open override var shouldAutorotate: Bool { presenter.shouldAutorotate }
 }
 
 public typealias AMAlertBlock = (Int)->Void

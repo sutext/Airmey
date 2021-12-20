@@ -63,18 +63,19 @@ class PopupController: UIViewController {
             am.edge.equal(top: 0, bottom: 0)
         }
         self.addTest("Test multiple popup") {
-            pop.alert("test alert",confirm: "确定",cancel: "取消")
-            pop.alert("test alert",confirm: "确定",cancel: "取消")
-
-            pop.alert("test alert",confirm: "确定",cancel: "取消")
-
             pop.wait("loading....")
             pop.idle()
+            pop.remind("testing....")
+            pop.alert("test alert",confirm: "确定",cancel: "取消")
+            pop.alert("test 2",confirm: "确定",cancel: "取消")
+            pop.alert("test 1",confirm: "确定",cancel: "取消")
             pop.remind("test1")
 //            pop.action(["apple","facebook"])
             pop.action(["facebook","apple"])
-            pop.remind("testing....")
-            pop.alert("test alert",confirm: "确定",cancel: "取消")
+            
+            pop.alert("clear all",confirm: "确定",cancel: "取消") { idx in
+                pop.clear()
+            }
 
         }
         self.addTest("Test Pop") {

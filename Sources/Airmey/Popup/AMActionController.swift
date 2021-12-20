@@ -72,6 +72,7 @@ open class AMActionController:AMPopupController,AMActionable{
     @objc dynamic func cancelAction(sender:UIControl){
         self.dismiss(animated: true)
     }
+    public override var popupLevel: AMPopupLevel { .action } 
 }
 extension AMActionController:UITableViewDataSource,UITableViewDelegate{
     public func numberOfSections(in tableView: UITableView) -> Int {

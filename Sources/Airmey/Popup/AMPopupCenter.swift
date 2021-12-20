@@ -6,37 +6,46 @@
 //
 
 import UIKit
-
-class POPWindow:UIWindow{
+ 
+class AMPopupWindow:UIWindow{
     init() {
         super.init(frame: UIScreen.main.bounds)
-        self.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.alert.rawValue + 1.0)
+        self.windowLevel = .alert + 1
         self.backgroundColor = .clear
         self.rootViewController = UIViewController(nibName: nil, bundle: nil)
         self.rootViewController?.view.backgroundColor = .clear
     }
     required init?(coder: NSCoder) {
-        fatalError("Not allowed")
+        fatalError("NSCoding of AMPopupWindow  not allowed!")
     }
     func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
+        self.windowLevel = viewControllerToPresent.popupLevel
         self.rootViewController?.present(viewControllerToPresent, animated: flag, completion: completion)
+    }
+    /// never been makeKey just for display
+    override func makeKey() {
+        
+    }
+    /// never been makeKey just for display
+    override func makeKeyAndVisible() {
+        
     }
 }
 ///Add an  popup operation queue
 open class AMPopupCenter {
     /// default Wait controller  override it for custom
-    open class var Wait:AMWaitable.Type{AMWaitController.self}
+    open class var Wait:AMWaitable.Type{ AMWaitController.self }
     /// default Alert controller  override it for custom. By defualt use system Impl
-    open class var Alert:AMAlertable.Type{UIAlert.self}
+    open class var Alert:AMAlertable.Type{ UIAlert.self }
     /// default Remind controller  override it for custom
-    open class var Remind:AMRemindable.Type{AMRemindController.self}
+    open class var Remind:AMRemindable.Type{ AMRemindController.self }
     /// default Action controller  override it for custom By defualt use system Impl
-    open class var Action:AMActionable.Type{UIAlert.self}
+    open class var Action:AMActionable.Type{ UIAlert.self }
     private var queue:[Operation] = []
     private var current:Operation?
     private var alerters:[String:Alerter] = [:]
     private weak var waiter:UIViewController?
-    internal var windows:[POPWindow] = []
+    internal var windows:[AMPopupWindow] = []
     public init(){
         UIViewController.swizzleDismiss()
     }
@@ -127,7 +136,7 @@ extension AMPopupCenter{
     public func idle() {
         self.add(.idle)
     }
-    /// Clear all the presented controller base on keyWindow'rootViewController
+    /// Clear all the presented  controller
     public func clear() {
         self.add(.clear)
     }
@@ -181,7 +190,8 @@ extension AMPopupCenter{
         }
     }
     private func _clear() {
-        UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: false)
+        self.windows.forEach{ $0.isHidden = true }
+        self.windows = []
         self.current = nil
         self.delayNext()
     }
@@ -250,7 +260,7 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        let window = POPWindow()
+        let window = AMPopupWindow()
         self.windows.append(window)
         window.isHidden = false
         window.present(vc, animated: animated, completion: nil)
