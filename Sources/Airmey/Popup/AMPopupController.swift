@@ -65,16 +65,17 @@ extension UIViewController{
         self.builtinDismiss(animated: flag, completion: nil)
         let window = self.view.window as? AMPopupWindow
         func hideWindow(){
-            if let wind = window {
+            if let pop = self.am_pop,let wind = window,
+               let idx = pop.windows.lastIndex(of: wind){
                 wind.isHidden = true
-                if let idx = self.am_pop?.windows.firstIndex(of: wind) {
-                    self.am_pop?.windows.remove(at: idx)
-                }
+                wind.resignKey()
+                self.am_pop = nil
+                pop.windows.remove(at: idx)
             }
         }
         /// make callback surely
         if flag {
-            DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.31) {
                 hideWindow()
                 completion?()
             }

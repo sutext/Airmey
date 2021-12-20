@@ -46,6 +46,14 @@ open class AMPresenter: NSObject {
     ///override method
     ///call self.onhide?() by defualt
     open func dismissDidEnd(in pc:UIPresentationController,completed: Bool){
+        if let pop = pc.presentedViewController.am_pop,
+           let window = pc.presentedView?.window as? AMPopupWindow,
+           let idx = pop.windows.lastIndex(of: window){
+            window.isHidden = true
+            window.resignKey()
+            pc.presentedViewController.am_pop = nil
+            pop.windows.remove(at: idx)
+        }
         self.onhide?()
     }
     class PresentationController:UIPresentationController{

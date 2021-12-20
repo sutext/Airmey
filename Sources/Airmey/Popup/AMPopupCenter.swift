@@ -22,14 +22,6 @@ class AMPopupWindow:UIWindow{
         self.windowLevel = viewControllerToPresent.popupLevel
         self.rootViewController?.present(viewControllerToPresent, animated: flag, completion: completion)
     }
-    /// never been makeKey just for display
-    override func makeKey() {
-        
-    }
-    /// never been makeKey just for display
-    override func makeKeyAndVisible() {
-        
-    }
 }
 ///Add an  popup operation queue
 open class AMPopupCenter {
@@ -59,6 +51,7 @@ extension AMPopupCenter{
         self.add(.dismiss(vc: vc, animated: animated, finish: completion))
     }
     /// present any UIViewController
+    /// Any  AMPopupController instance will be present in AMPopupWindow otherwise using delegate window
     public func present(
         _ vc:UIViewController,
         animated:Bool=true,
@@ -142,7 +135,7 @@ extension AMPopupCenter{
     }
     /// current top controller from the key window
     public var top:UIViewController?{
-        var next:UIViewController? = UIApplication.shared.keyWindow?.rootViewController
+        var next:UIViewController? = UIApplication.shared.delegate?.window??.rootViewController
         while next?.presentedViewController != nil {
             next = next?.presentedViewController
         }
@@ -260,12 +253,16 @@ extension AMPopupCenter{
         }
     }
     private func show(_ vc: UIViewController,animated: Bool=true, completion: AMBlock? = nil){
-        let window = AMPopupWindow()
-        self.windows.append(window)
-        window.isHidden = false
-        window.present(vc, animated: animated, completion: nil)
+        if vc is AMPopupController{
+            let window = AMPopupWindow()
+            self.windows.append(window)
+            window.makeKeyAndVisible()
+            window.present(vc, animated: animated, completion: nil)
+        }else {
+            self.top?.present(vc, animated: animated, completion: nil)
+        }
         if animated {
-            DispatchQueue.main.asyncAfter(deadline: .now()+0.31) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.31) {
                 completion?()
             }
         }else{

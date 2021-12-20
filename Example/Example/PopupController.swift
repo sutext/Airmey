@@ -78,8 +78,8 @@ class PopupController: UIViewController {
             }
 
         }
-        self.addTest("Test Pop") {
- 
+        self.addTest("Test Input") {
+            pop.present(PopupInputController())
 //            pop.alert("xxxx")
         }
         self.addTest("clear") {
