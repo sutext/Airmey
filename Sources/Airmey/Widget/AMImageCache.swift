@@ -34,8 +34,13 @@ public class AMImageCache {
     }()
 
     private init(){
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         self.thumbCache.countLimit = 80
         self.imageCache.countLimit = 50
+    }
+    
+    @objc private func didEnterBackground() {
+        clearMemery()
     }
 }
 extension AMImageCache{
