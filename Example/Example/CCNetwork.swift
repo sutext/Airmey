@@ -22,7 +22,7 @@ public enum CCLoginType :String,CaseIterable,AMTextDisplayable{
     case apple
     case google
     case facebook
-    public var displayText: AMDisplayText{rawValue}
+    public var displayText: AMDisplayText{ rawValue }
 }
 public class CCNetwork: AMNetwork {
     fileprivate init(){

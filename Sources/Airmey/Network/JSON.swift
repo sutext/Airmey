@@ -11,6 +11,7 @@ import UIKit
 /// Common value type JSON data model stucture
 /// Add Collection Codable subscript ... implementions
 ///
+@dynamicMemberLookup
 public enum JSON {
     case null
     case bool(Bool)
@@ -193,39 +194,49 @@ extension Int:JSONIndex{}
 
 extension JSON{
     public subscript(key:JSONIndex)->JSON{
-        get{
-            switch (self,key){
-            case let (.array(ary),idx as Int):
-                return ary.count>idx ? ary[idx] : .null
-            case let (.object(dic),str as String):
-                return dic[str] ?? .null
-            default:
-                return .null
-            }
+        get{ getValue(key) }
+        set{ setValue(newValue, forKey: key) }
+    }
+    public subscript(dynamicMember key:String) -> JSON {
+        get { getValue(key)}
+        set { setValue(newValue, forKey: key)}
+    }
+    public subscript(path: JSONIndex...) -> JSON {
+        get { self[path] }
+        set { self[path] = newValue }
+    }
+    private func getValue(_ key:JSONIndex)->JSON{
+        switch (self,key){
+        case let (.array(ary),idx as Int):
+            return ary.count>idx ? ary[idx] : .null
+        case let (.object(dic),str as String):
+            return dic[str] ?? .null
+        default:
+            return .null
         }
-        set{
-            switch key{
-            case let idx as Int:
-                guard case .array(var ary) = self else {
-                    return
-                }
-                if ary.count>idx{
-                    ary[idx] = newValue
-                    self = .array(ary)
-                }
-            case let str as String:
-                switch self{
-                case .object(var dic):
-                    dic[str] = newValue
-                    self = .object(dic)
-                case .null:
-                    self = .object([str:newValue])
-                default :
-                    break
-                }
-            default:
+    }
+    private mutating func setValue(_ newValue:JSON,forKey key:JSONIndex){
+        switch key{
+        case let idx as Int:
+            guard case .array(var ary) = self else {
+                return
+            }
+            if ary.count>idx{
+                ary[idx] = newValue
+                self = .array(ary)
+            }
+        case let str as String:
+            switch self{
+            case .object(var dic):
+                dic[str] = newValue
+                self = .object(dic)
+            case .null:
+                self = .object([str:newValue])
+            default :
                 break
             }
+        default:
+            break
         }
     }
     private subscript(path: [JSONIndex]) -> JSON {
@@ -247,16 +258,7 @@ extension JSON{
             }
         }
     }
-    public subscript(path: JSONIndex...) -> JSON {
-        get {
-            return self[path]
-        }
-        set {
-            self[path] = newValue
-        }
-    }
 }
-
 public extension JSON{
     @inlinable var int8:Int8?{
         return self.number?.int8Value

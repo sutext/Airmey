@@ -7,6 +7,7 @@
 
 import UIKit
 import Airmey
+import CoreData
 
 let orm = Storage()
 
@@ -18,6 +19,20 @@ class Storage: AMStorage {
         try! super.init(momd: url)
     }
 }
+
+@objc(UserObject)
+class UserObject:NSManagedObject {
+
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<UserObject> {
+        return NSFetchRequest<UserObject>(entityName: "UserObject")
+    }
+    @NSManaged public var age: Int64
+    @NSManaged public var avatar: String?
+    @NSManaged public var id: Int64
+    @NSManaged public var name: String?
+
+}
+
 extension UserObject : AMManagedObject{
     public static func id(for model: JSON) throws -> Int64 {
         guard let id = model["id"].int64 else {
@@ -26,9 +41,9 @@ extension UserObject : AMManagedObject{
         return id
     }
     public func awake(from model: JSON) {
-        self.name = model["name"].string
-        self.avatar = model["avatar"].string
-        self.age = model["age"].int64Value
+        self.name = model.name.string
+        self.avatar = model.avatar.string
+        self.age = model.age.int64Value
     }
     func toJSON()->JSON{
         return ["id":id,"name":name,"age":age,"avatar":avatar]
@@ -45,6 +60,7 @@ class CoreDataController: UIViewController {
     }
     let stackView = UIStackView()
     let scrollView = UIScrollView()
+    let textLabel = UILabel()
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
@@ -69,37 +85,69 @@ class CoreDataController: UIViewController {
             am.center.equal(to: 0)
             am.edge.equal(top: 0, bottom: 0)
         }
-        self.addTest("Test concurrence") {
-            DispatchQueue(label: "thread1").async {
-                for _ in 0..<10000 {
-                  let _ = try?  orm.insert(UserObject.self, model: self.randomUser())
-                }
+        try? self.addTest("Test concurrence") {
+            for _ in 0..<10 {
+                try orm.insert(UserObject.self, model: self.randomUser())
             }
-            DispatchQueue(label: "thread2").async {
+            DispatchQueue(label: "thread2").async{
                 var models:[JSON] = []
-                for _ in 0..<10000 {
+                for _ in 0..<100 {
                     models.append(self.randomUser())
                 }
-                let _ = try? orm.insert(UserObject.self, models: models)
+                if let users = try? orm.insert(UserObject.self, models: models){
+                    orm.updateAndSave {
+                        users.forEach({ user in
+                            user.age += 1
+                        })
+                    }
+                    DispatchQueue.main.async {
+                        self.navbar.title = "thread2 \(users.count)"
+                    }
+                }
+                print("thread2 over")
             }
-            DispatchQueue(label: "thread3").asyncAfter(deadline: .now()+0.01) {
+            DispatchQueue(label: "thread3").asyncAfter(deadline: .now()+0.01){
                 var models:[JSON] = []
-                for _ in 0..<500 {
+                for _ in 0..<100 {
                     models.append(self.randomUser())
                 }
-                let predicate = NSPredicate(format: "id > 1000000000000")
+                let predicate = NSPredicate(format: "id > 1000000")
                 if let users = (try? orm.overlay(UserObject.self,models:models,where: predicate)) {
-                    print(users.count)
+                    orm.updateAndSave {
+                        users.forEach { user in
+                            if user.id%3 == 1 {
+                                user.age += 1
+                            }
+                        }
+                    }
+                    DispatchQueue.main.async {
+                        self.navbar.title = "thread3 \(users.count)"
+                    }
                 }
+                print("thread3 over")
             }
-            DispatchQueue(label: "thread4").asyncAfter(deadline: .now()+0.01) {
-                let users = orm.query(UserObject.self)
-                print(users.map{$0.toJSON()})
-                print("all count:",users.count)
+            DispatchQueue(label: "thread4").asyncAfter(deadline: .now()+0.01)
+            {
+                let predicate = NSPredicate(format: "id < 100000")
+                let users = orm.query(UserObject.self,where: predicate)
+                orm.updateAndSave {
+                    users.forEach { user in
+                        if user.id%3 == 0 {
+                            orm.delete(user)
+                        }
+                        if user.id%3 == 1 {
+                            user.age += 1
+                        }
+                    }
+                }
+                print("thread4 over")
+                DispatchQueue.main.async {
+                    self.navbar.title = "thread4 \(users.count)"
+                }
             }
         }
     }
-    func addTest(_ text:String,action:(()->Void)?) {
+    func addTest(_ text:String,action: (()throws -> Void)?) rethrows {
         let imageLabel = AMImageLabel(.left)
         imageLabel.image = .round(.red, radius: 5)
         imageLabel.text = text
@@ -107,12 +155,12 @@ class CoreDataController: UIViewController {
         imageLabel.textColor = .black
         self.stackView.addArrangedSubview(imageLabel)
         imageLabel.onclick = {_ in
-            action?()
+            try? action?()
         }
     }
     func randomUser()->JSON{
         var json:JSON = [:]
-        let id = arc4random()
+        let id = Int.random(in: 1...1000000)
         json["id"] = JSON(id)
         json["name"] = "name_\(id)"
         json["avatar"] = "https://avatar.com/id/\(id)"

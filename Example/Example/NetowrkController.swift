@@ -41,7 +41,9 @@ class NetowrkController: UIViewController {
         self.stackView.am.center.equal(to: (100,0))
         self.addTest("Test Login") {
             pop.action(CCLoginType.allCases) { type, idx in
-                self.doLogin(type as! CCLoginType)
+                if let type = type as? CCLoginType {
+                    self.doLogin(type)
+                }
             }
         }
         self.addTest("上传头像") {[weak self] in

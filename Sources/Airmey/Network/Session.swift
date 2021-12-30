@@ -11,10 +11,8 @@ import Foundation
 class Session:NSObject{
     @Protected
     private var tasks:[Int:HTTPTask] = [:]
-    
     private let rootQueue:DispatchQueue = .init(label: "com.airmey.network.rootQueue")
     private let retryQueue:DispatchQueue = .init(label: "com.airmey.network.retryQueue")
-    
     private lazy var session:URLSession = {
         let config = URLSessionConfiguration.default
         let queue = OperationQueue()
@@ -131,11 +129,11 @@ class Session:NSObject{
 
 extension Session{
     func add(_ task:HTTPTask) {
-        self.tasks[task.id] = task
+        self.$tasks[task.id] = task
         task.resume()
     }
     func remove(_ task:HTTPTask){
-        self.tasks.removeValue(forKey: task.id)
+        self.$tasks[task.id] = nil
     }
     func restart(_ task:HTTPTask,after:TimeInterval = 0){
         retryQueue.asyncAfter(deadline: .now()+after) {
@@ -146,19 +144,19 @@ extension Session{
 }
 extension Session:URLSessionTaskDelegate{
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        if let req = self.tasks[task.taskIdentifier] {
+        if let req = self.$tasks[task.taskIdentifier] {
             req.metrics = metrics
         }
     }
 }
 extension Session:URLSessionDataDelegate{
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        if let req = self.tasks[dataTask.taskIdentifier] {
+        if let req = self.$tasks[dataTask.taskIdentifier] {
             req.append(data)
         }
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Swift.Error?) {
-        if let req = self.tasks[task.taskIdentifier] {
+        if let req = self.$tasks[task.taskIdentifier] {
             if let delay = req.finish(error) {
                 self.restart(req,after: delay)
             }else{
@@ -173,7 +171,7 @@ extension Session:URLSessionDataDelegate{
 
 extension Session : URLSessionDownloadDelegate{
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL){
-        if let req = self.tasks[downloadTask.taskIdentifier] as? DownloadTask{
+        if let req = self.$tasks[downloadTask.taskIdentifier] as? DownloadTask{
             req.finishDownload(location)
         }
     }

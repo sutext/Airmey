@@ -32,6 +32,7 @@ class RootViewController: AMLayoutViewContrller {
         popup.setNavigationBarHidden(true, animated: false)
         json.setNavigationBarHidden(true, animated: false)
         widget.setNavigationBarHidden(true, animated: false)
+        coreData.setNavigationBarHidden(true, animated: false)
         self.tabbarController.viewControllers = [table,popup,json,widget,coreData]
         self.leftViewController = NetowrkController()
     }

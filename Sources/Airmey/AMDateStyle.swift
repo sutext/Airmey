@@ -17,9 +17,10 @@ import Foundation
 ///     func test(){
 ///         let str = Date().string(for: .day) // 2021-08-26
 ///         let date = "2021-08-26".date(for: .day)
+///         let mmss = Date().string(for: "mm:ss")
 ///     }
 ///
-public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equatable{
+public struct AMDateStyle :RawRepresentable,Equatable{
     /// common full date style  `yyyy-MM-dd HH:mm:ss`
     public static let full:AMDateStyle = "yyyy-MM-dd HH:mm:ss"
     /// `mm:ss`
@@ -28,7 +29,7 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
     public static let hhmmss:AMDateStyle = "HH:mm:ss"
     /// `EEE, dd MMM yyyy HH:mm:ss z`
     public static let rfc822:AMDateStyle = {
-        let s:AMDateStyle = "EEE, dd MMM yyyy HH:mm:ss z"
+        var s:AMDateStyle = "EEE, dd MMM yyyy HH:mm:ss z"
         s.updater = {
             $0.dateFormat = $1
             $0.locale = Locale(identifier: "en")
@@ -36,17 +37,15 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
         }
         return s
     }()
-    public let rawValue: String
-    /// The DateFormatter updater hock after initialization
+    /// The DateFormatter updater hock after DateFormatter initialization
+    /// User can add custom settings for DateFormatter here
     public var updater:((DateFormatter,String)->Void)
-    required public init(rawValue: String) {
+    public let rawValue: String
+    public init(rawValue: String) {
         self.rawValue = rawValue
         self.updater = {
             $0.dateFormat = $1
         }
-    }
-    required public convenience init(stringLiteral value: StringLiteralType) {
-        self.init(rawValue: value)
     }
     fileprivate var formater:DateFormatter {
         let dic = Thread.current.threadDictionary
@@ -60,8 +59,14 @@ public final class AMDateStyle :RawRepresentable,ExpressibleByStringLiteral,Equa
         return formater
     }
 }
+
+extension AMDateStyle:ExpressibleByStringLiteral{
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(rawValue: value)
+    }
+}
 extension Date{
-    /// Fast date formeter
+    /// Fast and cached date formeter
     ///
     ///     let str = Date().string(for: .full)
     ///
@@ -72,9 +77,9 @@ extension Date{
     }
 }
 extension String{
-    /// Fast date formeter
+    /// Fast and cached date formeter
     ///
-    ///     let date = "2021-08-26 10:10:10".string(for: .full)
+    ///     let date = "2021-08-26 10:10:10".date(for: .full)
     ///
     ///- Parameters:
     /// - style: The date style
@@ -83,6 +88,8 @@ extension String{
     }
 }
 extension TimeInterval{
+    ///
+    /// Change TimeInterval  to "hh:mm:ss" style fastly
     public var hhmmss:String{
         let inttime = Int(self)
         let sec = inttime%60
@@ -91,6 +98,8 @@ extension TimeInterval{
         min = min%60
         return String(format: "%02d:%02d:%02d", hour,min,sec)
     }
+    ///
+    /// Change TimeInterval  to "mm:ss" style fastly
     public var mmss:String{
         let inttime = Int(self)
         let min = inttime/60
@@ -102,7 +111,7 @@ extension TimeInterval{
     ///     let str = 1629951106.string(for: .full) //2021-08-26 12:11:46 UTC-8
     ///
     ///- Parameters:
-    /// - style: The date style
+    ///    - style: The date style
     public func string(for style:AMDateStyle) -> String {
         return style.formater.string(from: Date(timeIntervalSince1970: self))
     }

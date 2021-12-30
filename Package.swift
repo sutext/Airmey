@@ -12,9 +12,6 @@ let package = Package(
             name: "Airmey",
             targets: ["Airmey"]),
         .library(
-            name: "AMCrypto",
-            targets: ["AMCrypto"]),
-        .library(
             name: "AMPhotoKit",
             targets: ["AMPhotoKit"]),
         .library(
@@ -31,11 +28,6 @@ let package = Package(
         .target(
             name: "Airmey",
             dependencies: []
-        ),
-        .target(
-            name: "AMCrypto",
-            dependencies: [],
-            publicHeadersPath: "."
         ),
         .target(
             name: "AMPhotoKit",

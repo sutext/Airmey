@@ -19,9 +19,7 @@ class TestJsonController: UIViewController {
     }
     override func viewDidLoad() {        
         super.viewDidLoad()
-        
         print(JSON(parse: try? JSONEncoder().encode(true)))
-
         print(NSNumber.init(value: true).stringValue)
         print(NSNumber.init(value: false).stringValue)
         print(JSON(1))
@@ -42,7 +40,7 @@ class TestJsonController: UIViewController {
         json["int_min"] = JSON(Int64.min)
         json["int_max"] = JSON(Int64.max)
         json["uint_max"] = JSON(UInt64.max)
-        json["array"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max,int,[bool],[int]]
+        json["ary"] = [true,Double.pi,Int64.min,Int64.max,UInt64.max,int,[bool],[int]]
         json["dic"] = ["name":"jackson","age":18,"obj":json,"int":int]
         json["empty"] = [:]
         json["null"] = .null
@@ -53,6 +51,16 @@ class TestJsonController: UIViewController {
         encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
         if let data = try? encoder.encode(JSON(params)) {
             print(String(data:data,encoding: .utf8) ?? "")
+        }
+        var dic = [Int:Int]()
+        dic[1] = 2
+        dic[2] = 1
+        for ele in dic {
+            print(ele)
+        }
+        dic[1] = nil
+        for ele in dic {
+            print(ele)
         }
     }
 }

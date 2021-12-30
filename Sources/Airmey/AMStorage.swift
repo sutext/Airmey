@@ -107,48 +107,52 @@ open class AMStorage{
 //MARK: public sync methods
 extension AMStorage{
     ///
+    /// Batch update or delete some NSManagedObject.
+    ///
+    ///         let jack = orm.query(one:UserObject.self,id:"1")
+    ///         let tom = orm.query(one:UserObject.self,id:"2")
+    ///         orm.updateAndSave{
+    ///             jack?.name = "Mr Jackson"
+    ///             jack?.age = 11
+    ///             jack?.avatar = "https://example.com/avatar/1"
+    ///             orm.delete(tom)
+    ///         }
+    ///         lable.text = jack?.name // "Mr Jackson"
+    ///
+    /// - Important: Any changes of NSManagedObject must  be around by this method ,otherwise some crash may occur!!! We must try our best to add all changes in one batch.
+    /// - Important: The closure will be execute in NSManagedObjectContext's queue. So UI operation shouldn't be include in it.
+    /// - Important: `query overlay insert` methods shouldn't be include in the closure. otherwise deadlock may occur
+    ///
+    /// - Parameters:
+    ///    - closure: will be execute synchronously in the NSManagedObjectContext's private queue
+    ///
+    public func updateAndSave(_ closure:()->Void){
+        self.moc.performAndWait {
+            closure()
+            try? self.moc.save()
+        }
+    }
+    ///
     /// Delete a managed object from database.
     /// - Parameters:
     ///     - object: The instance that will be delete
-    /// - Throws: some system error from moc.
+    /// - Warning: This method must be around by updateAndSave { }
     ///
-    public func delete(_ object:NSManagedObject?)throws{
+    public func delete(_ object:NSManagedObject?){
         if let object = object {
-            var err:Error? = nil
-            self.moc.performAndWait {
-                do {
-                    self.moc.delete(object)
-                    try self._save()
-                } catch {
-                    err = error
-                }
-            }
-            if let err = err{
-                throw err
-            }
+            self.moc.delete(object)
         }
     }
     ///
     /// Delete a managed object from database.
     /// - Parameters:
     ///     - objects: The instance array that will be delete
-    /// - Throws: some system error from moc.
+    /// - Warning: This method must be around by updateAndSave { }
     ///
-    public func delete(_ objects:[NSManagedObject]?)throws{
+    public func delete(_ objects:[NSManagedObject]?){
         if let objects = objects {
-            var err:Error? = nil
-            self.moc.performAndWait {
-                do {
-                    objects.forEach {
-                        self.moc.delete($0)
-                    }
-                    try self._save();
-                } catch {
-                    err = error
-                }
-            }
-            if let err = err{
-                throw err
+            objects.forEach {
+                self.moc.delete($0)
             }
         }
     }
@@ -163,12 +167,15 @@ extension AMStorage{
     /// - Returns: The result object list
     ///
     @discardableResult
-    public func overlay<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],where predicate:NSPredicate?=nil)throws->[Object]{
+    public func overlay<Object:AMManagedObject>(
+        _ type:Object.Type,
+        models:[Object.Model],
+        where predicate:NSPredicate?=nil) throws -> [Object] {
         var results:[Object] = [];
         var err:Error? = nil
         self.moc.performAndWait {
             do {
-                let olds = self.query(type, where: predicate)
+                let olds = self._query(type, where: predicate)
                 results = try self.create(type, models:models)
                 var rms = [Object]()
                 olds.forEach{ old in
@@ -182,7 +189,7 @@ extension AMStorage{
                 rms.forEach { obj in
                     self.moc.delete(obj)
                 }
-                try self._save();
+                try self.moc.save();
             } catch{
                 err = error
             }
@@ -193,7 +200,7 @@ extension AMStorage{
         return results;
     }
     ///
-    ///  Insert or update an managed object from model
+    ///  Insert or update a managed object from model
     /// - Parameters:
     ///     - type: An `AMManagedObject` subclass type
     ///     - model: The data source model instance
@@ -201,13 +208,15 @@ extension AMStorage{
     /// - Returns: A newly or updated managed object instance
     ///
     @discardableResult
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model)throws->Object{
+    public func insert<Object:AMManagedObject>(
+        _ type:Object.Type,
+        model:Object.Model) throws -> Object{
         var obj:Object? = nil
         var err:Error? = nil
         self.moc.performAndWait {
             do {
                 obj = try self.create(type, model: model)
-                try self._save();
+                try self.moc.save();
             } catch {
                 err = error
             }
@@ -226,13 +235,15 @@ extension AMStorage{
     /// - Returns: A newly or updated managed object instance list
     ///
     @discardableResult
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model])throws->[Object]{
-        var results:[Object] = [];
+    public func insert<Object:AMManagedObject>(
+        _ type:Object.Type,
+        models:[Object.Model]) throws -> [Object]{
+        var results:[Object] = []
         var err:Error? = nil
         self.moc.performAndWait {
             do {
                 results = try self.create(type, models:models)
-                try self._save();
+                try self.moc.save()
             } catch{
                 err = error
             }
@@ -240,7 +251,7 @@ extension AMStorage{
         if let err = err {
             throw err
         }
-        return results;
+        return results
     }
     ///
     ///  Query a managed object form id
@@ -249,12 +260,14 @@ extension AMStorage{
     ///     - id: The object primary id
     /// - Returns: The managed object  if matching the id
     ///
-    public func query<Object:AMManagedObject>(one type:Object.Type, id:Object.IDValue)->Object?{
-        guard  id.objectId.count > 0 else {
-            return nil
+    public func query<Object:AMManagedObject>(
+        one type:Object.Type,
+        id:Object.IDValue) -> Object?{
+        var obj:Object? = nil
+        self.moc.performAndWait {
+            obj = self._query(one: type, id: id)
         }
-        let predicate = NSPredicate(format:"id == %@",id.objectId)
-        return self.query(type, where: predicate).first
+        return obj
     }
     ///
     ///  Query all managed objects which match the predicate
@@ -265,19 +278,15 @@ extension AMStorage{
     ///     - sorts: A `NSSortDescriptor` instance. just like order by
     /// - Returns: The managed objects matching the predicate
     ///
-    public func query<Object:NSManagedObject>(_ type:Object.Type,where predicate:NSPredicate?=nil,page:(index:Int,size:Int)?=nil,sorts:[NSSortDescriptor]? = nil)->[Object]{
+    public func query<Object:NSManagedObject>(
+        _ type:Object.Type,
+        where predicate:NSPredicate?=nil,
+        page:(index:Int,size:Int)?=nil,
+        sorts:[NSSortDescriptor]? = nil)->[Object]
+    {
         var results:[Object] = []
         self.moc.performAndWait {
-            let request = type.fetchRequest()
-            request.predicate = predicate
-            request.sortDescriptors = sorts
-            if let page = page {
-                request.fetchLimit = page.size
-                request.fetchOffset = page.index * page.size
-            }
-            if let objs =  try? self.moc.fetch(request) as? [Object]{
-                results = objs
-            }
+            results = self._query(type, where: predicate, page: page, sorts: sorts)
         }
         return results
     }
@@ -288,7 +297,9 @@ extension AMStorage{
     ///     - predicate: The querey predicate
     /// - Returns: The managed objects count that matching the predicate
     ///
-    public func count<Object:NSManagedObject>(for type:Object.Type,where predicate:NSPredicate?=nil)->Int{
+    public func count<Object:NSManagedObject>(
+        for type:Object.Type,
+        where predicate:NSPredicate?=nil) -> Int{
         var count = 0
         self.moc.performAndWait {
             let request = type.fetchRequest()
@@ -299,20 +310,32 @@ extension AMStorage{
         }
         return count
     }
-    /// commit all the insert or update operation
-    public func save(){
-        self.moc.performAndWait{
-            try? self._save()
-        }
-    }
-    
 }
 //MARK: private methods
 extension AMStorage{
-    private func _save() throws{
-        if self.moc.hasChanges {
-            try self.moc.save();
+    public func _query<Object:AMManagedObject>(
+        one type:Object.Type,
+        id:Object.IDValue) -> Object?{
+        guard  id.objectId.count > 0 else {
+            return nil
         }
+        let predicate = NSPredicate(format:"id == %@",id.objectId)
+        return self._query(type, where: predicate).first
+    }
+    private func _query<Object:NSManagedObject>(
+        _ type:Object.Type,
+        where predicate:NSPredicate?=nil,
+        page:(index:Int,size:Int)?=nil,
+        sorts:[NSSortDescriptor]? = nil)->[Object]
+    {
+        let request = type.fetchRequest()
+        request.predicate = predicate
+        request.sortDescriptors = sorts
+        if let page = page {
+            request.fetchLimit = page.size
+            request.fetchOffset = page.index * page.size
+        }
+        return  (try? self.moc.fetch(request) as? [Object]) ?? []
     }
     private func create<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model])throws->[Object]{
         var result:[Object] = []
@@ -337,40 +360,12 @@ extension AMStorage{
 }
 //MARK: async methods
 extension AMStorage{
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,model:Object.Model,block:ONResult<Object>?){
-        self.queue.async {
-            var result:Result<Object,Error>
-            do {
-                let obj = try self.insert(type, model: model)
-                result = .success(obj)
-            } catch  {
-                result = .failure(error)
-            }
-            DispatchQueue.main.async {
-                block?(result)
-            }
-        }
-    }
-    public func insert<Object:AMManagedObject>(_ type:Object.Type,models:[Object.Model],block:ONResult<[Object]>?){
-        self.queue.async {
-            var result:Result<[Object],Error>
-            do {
-                let objs = try self.insert(type, models: models)
-                result = .success(objs)
-            } catch  {
-                result = .failure(error)
-            }
-            DispatchQueue.main.async {
-                block?(result)
-            }
-        }
-    }
     public func query<Object:AMManagedObject>(
         one type:Object.Type,
         id:Object.IDValue,
         block:((Object?) ->Void)?) {
-        self.queue.async {
-            let obj = self.query(one: type, id: id)
+        self.moc.perform {
+            let obj = self._query(one: type, id: id)
             DispatchQueue.main.async {
                 block?(obj)
             }
@@ -378,12 +373,12 @@ extension AMStorage{
     }
     public func query<Object:NSManagedObject>(
         _ type:Object.Type,
-        where predicate:NSPredicate?=nil,
-        page:(index:Int,size:Int)?=nil,
+        where predicate:NSPredicate? = nil,
+        page:(index:Int,size:Int)? = nil,
         sorts:[NSSortDescriptor]? = nil,
         block:(([Object])->Void)?){
-        self.queue.async {
-            let objs = self.query(type, where: predicate,page:page, sorts: sorts)
+        self.moc.perform {
+            let objs = self._query(type, where: predicate,page:page, sorts: sorts)
             DispatchQueue.main.async {
                 block?(objs)
             }
