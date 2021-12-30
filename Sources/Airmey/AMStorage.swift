@@ -129,7 +129,9 @@ extension AMStorage{
     public func updateAndSave(_ closure:()->Void){
         self.moc.performAndWait {
             closure()
-            try? self.moc.save()
+            self.moc.perform {
+                try? self.moc.save()
+            }
         }
     }
     ///

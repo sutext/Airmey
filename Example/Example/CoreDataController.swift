@@ -85,9 +85,11 @@ class CoreDataController: UIViewController {
             am.center.equal(to: 0)
             am.edge.equal(top: 0, bottom: 0)
         }
-        try? self.addTest("Test concurrence") {
-            for _ in 0..<10 {
-                try orm.insert(UserObject.self, model: self.randomUser())
+        self.addTest("Test concurrence") {
+            DispatchQueue(label: "thread1").async {
+                for _ in 0..<100 {
+                   let _ =  try? orm.insert(UserObject.self, model: self.randomUser())
+                }
             }
             DispatchQueue(label: "thread2").async{
                 var models:[JSON] = []
@@ -128,7 +130,7 @@ class CoreDataController: UIViewController {
             }
             DispatchQueue(label: "thread4").asyncAfter(deadline: .now()+0.01)
             {
-                let predicate = NSPredicate(format: "id < 100000")
+                let predicate = NSPredicate(format: "id < 1000")
                 let users = orm.query(UserObject.self,where: predicate)
                 orm.updateAndSave {
                     users.forEach { user in

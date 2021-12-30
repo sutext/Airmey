@@ -146,6 +146,86 @@ public extension Protected where T: RangeReplaceableCollection {
             ward.append(contentsOf: newElements)
         }
     }
+    /// Removes and returns the element at the specified position.
+    ///
+    /// All the elements following the specified position are moved up to
+    /// close the gap.
+    ///
+    ///     var measurements: [Double] = [1.1, 1.5, 2.9, 1.2, 1.5, 1.3, 1.2]
+    ///     let removed = measurements.remove(at: 2)
+    ///     print(measurements)
+    ///     // Prints "[1.1, 1.5, 1.2, 1.5, 1.3, 1.2]"
+    ///
+    /// - Parameter index: The position of the element to remove. `index` must
+    ///   be a valid index of the array.
+    /// - Returns: The element at the specified index.
+    ///
+    /// - Complexity: O(*n*), where *n* is the length of the array.
+    func remove(at index: T.Index) -> T.Element{
+        write {
+            $0.remove(at: index)
+        }
+    }
+
+    /// Inserts a new element at the specified position.
+    ///
+    /// The new element is inserted before the element currently at the specified
+    /// index. If you pass the array's `endIndex` property as the `index`
+    /// parameter, the new element is appended to the array.
+    ///
+    ///     var numbers = [1, 2, 3, 4, 5]
+    ///     numbers.insert(100, at: 3)
+    ///     numbers.insert(200, at: numbers.endIndex)
+    ///
+    ///     print(numbers)
+    ///     // Prints "[1, 2, 3, 100, 4, 5, 200]"
+    ///
+    /// - Parameter newElement: The new element to insert into the array.
+    /// - Parameter i: The position at which to insert the new element.
+    ///   `index` must be a valid index of the array or equal to its `endIndex`
+    ///   property.
+    ///
+    /// - Complexity: O(*n*), where *n* is the length of the array. If
+    ///   `i == endIndex`, this method is equivalent to `append(_:)`.
+    func insert(_ newElement: T.Element, at i: T.Index){
+        write {
+            $0.insert(newElement, at: i)
+        }
+    }
+
+    /// Removes all elements from the array.
+    ///
+    /// - Parameter keepCapacity: Pass `true` to keep the existing capacity of
+    ///   the array after removing its elements. The default value is
+    ///   `false`.
+    ///
+    /// - Complexity: O(*n*), where *n* is the length of the array.
+    func removeAll(keepingCapacity keepCapacity: Bool = false){
+        write {
+            $0.removeAll(keepingCapacity: keepCapacity)
+        }
+    }
+    /// Removes all the elements that satisfy the given predicate.
+    ///
+    /// Use this method to remove every element in a collection that meets
+    /// particular criteria. The order of the remaining elements is preserved.
+    /// This example removes all the odd values from an
+    /// array of numbers:
+    ///
+    ///     var numbers = [5, 6, 7, 8, 9, 10, 11]
+    ///     numbers.removeAll(where: { $0 % 2 != 0 })
+    ///     // numbers == [6, 8, 10]
+    ///
+    /// - Parameter shouldBeRemoved: A closure that takes an element of the
+    ///   sequence as its argument and returns a Boolean value indicating
+    ///   whether the element should be removed from the collection.
+    ///
+    /// - Complexity: O(*n*), where *n* is the length of the collection.
+    func removeAll(where shouldBeRemoved: (T.Element) -> Bool){
+        write {
+            $0.removeAll(where: shouldBeRemoved)
+        }
+    }
 }
 
 /// Data  methods

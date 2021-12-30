@@ -63,10 +63,12 @@ open class HTTPTask{
         task.suspend()
     }
     func append(_ data:Data) {
-        if self.data == nil {
-            mutableData = data
-        } else {
-            $mutableData.write { $0?.append(data) }
+        $mutableData.write {
+            if $0 == nil {
+                $0 = data
+            } else {
+                $0?.append(data)
+            }
         }
     }
     func finish(_ error:Error?)->TimeInterval? {
