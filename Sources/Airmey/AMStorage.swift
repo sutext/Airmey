@@ -111,7 +111,7 @@ extension AMStorage{
     ///
     ///         let jack = orm.query(one:UserObject.self,id:"1")
     ///         let tom = orm.query(one:UserObject.self,id:"2")
-    ///         orm.updateAndSave{
+    ///         orm.update{
     ///             jack?.name = "Mr Jackson"
     ///             jack?.age = 11
     ///             jack?.avatar = "https://example.com/avatar/1"
@@ -124,13 +124,16 @@ extension AMStorage{
     /// - Important: `query overlay insert` methods shouldn't be include in the closure. otherwise deadlock may occur
     ///
     /// - Parameters:
+    ///    - save: save context or not
     ///    - closure: will be execute synchronously in the NSManagedObjectContext's private queue
     ///
-    public func updateAndSave(_ closure:()->Void){
+    public func update(save:Bool = true, closure:(()->Void)){
         self.moc.performAndWait {
             closure()
-            self.moc.perform {
-                try? self.moc.save()
+            if save {
+                self.moc.perform {
+                    try? self.moc.save()
+                }
             }
         }
     }
@@ -138,7 +141,7 @@ extension AMStorage{
     /// Delete a managed object from database.
     /// - Parameters:
     ///     - object: The instance that will be delete
-    /// - Warning: This method must be around by updateAndSave { }
+    /// - Warning: This method must be around by update(save:closure:)
     ///
     public func delete(_ object:NSManagedObject?){
         if let object = object {
@@ -149,7 +152,7 @@ extension AMStorage{
     /// Delete a managed object from database.
     /// - Parameters:
     ///     - objects: The instance array that will be delete
-    /// - Warning: This method must be around by updateAndSave { }
+    /// - Warning: This method must be around by update(save:closure:)
     ///
     public func delete(_ objects:[NSManagedObject]?){
         if let objects = objects {

@@ -1,6 +1,7 @@
 # Airmey
 
-- iOS 开发常用工具集。包含网络，网络图片，存储，弹窗，自动布局以及常用的抽象 UI 控件
+- iOS 开发常用工具集。包含网络，网络图片，存储，弹窗，自动布局以及常用的抽象等。简洁轻量而高效的实现几乎所有常见App开发所需要依赖的库。
+- 引入Airmey之后 Alamofire，Moya，SwiftJSON，SDWebImage，MJRefresh，MagicRecord，SnapKit，MBProgressHUD，等等等都不需要了。
 
 - [Airmey](#airmey)
   - [Network](#network)

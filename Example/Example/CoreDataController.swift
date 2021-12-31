@@ -97,7 +97,7 @@ class CoreDataController: UIViewController {
                     models.append(self.randomUser())
                 }
                 if let users = try? orm.insert(UserObject.self, models: models){
-                    orm.updateAndSave {
+                    orm.update {
                         users.forEach({ user in
                             user.age += 1
                         })
@@ -115,7 +115,7 @@ class CoreDataController: UIViewController {
                 }
                 let predicate = NSPredicate(format: "id > 1000000")
                 if let users = (try? orm.overlay(UserObject.self,models:models,where: predicate)) {
-                    orm.updateAndSave {
+                    orm.update {
                         users.forEach { user in
                             if user.id%3 == 1 {
                                 user.age += 1
@@ -132,7 +132,7 @@ class CoreDataController: UIViewController {
             {
                 let predicate = NSPredicate(format: "id < 1000")
                 let users = orm.query(UserObject.self,where: predicate)
-                orm.updateAndSave {
+                orm.update {
                     users.forEach { user in
                         if user.id%3 == 0 {
                             orm.delete(user)
