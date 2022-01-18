@@ -17,6 +17,8 @@ public extension CGFloat{
     static var tabbarHeight:CGFloat { 49 + .footerHeight }
     /// The navigation bar height
     static var navbarHeight:CGFloat { 44 + .headerHeight }
+    /// The portrait navigation  height
+    static let portaitNavH: CGFloat = AMPhone.isSlim ? 88 : 64
     /// The screen width
     static var screenWidth:CGFloat { UIScreen.main.bounds.width }
     ///The screen height
