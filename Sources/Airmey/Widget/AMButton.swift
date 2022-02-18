@@ -99,8 +99,11 @@ open class AMButton: UIButton {
 extension AMButton{
     open override func imageRect(forContentRect contentRect: CGRect) -> CGRect {
         switch self.style {
-        case .cover,.bottom:
+        case .cover:
             return CGRect(x: self.contentEdgeInsets.left, y: self.contentEdgeInsets.top, width: self.imageSize.width, height: self.imageSize.height)
+        case .bottom:
+            let maxWidh = max(imageSize.width, titleSize.width)
+            return CGRect(x: (maxWidh - imageSize.width)/2+self.contentEdgeInsets.left, y: self.contentEdgeInsets.top, width: self.imageSize.width, height: self.imageSize.height)
         default:
             return super.imageRect(forContentRect: contentRect);
         }
@@ -122,8 +125,9 @@ extension AMButton{
             if titleSize == .zero {
                 return .zero
             }
-            let imageRect = CGRect(x: self.contentEdgeInsets.left, y: self.contentEdgeInsets.top, width: self.imageSize.width, height: self.imageSize.height);
-            var resultRect = CGRect(x:imageRect.size.width/2-titleSize.width/2+imageRect.origin.x, y:imageRect.size.height+imageRect.origin.y+spacing, width:titleSize.width, height:titleSize.height);
+            let maxWidh = max(imageSize.width, titleSize.width)
+            let imageRect = CGRect(x: (maxWidh-titleSize.width)/2+self.contentEdgeInsets.left, y: self.contentEdgeInsets.top, width: self.imageSize.width, height: self.imageSize.height);
+            var resultRect = CGRect(x: imageRect.origin.x, y:imageRect.size.height+imageRect.origin.y+spacing, width:titleSize.width, height:titleSize.height);
             resultRect.origin.y += self.titleEdgeInsets.top;
             return resultRect
         default:
@@ -149,7 +153,7 @@ extension AMButton{
             return CGSize(width: self.contentEdgeInsets.left+self.contentEdgeInsets.right+self.imageSize.width, height: self.contentEdgeInsets.top+self.contentEdgeInsets.bottom+self.imageSize.height)
         case .bottom:
             let titleSize = self.titleSize
-            var resultSize = CGSize(width: self.imageSize.width, height: self.imageSize.height+titleSize.height);
+            var resultSize = CGSize(width: max(self.imageSize.width, titleSize.width), height: self.imageSize.height+titleSize.height);
             resultSize.height += (self.titleEdgeInsets.top+self.titleEdgeInsets.bottom);
             return CGSize(width: self.contentEdgeInsets.left+self.contentEdgeInsets.right+resultSize.width, height: self.contentEdgeInsets.top+self.contentEdgeInsets.bottom+resultSize.height)
         default:
@@ -170,7 +174,7 @@ extension AMButton{
         if label.text == nil || label.text!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).count == 0 {
             return .zero
         }
-        let width = self.imageSize.width + (self.contentEdgeInsets.left+self.contentEdgeInsets.right);
+        let width = self.imageSize.width + (self.contentEdgeInsets.left+self.contentEdgeInsets.right) + 20;
         let height = (self.style == .cover ? imageSize.height : CGFloat(Int16.max))
         return label.textRect(forBounds: CGRect(x:0,y:0,width:width,height:height), limitedToNumberOfLines: label.numberOfLines).size;
     }
