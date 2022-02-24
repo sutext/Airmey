@@ -27,7 +27,7 @@ public final class AMImageLabel: AMView {
     public let imageView = UIImageView()
     /// innter text label
     public let textLabel = UILabel()
-    public let stackView = UIStackView()
+    private let stackView = UIStackView()
     public private(set) var layout:Layout
     public private(set) var insets:AMEdgeAnchor.Constraint!
     ///
