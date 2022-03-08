@@ -15,7 +15,7 @@ public class AMTextView: UITextView {
         }
     }
     
-    var placeHolderColor: UIColor = UIColor.gray{
+    public var placeHolderColor: UIColor = UIColor.gray{
         didSet{
             self.setNeedsDisplay()
         }
