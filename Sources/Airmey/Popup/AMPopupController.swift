@@ -127,7 +127,7 @@ public protocol AMWaitable:AMPopupController{
 }
 ///Tost style
 public protocol AMRemindable:AMPopupController{
-    init(_ msg:AMTextDisplayable,title:AMTextDisplayable?)
+    init(_ msg:AMTextDisplayable,title:AMTextDisplayable?,inset: UIEdgeInsets?, position: RemindPosition?)
 }
 ///Alert style
 public protocol AMAlertable:UIViewController{
@@ -141,4 +141,9 @@ public protocol AMAlertable:UIViewController{
 ///ActionSheet style
 public protocol AMActionable:UIViewController{
     init(_ items:[AMTextDisplayable],onhide:AMActionBlock?)
+}
+
+public enum RemindPosition {
+    case middle
+    case bottom
 }

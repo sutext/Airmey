@@ -65,8 +65,10 @@ extension AMPopupCenter{
         title:AMTextDisplayable?=nil,
         duration:TimeInterval?=nil,
         meta:AMRemindable.Type?=nil,
+        messageInset: UIEdgeInsets? = nil,
+        position: RemindPosition? = nil,
         onhide:AMBlock?=nil) {
-        let vc = (meta ?? Self.Remind).init(msg, title: title)
+        let vc = (meta ?? Self.Remind).init(msg, title: title, inset: messageInset, position: position)
         vc.am_pop = self
         self.add(.remind(vc,duration:duration))
     }

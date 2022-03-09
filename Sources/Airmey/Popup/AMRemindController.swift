@@ -9,10 +9,14 @@ import UIKit
 
 /// Default buildin Remind appearence
 open class AMRemindController: AMPopupController ,AMRemindable{
+    
     public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
         view.backgroundColor = UIColor(white: 0, alpha: 0.7)
-        view.layer.cornerRadius = 5
+        view.am.width.greater(than: 210)
+        view.layer.cornerRadius = 8
+        view.addSubview(messageLabel)
+        messageLabel.am.edge.equal(top:messageInset.top,left: messageInset.left , bottom: -messageInset.bottom,right: -messageInset.right)
         return view;
     }()
     public lazy var messageLabel:UILabel = {
@@ -21,34 +25,42 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         label.backgroundColor = .clear
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 17)
+        label.numberOfLines = 15
         return label
     }()
-    public required init(
-        _ msg: AMTextDisplayable,
-        title: AMTextDisplayable? = nil) {
+    public required init(_ msg: AMTextDisplayable,
+                         title: AMTextDisplayable?,
+                         inset: UIEdgeInsets?,
+                         position: RemindPosition?) {
         super.init(AMDimmingPresenter())
         self.presenter.dimming = 0
         self.presenter.onMaskClick = nil
         self.messageLabel.displayText = msg
+        if let inset = inset {
+            self.messageInset = inset
+        }
+        if let position = position {
+            self.position = position
+        }
     }
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
     open override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .clear
         self.view.addSubview(self.blurView)
-        self.blurView.addSubview(self.messageLabel)
-        self.messageLabel.numberOfLines = 15
-        self.blurView.amake{
-            $0.width.greater(than: 210)
-            $0.center.equal(to: 0)
-        }
-        self.messageLabel.amake { am in
-            am.width.less(than: .screenWidth * 0.8)
-            am.height.greater(than: 45)
-            am.edge.equal(top:20,left: 15 , bottom: -20,right: -15 )
+        blurView.am.centerX.equal(to: 0)
+        if position == .middle {
+            blurView.am.centerY.equal(to: 0)
+        }else{
+            blurView.am.bottom.equal(to: -(.footerHeight + 32))
         }
     }
+    
+    private var position: RemindPosition = .middle
+    
+    private var messageInset: UIEdgeInsets = .init(top: 20, left: 15, bottom: 20, right: 15)
 }
