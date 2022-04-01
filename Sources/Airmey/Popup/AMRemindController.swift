@@ -24,8 +24,10 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         label.textAlignment = .center
         label.backgroundColor = .clear
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 17)
+        label.textColor = .hex(0xE03A42)
+        label.font = UIFont.systemFont(ofSize: 14)
         label.numberOfLines = 15
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     public required init(_ msg: AMTextDisplayable,
@@ -53,6 +55,8 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         self.view.backgroundColor = .clear
         self.view.addSubview(self.blurView)
         blurView.am.centerX.equal(to: 0)
+        blurView.am.left.greater(than: 20.0)
+        blurView.am.right.less(than: -20)
         if position == .middle {
             blurView.am.centerY.equal(to: 0)
         }else{
