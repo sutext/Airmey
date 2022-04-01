@@ -12,7 +12,7 @@ open class AMRemindController: AMPopupController ,AMRemindable{
     
     public lazy var blurView:UIView = {
         let view = UIView(frame: .zero)
-        view.backgroundColor = UIColor(white: 0, alpha: 0.7)
+        view.backgroundColor = .hex(0x000000)
         view.am.width.greater(than: 210)
         view.layer.cornerRadius = 8
         view.addSubview(messageLabel)
@@ -56,7 +56,6 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         self.view.addSubview(self.blurView)
         blurView.am.centerX.equal(to: 0)
         blurView.am.left.greater(than: 20.0)
-        blurView.am.right.less(than: -20)
         if position == .middle {
             blurView.am.centerY.equal(to: 0)
         }else{
