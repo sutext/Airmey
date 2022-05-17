@@ -21,21 +21,12 @@ open class AMRefreshFooter: AMRefresh {
             self.feedback = threshold >= 1
         }
     }
-    public let indicator = UIActivityIndicatorView(style: .gray)
-    public init(height:CGFloat? = nil) {
+    public let indicator: Loading
+    public init(_ indicator:Loading = Loading(), height:CGFloat? = nil) {
+        self.indicator = indicator
         super.init(.footer,height: height)
-        self.stackView.spacing = 5
-        self.stackView.axis = .horizontal
-        self.stackView.distribution = .equalCentering
-        self.stackView.alignment = .center
-        self.addSubview(self.stackView)
-        self.stackView.am.center.equal(to: 0)
-        self.stackView.addArrangedSubview(self.indicator)
-        self.stackView.addArrangedSubview(self.textLabel)
-        self.text = "drag to refresh"
-        self.setText("relax to refreshing", for: .draging)
-        self.setText("refreshing", for: .refreshing)
-        self.disabledText = "No more content"
+        self.addSubview(self.indicator)
+        self.indicator.am.center.equal(to: 0)
     }
     public override func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -51,16 +42,16 @@ open class AMRefreshFooter: AMRefresh {
         didSet{
             if !isEnabled {
                 self.textLabel.displayText = self.disabledText ?? self.text
-                self.indicator.stopAnimating()
+                self.indicator.update(status: .idle)
             }
         }
     }
     public override func statusChanged(_ status: AMRefresh.Status, old: AMRefresh.Status) {
         switch status {
         case .idle:
-            self.indicator.stopAnimating()
+            self.indicator.update(status: .idle)
         case .refreshing:
-            self.indicator.startAnimating()
+            self.indicator.update(status: .refreshing)
         default:
             break
         }

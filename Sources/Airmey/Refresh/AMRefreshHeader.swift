@@ -117,6 +117,9 @@ extension AMRefresh{
         public static func gif(_ images:[UIImage],duration:TimeInterval? = nil)->Loading{
             GifLoading(images,duration: duration)
         }
+        public static func image(_ image: UIImage,duration:TimeInterval? = nil)->Loading{
+            ImageLoading(image,duration: duration)
+        }
     }
 }
 extension AMRefresh{
@@ -159,7 +162,52 @@ extension AMRefresh{
             inner.image = images[index]
         }
     }
+    
+    public class ImageLoading:Loading{
+        private let inner = UIImageView()
+        private var duration:TimeInterval = 0.3
+        private lazy var rotateAnimation: CABasicAnimation = {
+            let rotateAnimation = CABasicAnimation(keyPath: "transform.rotation")
+            rotateAnimation.toValue = Double.pi * 2
+            rotateAnimation.repeatCount = MAXFLOAT
+            return rotateAnimation
+        }()
+        public init(_ image: UIImage ,duration:TimeInterval? = nil) {
+            super.init(frame:.zero)
+            self.addSubview(inner)
+            inner.image = image
+            inner.am.edge.equal(to: 0)
+            if let dur = duration {
+                self.duration = dur
+            }
+            self.rotateAnimation.duration = self.duration
+        }
+        
+        private func innerStartAnimating() {
+            inner.layer.transform = CATransform3DRotate(CATransform3DIdentity, 0, 0, 0, 1)
+            inner.layer.add(rotateAnimation, forKey: nil)
+        }
+        
+        private func innerStopAnimating() {
+            inner.layer.transform = CATransform3DRotate(CATransform3DIdentity, 0, 0, 0, 1)
+            inner.layer.removeAllAnimations()
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        public override func update(status: AMRefresh.Status) {
+            switch status {
+            case .idle:
+                innerStopAnimating()
+            case .refreshing:
+                innerStartAnimating()
+            default:
+                break
+            }
+        }
+        public override func update(percent: CGFloat) {
+            inner.layer.transform = CATransform3DRotate(CATransform3DIdentity, .pi*percent*2, 0, 0, 1)
+        }
+    }
 }
-
-
-
