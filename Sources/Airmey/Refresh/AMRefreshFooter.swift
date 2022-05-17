@@ -79,6 +79,7 @@ open class AMRefreshFooter: AMRefresh {
         }
         let percent = (offset-happenedOffset-moveableOffset)/self.height
         if scview.isDragging {
+            indicator.update(percent: percent)
             if self.status == .idle , percent >= threshold {
                 self.status = .draging
             }else if self.status == .draging && percent < threshold{

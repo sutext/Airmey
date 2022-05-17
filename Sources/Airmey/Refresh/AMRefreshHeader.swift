@@ -165,7 +165,7 @@ extension AMRefresh{
     
     public class ImageLoading:Loading{
         private let inner = UIImageView()
-        private var duration:TimeInterval = 0.3
+        private var duration:TimeInterval = 1
         private lazy var rotateAnimation: CABasicAnimation = {
             let rotateAnimation = CABasicAnimation(keyPath: "transform.rotation")
             rotateAnimation.toValue = Double.pi * 2
