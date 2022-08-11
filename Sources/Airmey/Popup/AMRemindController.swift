@@ -63,7 +63,7 @@ open class AMRemindController: AMPopupController ,AMRemindable{
         }
     }
     
-    private var position: RemindPosition = .middle
+    public var position: RemindPosition = .middle
     
-    private var messageInset: UIEdgeInsets = .init(top: 14, left: 25, bottom: 14, right: 25)
+    public var messageInset: UIEdgeInsets = .init(top: 14, left: 25, bottom: 14, right: 25)
 }
