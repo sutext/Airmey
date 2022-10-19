@@ -23,7 +23,7 @@ class RootViewController: AMLayoutViewContrller {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-        let table = UINavigationController(rootViewController: TableViewController())
+        let table = UINavigationController(rootViewController: UTNetowrkController())
         let popup = UINavigationController(rootViewController: PopupController())
         let json = UINavigationController(rootViewController: TestJsonController())
         let widget = UINavigationController(rootViewController: WidgetsController())

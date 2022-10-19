@@ -11,12 +11,11 @@ import Foundation
 class Session:NSObject{
     @Protected
     private var tasks:[Int:HTTPTask] = [:]
-    private let rootQueue:DispatchQueue = .init(label: "com.airmey.network.rootQueue")
-    private let retryQueue:DispatchQueue = .init(label: "com.airmey.network.retryQueue")
-    private lazy var session:URLSession = {
+    private let rootQueue:DispatchQueue = DispatchQueue(label: "com.airmey.network.rootQueue",attributes: .concurrent)
+    lazy var session:URLSession = {
         let config = URLSessionConfiguration.default
         let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
+        queue.maxConcurrentOperationCount = 6
         queue.underlyingQueue = rootQueue
         queue.name = "com.airmey.network.delegateQueue"
         queue.qualityOfService = .default
@@ -39,7 +38,7 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.dataTask(with: urlreq)
-        let req = HTTPTask(task,retrier: retrier,decoder: decoder,completion: completion)
+        let req = HTTPTask(task,session: self,retrier: retrier,decoder: decoder,completion: completion)
         self.add(req)
         return req
     }
@@ -58,7 +57,7 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.uploadTask(with: urlreq, fromFile: file)
-        let req = UploadTask(task,decoder: decoder,fileManager: fileManager,completion: completion)
+        let req = UploadTask(task,session: self,decoder: decoder,fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
@@ -83,10 +82,10 @@ class Session:NSObject{
             switch upload {
             case .data(let data):
                 let task = self.session.uploadTask(with: urlreq, from: data)
-                req = UploadTask(task,decoder: decoder,fileManager: form.fileManager,completion: completion)
+                req = UploadTask(task,session: self,decoder: decoder,fileManager: form.fileManager,completion: completion)
             case .file(let fileURL):
                 let task = self.session.uploadTask(with: urlreq, fromFile: fileURL)
-                req = UploadTask(task,decoder: decoder,fileManager: form.fileManager,completion: completion)
+                req = UploadTask(task,session: self,decoder: decoder,fileManager: form.fileManager,completion: completion)
                 req.cleanupFile = fileURL
             }
             self.add(req)
@@ -103,7 +102,7 @@ class Session:NSObject{
         transfer:DownloadTask.URLTransfer? = nil,
         completion:HTTPFinish?)->DownloadTask?{
         let task = self.session.downloadTask(withResumeData: data)
-        let req = DownloadTask(task, transfer: transfer, fileManager: fileManager,completion: completion)
+        let req = DownloadTask(task,session: self, transfer: transfer, fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
@@ -121,7 +120,7 @@ class Session:NSObject{
             return nil
         }
         let task = self.session.downloadTask(with: urlreq)
-        let req = DownloadTask(task, transfer: transfer, fileManager: fileManager,completion: completion)
+        let req = DownloadTask(task,session: self, transfer: transfer, fileManager: fileManager,completion: completion)
         self.add(req)
         return req
     }
@@ -134,12 +133,6 @@ extension Session{
     }
     func remove(_ task:HTTPTask){
         self.$tasks[task.id] = nil
-    }
-    func restart(_ task:HTTPTask,after:TimeInterval = 0){
-        retryQueue.asyncAfter(deadline: .now()+after) {
-            task.reset(task: self.session.dataTask(with: task.request!))
-            self.add(task)
-        }
     }
 }
 extension Session:URLSessionTaskDelegate{
@@ -157,12 +150,14 @@ extension Session:URLSessionDataDelegate{
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Swift.Error?) {
         if let req = self.$tasks[task.taskIdentifier] {
+            self.remove(req)
             if let delay = req.finish(error) {
-                self.restart(req,after: delay)
+                rootQueue.asyncAfter(deadline: .now()+delay) {
+                    req.restart()
+                }
             }else{
                 req.cleanup()
             }
-            self.remove(req)
         }
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {

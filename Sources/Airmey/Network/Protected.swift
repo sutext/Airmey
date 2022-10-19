@@ -42,9 +42,9 @@ import Foundation
  * possibility.
  *
  */
-fileprivate final class AMLock {
+public final class AMLock {
     private let unfairLock: os_unfair_lock_t
-    init() {
+    public init() {
         unfairLock = .allocate(capacity: 1)
         unfairLock.initialize(to: os_unfair_lock())
     }
@@ -52,17 +52,17 @@ fileprivate final class AMLock {
         unfairLock.deinitialize(count: 1)
         unfairLock.deallocate()
     }
-    private func lock() {
+    public func lock() {
         os_unfair_lock_lock(unfairLock)
     }
-    private func unlock() {
+    public func unlock() {
         os_unfair_lock_unlock(unfairLock)
     }
-    fileprivate func around<T>(_ closure: () -> T) -> T {
+    public func around<T>(_ closure: () -> T) -> T {
         lock(); defer { unlock() }
         return closure()
     }
-    fileprivate func around(_ closure: () -> Void) {
+    public func around(_ closure: () -> Void) {
         lock(); defer { unlock() }
         closure()
     }

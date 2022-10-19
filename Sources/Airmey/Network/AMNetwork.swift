@@ -36,34 +36,40 @@ open class AMNetwork {
     open var debug:Bool{ false }
     /// global callback queue by default use main queue.
     open var queue:DispatchQueue { .main }
-    /// global http method `.get` by default. override for custom
+    /// global http method `.get` by default. override it in  options
     open var method:HTTPMethod{.get}
-    /// global retryer  `nil` by default . override for custom
+    /// global retryer  `nil` by default .override it in  options
     open var retrier:Retrier?{ nil }
-    /// global request encoder. By default use  `HTTP.JSONEncoder()`. override for custom
+    /// global request encoder. By default use  `HTTP.JSONEncoder()`. override it in  options
     open var encoder:HTTPEncoder{ HTTP.JSONEncoder() }
-    /// global request decoder. By default use  `HTTP.JSONDecoder()`. override for custom
+    /// global request decoder. By default use  `HTTP.JSONDecoder()`. override it in  options
     open var decoder:HTTPDecoder{ HTTP.JSONDecoder() }
-    /// global http headers `[:]` by default, override for custom
+    /// global http headers `[:]` by default, override it in  options
     open var headers:[String:String]{ [:] }
-    /// global timeout in secends `60` by default. override for custom
+    /// global timeout in secends `60` by default. override it in  options
     open var timeout:TimeInterval{ 60 }
     /// global default fileManager. override for custom
     open var fileManager:FileManager{ .default }
-    /// global response verifer return directly. override for custom
-    open func verify(_ old:Response<JSON>)->Response<JSON>{ old }
-    /// global error catched here
+    
+    /// global response verifer.
+    ///
+    /// - Yout can `override` it by custom verifier in options.
+    /// - You can change the response data by return .rewrite(data).
+    /// - You can change the error by throws a new error.
+    /// - You restart current task by retrun .restart(URLRequest).
+    ///
+    /// - Throws: A new Response Error
     /// - Parameters:
-    ///     - error: The input error
-    /// - Throws: Output a new Error if throws. otherwise keep origin error
-    /// - Note: this method called in airmey delegate queue
-    open func `catch` (_ error:Error) throws{}
+    ///    - resp: The input Response
+    /// - Returns: A `VerifyResult` whtin none restart and rewrite.
+    ///
+    open func verify(_ resp:Response<JSON>)throws ->VerifyResult{ .none }
     ///
     /// Send an common data request
     /// 
     /// - Parameters:
-    ///     - req: The `AMRequest` protocol instance
-    ///     - completion: The data request completion call back
+    ///    - req: The `AMRequest` protocol instance
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -92,19 +98,29 @@ open class AMNetwork {
             encoder: encoder,
             decoder: decoder,
             retrier: retrier,
-            timeout: timeout) {res in
-            var resp:Response<R.Model>
-            if let verify = req.options?.verifier{
-                resp = verify(res).map{try req.convert($0)}
-            }else{
-                resp = self.verify(res).map{try req.convert($0)}
-            }
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
+            timeout: timeout)
+        {res in
+            var resp:Response<R.Model>?
+            do {
+                var result:VerifyResult
+                if let verify = req.options?.verifier{
+                    result = try verify(res)
+                }else{
+                    result = try self.verify(res)
                 }
+                switch result {
+                case .none:
+                    resp = res.map{ try req.convert($0)}
+                case .restart(let r):
+                    res.task?.restart(req: r)
+                case .rewrite(let json):
+                    resp = res.map{_ in json}.map { try req.convert($0) }
+                }
+            }catch{
+                resp = .init(data: res.data, task: res.task, result: .failure(error))
+            }
+            guard let resp = resp else {
+                return
             }
             if self.debug{
                 debugPrint(resp)
@@ -116,10 +132,10 @@ open class AMNetwork {
     /// Send a simple data request directly
     ///
     /// - Parameters:
-    ///     - path: The request relative to th baseURL
-    ///     - params: The request params
-    ///     - options: The current request options
-    ///     - completion: The data request completion call back
+    ///    - path: The request relative to th baseURL
+    ///    - params: The request params
+    ///    - options: The current request options
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -152,19 +168,29 @@ open class AMNetwork {
             encoder: encoder,
             decoder: decoder,
             retrier: retrier,
-            timeout: timeout) {res in
-            var resp:Response<JSON>
-            if let verify = options?.verifier{
-                resp = verify(res)
-            }else{
-                resp = self.verify(res)
-            }
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
+            timeout: timeout)
+        { res in
+            var resp:Response<JSON>?
+            do {
+                var result:VerifyResult
+                if let verify = options?.verifier{
+                    result = try verify(res)
+                }else{
+                    result = try self.verify(res)
                 }
+                switch result {
+                case .none:
+                    resp = res
+                case .restart(let r):
+                    res.task?.restart(req: r)
+                case .rewrite(let json):
+                    resp = res.map{_ in json }
+                }
+            } catch {
+                resp = .init(data: res.data, task: res.task, result: .failure(error))
+            }
+            guard let resp = resp else {
+                return
             }
             if self.debug{
                 debugPrint(resp)
@@ -175,8 +201,8 @@ open class AMNetwork {
     /// Send an `multipart/form-data` request
     ///
     /// - Parameters:
-    ///     - req: The `AMFormUpload` protocol instance
-    ///     - completion: The data request completion call back
+    ///    - req: The `AMFormUpload` protocol instance
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -199,19 +225,29 @@ open class AMNetwork {
             params: req.params,
             decoder: decoder,
             headers: headers,
-            fileManager: fileManager) { res in
-            var resp:Response<R.Model>
-            if let verify = req.options?.verifier{
-                resp = verify(res).map{try req.convert($0)}
-            }else{
-                resp = self.verify(res).map{try req.convert($0)}
-            }
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
+            fileManager: fileManager)
+        { res in
+            var resp:Response<R.Model>?
+            do {
+                var result:VerifyResult
+                if let verify = req.options?.verifier{
+                    result = try verify(res)
+                }else{
+                    result = try self.verify(res)
                 }
+                switch result {
+                case .none:
+                    resp = res.map{ try req.convert($0)}
+                case .restart(let r):
+                    res.task?.restart(req: r)
+                case .rewrite(let json):
+                    resp = res.map{_ in json}.map { try req.convert($0) }
+                }
+            }catch{
+                resp = .init(data: res.data, task: res.task, result: .failure(error))
+            }
+            guard let resp = resp else {
+                return
             }
             if self.debug{
                 debugPrint(resp)
@@ -222,8 +258,8 @@ open class AMNetwork {
     /// Send an file upload  request
     ///
     /// - Parameters:
-    ///     - req: The `AMFileUpload` protocol instance
-    ///     - completion: The data request completion call back
+    ///    - req: The `AMFileUpload` protocol instance
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -249,19 +285,29 @@ open class AMNetwork {
             params: req.params,
             headers: headers,
             decoder: decoder,
-            fileManager: fileManager) { res in
-            var resp:Response<R.Model>
-            if let verify = req.options?.verifier{
-                resp = verify(res).map{try req.convert($0)}
-            }else{
-                resp = self.verify(res).map{try req.convert($0)}
-            }
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
+            fileManager: fileManager)
+        { res in
+            var resp:Response<R.Model>?
+            do {
+                var result:VerifyResult
+                if let verify = req.options?.verifier{
+                    result = try verify(res)
+                }else{
+                    result = try self.verify(res)
                 }
+                switch result {
+                case .none:
+                    resp = res.map{ try req.convert($0)}
+                case .restart(let r):
+                    res.task?.restart(req: r)
+                case .rewrite(let json):
+                    resp = res.map{_ in json}.map { try req.convert($0) }
+                }
+            }catch{
+                resp = .init(data: res.data, task: res.task, result: .failure(error))
+            }
+            guard let resp = resp else {
+                return
             }
             if self.debug{
                 debugPrint(resp)
@@ -272,11 +318,11 @@ open class AMNetwork {
     /// Upload an local file to server.
     ///
     /// - Parameters:
-    ///     - file: The fileURL to be upload
-    ///     - to: The relative upload path
-    ///     - parmas: The upload request params
-    ///     - options: The upload request options
-    ///     - completion: The data request completion call back
+    ///    - file: The fileURL to be upload
+    ///    - to: The relative upload path
+    ///    - parmas: The upload request params
+    ///    - options: The upload request options
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -304,19 +350,29 @@ open class AMNetwork {
             params: params,
             headers: headers,
             decoder: decoder,
-            fileManager: fileManager) { res in
-            var resp:Response<JSON>
-            if let verify = options?.verifier{
-                resp = verify(res)
-            }else{
-                resp = self.verify(res)
-            }
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
+            fileManager: fileManager)
+        { res in
+            var resp:Response<JSON>?
+            do {
+                var result:VerifyResult
+                if let verify = options?.verifier{
+                    result = try verify(res)
+                }else{
+                    result = try self.verify(res)
                 }
+                switch result {
+                case .none:
+                    resp = res
+                case .restart(let r):
+                    res.task?.restart(req: r)
+                case .rewrite(let json):
+                    resp = res.map{_ in json }
+                }
+            } catch {
+                resp = .init(data: res.data, task: res.task, result: .failure(error))
+            }
+            guard let resp = resp else {
+                return
             }
             if self.debug{
                 debugPrint(resp)
@@ -327,8 +383,8 @@ open class AMNetwork {
     /// Send an file download  request
     /// - Note: If `transfer` is not specified, The download file will not be deleted until the system purges the temporary files. And the temporary file will been returned.
     /// - Parameters:
-    ///     - req: The `AMDownload` protocol instance
-    ///     - completion: Call back the transfered file location.
+    ///    - req: The `AMDownload` protocol instance
+    ///    - completion: Call back the transfered file location.
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -345,14 +401,6 @@ open class AMNetwork {
             headers: HTTPHeaders(req.headers),
             fileManager: fileManager,
             transfer:req.transfer) { resp in
-            var resp = resp
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
-                }
-            }
             if self.debug{
                 debugPrint(resp)
             }
@@ -362,11 +410,11 @@ open class AMNetwork {
     /// Send a simple download  request
     ///
     /// - Parameters:
-    ///     - url: A full resource url
-    ///     - params: The download request parameters
-    ///     - headers: The download request headers
-    ///     - transfer: The download file transfer
-    ///     - completion: Call back the temporary file location. At this time transfer not suport
+    ///    - url: A full resource url
+    ///    - params: The download request parameters
+    ///    - headers: The download request headers
+    ///    - transfer: The download file transfer
+    ///    - completion: Call back the temporary file location. At this time transfer not suport
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -393,14 +441,6 @@ open class AMNetwork {
             headers: aheaders,
             fileManager: fileManager,
             transfer: transfer) { resp in
-            var resp = resp
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
-                }
-            }
             if self.debug{
                 debugPrint(resp)
             }
@@ -410,9 +450,9 @@ open class AMNetwork {
     /// Send a resume download request
     /// - Note: If `transfer` is not specified, the download will be moved to a temporary location determined by Airmey. The file will not be deleted until the system purges the temporary files.
     /// - Parameters:
-    ///     - data: The resume data from a previously cancelled download request
-    ///     - transfer: A closure used to determine how and where the downloaded file should be moved.
-    ///     - completion: The data request completion call back
+    ///    - data: The resume data from a previously cancelled download request
+    ///    - transfer: A closure used to determine how and where the downloaded file should be moved.
+    ///    - completion: The data request completion call back
     /// - Returns: Thre request handler for task control and progress control
     ///
     @discardableResult
@@ -426,28 +466,10 @@ open class AMNetwork {
             resume: data,
             fileManager: fileManager,
             transfer: transfer) { resp in
-            var resp = resp
-            if let err = resp.error{
-                do {
-                    try self.catch(err)
-                } catch {
-                    resp.setError(error)
-                }
-            }
             if self.debug{
                 debugPrint(resp)
             }
             queue.async { completion?(resp) }
-        }
-    }
-    /// Restart failed task
-    public func restart(_ task:HTTPTask){
-        switch task.state {
-        case .canceling,.completed:
-            session.restart(task)
-        default:
-            print("Warning restart running task not allowed")
-            break
         }
     }
 }
@@ -480,7 +502,12 @@ extension AMNetwork{
     }
 }
 extension AMNetwork{
-    public typealias Verifier = (Response<JSON>) -> Response<JSON>
+    public enum VerifyResult{
+        case none /// Do not do anything
+        case restart(URLRequest?) /// Restart current task
+        case rewrite(data:JSON) ///Rewrite  respones data
+    }
+    public typealias Verifier = (Response<JSON>)throws -> VerifyResult
     public struct Options{
         /// overwrite the global callback queue settings
         public var queue:DispatchQueue?

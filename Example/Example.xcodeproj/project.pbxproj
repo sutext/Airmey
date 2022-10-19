@@ -18,6 +18,9 @@
 		338E70DE265FD69600987BA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DD265FD69600987BA7 /* Assets.xcassets */; };
 		338E70E1265FD69600987BA7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */; };
 		33B649FE266A1C4200E04113 /* Airmey in Frameworks */ = {isa = PBXBuildFile; productRef = 33B649FD266A1C4200E04113 /* Airmey */; };
+		33C0D1DC28FFE870001AAB17 /* UTNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C0D1DB28FFE870001AAB17 /* UTNetwork.swift */; };
+		33C0D1DE28FFE8E8001AAB17 /* UTBaseURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C0D1DD28FFE8E8001AAB17 /* UTBaseURL.swift */; };
+		33C0D1E028FFEFEE001AAB17 /* UTNetworkController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C0D1DF28FFEFEE001AAB17 /* UTNetworkController.swift */; };
 		33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C26849266B5B3A0086F2B9 /* TestJsonController.swift */; };
 		33C2684C267897850086F2B9 /* SwiperController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C2684B267897840086F2B9 /* SwiperController.swift */; };
 		33C2684E267897AC0086F2B9 /* WidgetsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C2684D267897AC0086F2B9 /* WidgetsController.swift */; };
@@ -56,6 +59,9 @@
 		338E70E0265FD69600987BA7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		338E70E2265FD69600987BA7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		33B649FC266A1BE500E04113 /* Airmey */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Airmey; path = ..; sourceTree = "<group>"; };
+		33C0D1DB28FFE870001AAB17 /* UTNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTNetwork.swift; sourceTree = "<group>"; };
+		33C0D1DD28FFE8E8001AAB17 /* UTBaseURL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UTBaseURL.swift; sourceTree = "<group>"; };
+		33C0D1DF28FFEFEE001AAB17 /* UTNetworkController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTNetworkController.swift; sourceTree = "<group>"; };
 		33C26849266B5B3A0086F2B9 /* TestJsonController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestJsonController.swift; sourceTree = "<group>"; };
 		33C2684B267897840086F2B9 /* SwiperController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiperController.swift; sourceTree = "<group>"; };
 		33C2684D267897AC0086F2B9 /* WidgetsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetsController.swift; sourceTree = "<group>"; };
@@ -109,9 +115,13 @@
 				33C26849266B5B3A0086F2B9 /* TestJsonController.swift */,
 				33C2684B267897840086F2B9 /* SwiperController.swift */,
 				33C2684D267897AC0086F2B9 /* WidgetsController.swift */,
-				3372C6DA266502C4007351D0 /* CCNetwork.swift */,
 				33C2684F2678A4390086F2B9 /* CCSegmentControl.swift */,
 				33C268512678A4A60086F2B9 /* CCBadgeLabel.swift */,
+				33E7266026932A7400FCFCC8 /* CCNavBar.swift */,
+				3372C6DA266502C4007351D0 /* CCNetwork.swift */,
+				33C0D1DD28FFE8E8001AAB17 /* UTBaseURL.swift */,
+				33C0D1DB28FFE870001AAB17 /* UTNetwork.swift */,
+				33C0D1DF28FFEFEE001AAB17 /* UTNetworkController.swift */,
 				33C268532679D1D90086F2B9 /* WebImageController.swift */,
 				33640EAE2770B6B9008C3F93 /* PopupInputController.swift */,
 				3383D1D6275F652F001753F8 /* CoreDataController.swift */,
@@ -119,7 +129,6 @@
 				338E70DD265FD69600987BA7 /* Assets.xcassets */,
 				338E70DF265FD69600987BA7 /* LaunchScreen.storyboard */,
 				338E70E2265FD69600987BA7 /* Info.plist */,
-				33E7266026932A7400FCFCC8 /* CCNavBar.swift */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -207,6 +216,7 @@
 				33E37D992662B14000D953D0 /* PopupController.swift in Sources */,
 				335FC0A7269EE66100137ECE /* TableViewController.swift in Sources */,
 				3383D1D7275F652F001753F8 /* CoreDataController.swift in Sources */,
+				33C0D1E028FFEFEE001AAB17 /* UTNetworkController.swift in Sources */,
 				33C2684A266B5B3A0086F2B9 /* TestJsonController.swift in Sources */,
 				3372C6D32664A785007351D0 /* UpdateController.swift in Sources */,
 				33640EAF2770B6B9008C3F93 /* PopupInputController.swift in Sources */,
@@ -215,7 +225,9 @@
 				338E70D9265FD69500987BA7 /* NetowrkController.swift in Sources */,
 				338E70D5265FD69500987BA7 /* AppDelegate.swift in Sources */,
 				33E37D932662B11B00D953D0 /* RootViewController.swift in Sources */,
+				33C0D1DC28FFE870001AAB17 /* UTNetwork.swift in Sources */,
 				33C268542679D1D90086F2B9 /* WebImageController.swift in Sources */,
+				33C0D1DE28FFE8E8001AAB17 /* UTBaseURL.swift in Sources */,
 				3383D1DA275F6A2D001753F8 /* Model.xcdatamodeld in Sources */,
 				33C2684C267897850086F2B9 /* SwiperController.swift in Sources */,
 				33E7266126932A7400FCFCC8 /* CCNavBar.swift in Sources */,
@@ -360,14 +372,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YNP838A98V;
+				DEVELOPMENT_TEAM = 24L372QN9V;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sanhexingyuan.Example;
+				PRODUCT_BUNDLE_IDENTIFIER = com.airmey.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -380,14 +392,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YNP838A98V;
+				DEVELOPMENT_TEAM = 24L372QN9V;
 				INFOPLIST_FILE = Example/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sanhexingyuan.Example;
+				PRODUCT_BUNDLE_IDENTIFIER = com.airmey.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;

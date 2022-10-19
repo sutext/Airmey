@@ -14,14 +14,17 @@ open class HTTPTask{
     private(set) var task:URLSessionTask
     @Protected
     private var mutableData: Data? = nil
+    private let session:Session
     let decoder:HTTPDecoder
     let completion:HTTPFinish?
     init(
         _ task:URLSessionTask,
+        session:Session,
         retrier:Retrier?,
         decoder:HTTPDecoder,
         completion:HTTPFinish?){
         self.task = task
+        self.session = session
         self.completion = completion
         self.retrier  = retrier
         self.decoder = decoder
@@ -39,7 +42,7 @@ open class HTTPTask{
     /// the current task state
     public var state:URLSessionTask.State{ task.state }
     /// the current url request
-    public var request:URLRequest?{ task.originalRequest }
+    public var request:URLRequest? { task.originalRequest }
     /// the curren task progress
     public var progress:Progress { task.progress }
     /// the current http url respone
@@ -86,12 +89,7 @@ open class HTTPTask{
         }
         do {
             let json = try decoder.decode(data,response: resp)
-            let response = Response<JSON>(
-                data: json,
-                result: .success(json),
-                request: request,
-                metrics: metrics,
-                response: response)
+            let response = Response<JSON>(data: json, task: self, result: .success(json))
             self.completion?(response)
             return nil
         } catch {
@@ -101,22 +99,24 @@ open class HTTPTask{
     }
     func retry(when error:Error)->TimeInterval?{
         guard let delay = self.retrier?.doRetry(self, when: error) else {
-            let response = Response<JSON>(
-                data: .null,
-                result: .failure(error),
-                request: request,
-                metrics: metrics,
-                response: response)
+            let response = Response<JSON>(data: .null, task: self, result: .failure(error))
             self.completion?(response)
             return nil
         }
         return delay
     }
-    func reset(task:URLSessionTask) {
+    func restart(req:URLRequest? = nil) {
+        guard case .completed = state else{
+            return
+        }
+        guard let req = req ?? task.originalRequest else {
+            return
+        }
         self.mutableData = nil
         self.metrics = nil
         self.error = nil
-        self.task = task
+        self.task = self.session.session.dataTask(with: req)
+        self.session.add(self)
     }
     func cleanup(){
         
@@ -127,11 +127,12 @@ public class UploadTask:HTTPTask{
     var cleanupFile:URL?
     init(
         _ task: URLSessionTask,
+        session:Session,
         decoder:HTTPDecoder,
         fileManager: FileManager,
         completion:HTTPFinish?) {
         self.fileManager = fileManager
-        super.init(task, retrier: nil,decoder: decoder,completion: completion)
+        super.init(task,session: session, retrier: nil,decoder: decoder,completion: completion)
     }
     override func cleanup() {
         super.cleanup()
@@ -154,14 +155,19 @@ public class DownloadTask:HTTPTask{
     private var fileManager:FileManager
     private let transfer:URLTransfer
     private var fileURL:URL?
-    init(_ task: URLSessionDownloadTask,transfer: URLTransfer?,fileManager:FileManager,completion:HTTPFinish?) {
+    init(
+        _ task: URLSessionDownloadTask,
+        session:Session,
+        transfer: URLTransfer?,
+        fileManager:FileManager,
+        completion:HTTPFinish?) {
         self.transfer = transfer ?? {url,_ in
             let filename = "Airmey_\(url.lastPathComponent)"
             let destination = url.deletingLastPathComponent().appendingPathComponent(filename)
             return destination
         }
         self.fileManager = fileManager
-        super.init(task, retrier: nil,decoder: HTTP.JSONDecoder(),completion: completion)
+        super.init(task, session: session,retrier: nil,decoder: HTTP.JSONDecoder(),completion: completion)
     }
     override func finish(_ error: Error?) -> TimeInterval? {
         guard case .completed = state else {
@@ -183,12 +189,7 @@ public class DownloadTask:HTTPTask{
         guard let location = self.fileURL?.absoluteString else {
             return retry(when: HTTPError.download(info:"invalid destination file url"))
         }
-        self.completion?(Response<JSON>(
-                            data: .null,
-                            result: .success(JSON(location)),
-                            request: request,
-                            metrics: metrics,
-                            response: response))
+        self.completion?(Response<JSON>(data: .null, task: self, result: .success(JSON(location))))
         return nil
     }
     func finishDownload(_ location:URL){

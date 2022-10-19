@@ -9,7 +9,7 @@ import UIKit
 import  Airmey
 
 
-class NetowrkController: UIViewController {
+class UTNetowrkController: UIViewController {
     let stackView = UIStackView()
     var oberver:NSKeyValueObservation?
     var progress:Progress? = nil{
@@ -22,7 +22,7 @@ class NetowrkController: UIViewController {
     }
     init() {
         super.init(nibName: nil, bundle: nil)
-        self.tabBarItem = UITabBarItem(title: "CCNetwork", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
+        self.tabBarItem = UITabBarItem(title: "UTNetwork", image: .round(.blue, radius: 10), selectedImage: .round(.red, radius: 10))
         self.modalPresentationStyle = .fullScreen
     }
     
@@ -32,45 +32,43 @@ class NetowrkController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-        self.title = "CCNetwork"
+        self.title = "UTNetwork"
         self.view.addSubview(self.stackView)
         self.stackView.axis = .vertical
         self.stackView.alignment = .leading
         self.stackView.distribution = .equalCentering
         self.stackView.spacing = 20
         self.stackView.am.center.equal(to: (100,0))
-        self.addTest("Test Login") {
-            pop.action(CCLoginType.allCases) { type, idx in
-                if let type = type as? CCLoginType {
-                    self.doLogin(type)
+        self.addTest("测试登陆") {
+            utnet.request("/public/user/login",params:[
+                "identityType":"EMAIL",
+                "identifier":"supertext@icloud.com",
+                "credential":"zwc20062200337",
+                
+            ]){
+                utenv.token = "\($0.value?["accessToken"].string ?? "")1"///登陆之后设置一个错误的token
+                utenv.refreshToken = $0.value?["refreshToken"].string ?? ""///设置正确的refreshtoken
+            }
+        }
+        self.addTest("测试token失效刷新") {///测试并发token失效的情况
+            utnet.request("/app/user/info",params: ["userId":1000002],options: .init(.post,headers: UTBaseURL.api.headers)){
+                let userId = $0.value?["userId"] ?? ""
+                print("请求1结果:",userId)
+            }
+            utnet.request("/app/user/info",params: ["userId":1000002],options: .init(.post,headers: UTBaseURL.api.headers)){
+                let userId = $0.value?["userId"] ?? ""
+                print("请求2结果:",userId)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+                utnet.request("/app/user/info",params: ["userId":1000002],options: .init(.post,headers: UTBaseURL.api.headers)){
+                    let userId = $0.value?["userId"] ?? ""
+                    print("请求3结果:",userId)
+                }
+                utnet.request("/app/user/info",params: ["userId":1000002],options: .init(.post,headers: UTBaseURL.api.headers)){
+                    let userId = $0.value?["userId"] ?? ""
+                    print("请求4结果:",userId)
                 }
             }
-        }
-        self.addTest("上传头像") {[weak self] in
-            self?.doUpload()
-        }
-        self.addTest("下载图片") {
-            pop.wait("downloading...")
-            let req = net.download("https://media.clipclaps.com/img/20210611/7cde0100308424f6.jpg", completion: {
-                pop.idle()
-                debugPrint($0)
-            })
-            self.progress = req?.progress
-            
-        }
-        self.addTest("测试GET") {
-            net.request("app/checkPhoneRegistration",params: [],options: .get(.api)){
-                debugPrint($0)
-            }
-        }
-        self.addTest("测试异常解析") {
-            let bool:Bool? = nil
-            net.request("feeds/home-pull",params: ["test":["hello":"world"],"testkey":JSON(true),"bool":bool],options: .post(.ugc)){
-                debugPrint($0)
-            }
-        }
-        self.addTest("测试webimage") {
-            root?.push(WebImageController())
         }
     }
     func doUpload(){

@@ -51,11 +51,9 @@ public class CCNetwork: AMNetwork {
         }
         return result
     }
-    public override func `catch`(_ error: Swift.Error) throws {
-        throw error
-    }
-    public override func verify(_ old: Response<JSON>) -> Response<JSON> {
-        old
+
+    public override func verify(_ old: Response<JSON>) -> VerifyResult {
+        .none
     }
     @discardableResult
     func request(_ req: CCRequest, completion: HTTPFinish? = nil) -> HTTPTask? {
@@ -112,38 +110,38 @@ extension CCNetwork.BaseURL{
 extension AMNetwork.Options{
     public static func post(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
         .init(.post,baseURL: base.url) { old in
-            return old.map {
-                let json = JSON($0)
-                guard case .api = base else{
-                    return json
-                }
-                guard let code = json["code"].int,code==1 else {
-                    throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
-                }
-                let data = json["data"]
-                if case .null = data{
-                    throw CCNetwork.Error.invalidData
-                }
-                return data
+            guard let json = old.value else{
+                return .none
             }
+            guard case .api = base else{
+                return .none
+            }
+            guard let code = json["code"].int,code==1 else {
+                throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
+            }
+            let data = json["data"]
+            if case .null = data{
+                throw CCNetwork.Error.invalidData
+            }
+            return .rewrite(data:data)
         }
     }
     public static func get(_ base:CCNetwork.BaseURL)->AMNetwork.Options{
         .init(.get,baseURL: base.url,headers: ["test":"testxxx"]) { old in
-            return old.map {
-                let json = JSON($0)
-                guard case .api = base else{
-                    return json
-                }
-                guard let code = json["code"].int,code==1 else {
-                    throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
-                }
-                let data = json["data"]
-                if case .null = data{
-                    throw CCNetwork.Error.invalidData
-                }
-                return data
+            guard let json = old.value else{
+                return .none
             }
+            guard case .api = base else{
+                return .none
+            }
+            guard let code = json["code"].int,code==1 else {
+                throw CCNetwork.Error.invalidCode(code: json["code"].intValue)
+            }
+            let data = json["data"]
+            if case .null = data{
+                throw CCNetwork.Error.invalidData
+            }
+            return .rewrite(data:data)
         }
     }
 }
